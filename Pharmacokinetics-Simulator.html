@@ -302,6 +302,45 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div class="field"><label>Serum Creatinine (mg/dL)</label><input type="number" id="scrInput" value="1.0" step="0.1" oninput="recalculate()"></div>
         <div class="field"><label>Weight Basis</label><select id="weightBasis" onchange="recalculate()"><option value="tbw">TBW (Total)</option><option value="ibw">IBW (Ideal)</option><option value="abw">ABW (Adjusted)</option></select></div>
       </div>
+
+      <h3>Physiological Modifiers <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Physiological Modifiers:</strong> Conditions that significantly alter PK parameters beyond standard CrCl-based adjustments.<br><br><ul><li><strong>Pregnancy:</strong> Vd +40%, GFR +50%, albumin drops — higher doses needed for renally-cleared drugs</li><li><strong>Heart Failure:</strong> Reduced perfusion to liver/kidneys — lower clearance, risk of accumulation</li><li><strong>Smoking:</strong> CYP1A2 induction — 40% faster clearance of affected drugs</li></ul>">?</span></h3>
+      <div class="row">
+        <div class="field">
+          <label>Pregnancy</label>
+          <select id="pregnancyMode" onchange="recalculate()">
+            <option value="none">Not pregnant</option>
+            <option value="first">1st Trimester</option>
+            <option value="second">2nd Trimester</option>
+            <option value="third">3rd Trimester</option>
+            <option value="postpartum">Postpartum (<6 weeks)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Heart Failure</label>
+          <select id="hfMode" onchange="recalculate()">
+            <option value="none">None</option>
+            <option value="mild">Mild (NYHA I-II)</option>
+            <option value="moderate">Moderate (NYHA III)</option>
+            <option value="severe">Severe (NYHA IV)</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Smoking Status</label>
+          <select id="smokingStatus" onchange="recalculate()">
+            <option value="none">Non-smoker</option>
+            <option value="light">Light (<10 cig/day)</option>
+            <option value="moderate">Moderate (10-20/day)</option>
+            <option value="heavy">Heavy (>20/day)</option>
+            <option value="recent_quit">Recently quit (<2 weeks)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div id="modifierInfo" class="info-box hidden" style="margin:0"></div>
+        </div>
+      </div>
       <div id="weightInfo" class="info-box"></div>
       <div id="renalWarning" class="warning-box hidden"><strong>Renal Impairment</strong><br><span id="renalMsg"></span></div>
 
@@ -614,7 +653,22 @@ function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();can
 function calcIBW(){const h=state.height;return state.sex==='male'?50+0.91*(h-152.4):45.5+0.91*(h-152.4);}
 function calcABW(){return calcIBW()+0.4*(state.weight-calcIBW());}
 function getEffW(){const b=document.getElementById('weightBasis').value;return b==='ibw'?calcIBW():b==='abw'?calcABW():state.weight;}
-function calcCrCl(){const w=getEffW();let c=((140-state.age)*w)/(72*state.scr);if(state.sex==='female')c*=0.85;return Math.max(c,5);}
+function calcCrCl(){
+  const w=getEffW();
+  let c=((140-state.age)*w)/(72*state.scr);
+  if(state.sex==='female')c*=0.85;
+  // Pregnancy: GFR increases 40-50% in 2nd/3rd trimester
+  const preg=document.getElementById('pregnancyMode').value;
+  if(preg==='second')c*=1.4;
+  else if(preg==='third')c*=1.5;
+  else if(preg==='postpartum')c*=1.2; // still elevated early postpartum
+  // Heart failure: reduced renal perfusion
+  const hf=document.getElementById('hfMode').value;
+  if(hf==='mild')c*=0.9;
+  else if(hf==='moderate')c*=0.75;
+  else if(hf==='severe')c*=0.55;
+  return Math.max(c,5);
+}
 function calcSchwartz(){const k=state.age<1?0.45:state.age<13?0.55:0.7;return((state.sex==='female'?k*0.85:k)*state.height)/state.scr;}
 
 function calcKe(drug){
@@ -631,6 +685,24 @@ function calcKe(drug){
   if(dm!=='none'&&d.dialyzable){const dk={ihd:0.05,cvvhd:0.02,sled:0.035,pd:0.01};ke+=dk[dm];}
   if(document.getElementById('interactionEnzyme').checked)ke*=1.4;
   if(document.getElementById('interactionInhibitor').checked)ke*=0.65;
+  // Pregnancy: increased clearance for renally-eliminated drugs (already captured via CrCl increase)
+  // Heart failure: reduced hepatic clearance for hepatically-metabolized drugs
+  const hf=document.getElementById('hfMode').value;
+  if(hf!=='none'&&d.hepatic){
+    if(hf==='mild')ke*=0.85;
+    else if(hf==='moderate')ke*=0.7;
+    else if(hf==='severe')ke*=0.5;
+  }
+  // Smoking: CYP1A2 induction (affects clozapine, theophylline, olanzapine)
+  const smoke=document.getElementById('smokingStatus').value;
+  const cyp1a2Drugs=['clozapine','theophylline'];
+  if(smoke!=='none'&&cyp1a2Drugs.includes(drug)){
+    if(smoke==='light')ke*=1.2;
+    else if(smoke==='moderate')ke*=1.4;
+    else if(smoke==='heavy')ke*=1.6;
+    // Recent quit: still partially induced
+    else if(smoke==='recent_quit')ke*=1.15;
+  }
   return ke;
 }
 function calcCL(){return state.ke*getEffW()*state.vd;}
@@ -663,10 +735,84 @@ function recalculate(){
     showPedInfo();
   }
   if(state.drug!=='custom'){const drug=DRUGS[state.drug];const ae=document.activeElement;if(ae.id!=='vdInput'){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}if(ae.id!=='fInput'){state.f=drug.f;document.getElementById('fInput').value=drug.f;}if(ae.id!=='pbInput'){state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;}}
+  // Pregnancy: Vd increases 30-50% due to increased plasma volume, body water, placental transfer
+  const preg=document.getElementById('pregnancyMode').value;
+  if(preg==='first')state.vd*=1.1;
+  else if(preg==='second')state.vd*=1.3;
+  else if(preg==='third')state.vd*=1.45;
+
   state.ke=calcKe(state.drug);
   document.getElementById('dosePerKg').textContent='('+((state.dose/state.weight).toFixed(1))+' mg/kg)';
-  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();updateShowMath();updateReferences();drawChart();
+  applyPhysiologicalModifiers();
+  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();updateModifierInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();updateShowMath();updateReferences();drawChart();
 }
+// === PHYSIOLOGICAL MODIFIERS ===
+function applyPhysiologicalModifiers(){
+  const preg=document.getElementById('pregnancyMode').value;
+  const hf=document.getElementById('hfMode').value;
+  const smoke=document.getElementById('smokingStatus').value;
+
+  // Pregnancy: adjust SCr (hemodilution) and Vd
+  if(preg!=='none'){
+    // SCr drops in pregnancy due to increased GFR
+    // Normal SCr in pregnancy: 0.4-0.7 mg/dL
+    // We adjust the effective CrCl instead
+  }
+
+  // These modifiers are applied in calcKe via multipliers
+}
+
+function updateModifierInfo(){
+  const preg=document.getElementById('pregnancyMode').value;
+  const hf=document.getElementById('hfMode').value;
+  const smoke=document.getElementById('smokingStatus').value;
+  const info=document.getElementById('modifierInfo');
+
+  let msgs=[];
+
+  // Pregnancy effects
+  if(preg!=='none'){
+    const pregEffects={
+      first:'1st trimester: Mild GFR increase (~20%). Vd starting to increase.',
+      second:'2nd trimester: GFR +40%, Vd +30%, albumin drops. Need higher doses for renally-cleared drugs (vancomycin, gentamicin, lithium).',
+      third:'3rd trimester: GFR +50%, Vd +40-50%, albumin lowest. Peak PK changes. Drug levels will be LOWER — may need 30-50% dose increase.',
+      postpartum:'Postpartum: GFR and Vd returning to normal over 6-8 weeks. Risk of toxicity as clearance normalizes — reduce doses gradually.'
+    };
+    msgs.push('<span style="color:#f472b6">Pregnancy ('+preg+'):</span> '+pregEffects[preg]);
+  }
+
+  // Heart failure effects
+  if(hf!=='none'){
+    const hfEffects={
+      mild:'NYHA I-II: Hepatic perfusion reduced ~15%. Mild renal hypoperfusion. Monitor levels — slight accumulation risk.',
+      moderate:'NYHA III: Hepatic perfusion reduced ~30%. Reduced renal blood flow. Decrease doses of hepatically-cleared drugs (lidocaine, theophylline). Consider 25% dose reduction.',
+      severe:'NYHA IV: Hepatic perfusion reduced ~50%. Significant renal hypoperfusion. Major clearance reduction. Reduce doses 30-50%. Frequent TDM essential.'
+    };
+    msgs.push('<span style="color:#60a5fa">Heart Failure ('+hf+'):</span> '+hfEffects[hf]);
+  }
+
+  // Smoking effects
+  if(smoke!=='none'){
+    const smokeEffects={
+      light:'Light smoking: CYP1A2 induced ~20%. Affects: clozapine, theophylline, olanzapine, caffeine. If patient quits, levels will RISE.',
+      moderate:'Moderate smoking: CYP1A2 induced ~40%. Higher doses of CYP1A2 substrates needed. If quitting, reduce doses by 25-40% over 1-2 weeks.',
+      heavy:'Heavy smoking: CYP1A2 induced ~60%. Clozapine/theophylline clearance significantly increased. Sudden cessation = toxicity risk.',
+      recent_quit:'Recently quit: CYP1A2 induction still present but declining. Full normalization takes 2-4 weeks. Monitor CYP1A2 drug levels closely.'
+    };
+    const affectsDrug=(smoke==='none')?false:
+      (state.drug==='clozapine'||state.drug==='theophylline'||state.drug==='olanzapine');
+    msgs.push('<span style="color:#fbbf24">Smoking ('+smoke+'):</span> '+smokeEffects[smoke]+
+      (affectsDrug?' <strong style="color:#f87171">This drug IS affected by smoking.</strong>':''));
+  }
+
+  if(msgs.length>0){
+    info.classList.remove('hidden');
+    info.innerHTML=msgs.join('<br><br>');
+  }else{
+    info.classList.add('hidden');
+  }
+}
+
 function onWeightChange(){recalculate();}
 function updateWeightInfo(){const ibw=calcIBW(),abw=calcABW(),tbw=state.weight,r=tbw/ibw;let m='TBW: '+tbw+' kg | IBW: '+ibw.toFixed(1)+' kg | ABW: '+abw.toFixed(1)+' kg';if(r>1.3)m+='<br><span style="color:#fbbf24">Obese (TBW/IBW='+r.toFixed(1)+'). Consider IBW or ABW for renally-cleared drugs.</span>';document.getElementById('weightInfo').innerHTML=m;}
 function showPedInfo(){const c=calcSchwartz();const i=document.getElementById('pedInfo');i.classList.remove('hidden');i.innerHTML='<strong>Pediatric:</strong> Schwartz CrCl = '+c.toFixed(1)+' mL/min/1.73m2 | Weight: '+state.weight+' kg';}
