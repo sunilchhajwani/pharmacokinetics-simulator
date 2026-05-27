@@ -168,9 +168,9 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('dosing')">Dosing</button>
-      <button class="tab-btn" onclick="switchTab('tdm')">TDM</button>
-      <button class="tab-btn" onclick="switchTab('advanced')">Advanced</button>
+      <button class="tab-btn active" onclick="switchTab('dosing',this)">Dosing</button>
+      <button class="tab-btn" onclick="switchTab('tdm',this)">TDM</button>
+      <button class="tab-btn" onclick="switchTab('advanced',this)">Advanced</button>
     </div>
 
     <!-- DOSING TAB -->
@@ -297,7 +297,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div class="field"><label>ke (h-1) <small style="color:#64748b">blank=auto</small></label><input type="number" id="keInput" value="" step="0.001" placeholder="Auto"></div>
       </div>
       <div class="row">
-        <div class="field"><label>Bioavailability (F)</label><input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1"></div>
+        <div class="field"><label>Bioavailability (F)</label><input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1" oninput="recalculate()"></div>
         <div class="field"><label>Protein Binding (%)</label><input type="number" id="pbInput" value="0" step="1" min="0" max="99" oninput="recalculate()"></div>
       </div>
       <h3>Hepatic Impairment <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Child-Pugh Classification:</strong> Assesses liver disease severity. Affects clearance of hepatically-metabolized drugs (phenytoin, theophylline, carbamazepine, clozapine, lidocaine, amiodarone).<br><br><strong>Adjustments:</strong><ul><li><strong>Class A (5-6 pts):</strong> Mild — clearance reduced ~15%</li><li><strong>Class B (7-9 pts):</strong> Moderate — clearance reduced ~35%</li><li><strong>Class C (10-15 pts):</strong> Severe — clearance reduced ~55%</li></ul>Only affects drugs marked as hepatically-metabolized. Renally-cleared drugs show a note that hepatic adjustment has minimal effect.">?</span></h3>
@@ -649,7 +649,7 @@ function showReport(){
   document.getElementById('reportBox').innerHTML=html;document.getElementById('reportOverlay').classList.add('show');
 }
 
-function switchTab(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');event.target.classList.add('active');}
+function switchTab(tab,el){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');if(el)el.classList.add('active');}
 function toggleCollapse(id){const el=document.getElementById(id),ar=document.getElementById(id.replace('Section','Arrow'));el.classList.toggle('collapsed');if(ar)ar.textContent=el.classList.contains('collapsed')?'&#9654;':'&#9660;';}
 function toggleHelp(icon){
   // Close all other tips
@@ -735,7 +735,7 @@ const MONOGRAPHS={
   carbamazepine:'<strong>Carbamazepine</strong><br><br><strong>Class:</strong> Iminostilbene antiepileptic<br><strong>Mechanism:</strong> Blocks voltage-gated Na+ channels<br><strong>Spectrum:</strong> Focal seizures, trigeminal neuralgia, bipolar disorder<br><strong>Key Side Effects:</strong> SJS/TEN (HLA-B*1502), agranulocytosis, hyponatremia, hepatotoxicity, autoinduction<br><strong>Monitoring:</strong> Level (4-12), CBC, Na+, LFTs<br><strong>Special Notes:</strong> <span style="color:#fbbf24">AUTOINDUCTION</span> — half-life drops from ~30h to ~15h over 2-4 weeks. Recheck levels after stabilization.',
   methotrexate:'<strong>Methotrexate</strong><br><br><strong>Class:</strong> Antifolate antimetabolite<br><strong>Mechanism:</strong> Inhibits dihydrofolate reductase → blocks DNA synthesis<br><strong>Spectrum:</strong> Leukemias, lymphomas, sarcomas, rheumatoid arthritis, ectopic pregnancy<br><strong>Key Side Effects:</strong> Myelosuppression, mucositis, hepatotoxicity, pneumonitis, nephrotoxicity<br><strong>Monitoring:</strong> Levels at 24h (<10), 48h (<1), 72h (<0.1 umol/L), CBC, LFTs, renal function<br><strong>Special Notes:</strong> Leucovorin rescue required for high-dose. Third-space fluid delays elimination. NSAIDs increase toxicity.',
   tobramycin:'<strong>Tobramycin</strong><br><br><strong>Class:</strong> Aminoglycoside<br><strong>Similar to:</strong> Gentamicin. Peak 5-12, Trough <2. Slightly less nephrotoxic. Preferred for Pseudomonas in CF patients.',
-  clozapine:'<strong>Clozapine</strong><br><br><strong>Class:</strong> Atypical antipsychotic (dibenzodiazepine)<><br><strong>Mechanism:</strong> D2/5-HT2A antagonist; also affects muscarinic, histaminic, adrenergic receptors<br><strong>Spectrum:</strong> Treatment-resistant schizophrenia, suicidality in schizophrenia<br><strong>Key Side Effects:</strong> <span style="color:#f87171">AGRANULOCYTOSIS (1-2%)</span>, metabolic syndrome, seizures, myocarditis, constipation, sialorrhea<br><strong>Monitoring:</strong> ANC (weekly x6mo, then biweekly), level (350-600 ng/mL), metabolic panel, ECG<br><strong>Special Notes:</strong> REMS program required. Smoking cessation increases levels (CYP1A2). Fluvoxamine strongly inhibits metabolism.',
+  clozapine:'<strong>Clozapine</strong><br><br><strong>Class:</strong> Atypical antipsychotic (dibenzodiazepine)<br><strong>Mechanism:</strong> D2/5-HT2A antagonist; also affects muscarinic, histaminic, adrenergic receptors<br><strong>Spectrum:</strong> Treatment-resistant schizophrenia, suicidality in schizophrenia<br><strong>Key Side Effects:</strong> <span style="color:#f87171">AGRANULOCYTOSIS (1-2%)</span>, metabolic syndrome, seizures, myocarditis, constipation, sialorrhea<br><strong>Monitoring:</strong> ANC (weekly x6mo, then biweekly), level (350-600 ng/mL), metabolic panel, ECG<br><strong>Special Notes:</strong> REMS program required. Smoking cessation increases levels (CYP1A2). Fluvoxamine strongly inhibits metabolism.',
   amiodarone:'<strong>Amiodarone</strong><br><br><strong>Class:</strong> Class III antiarrhythmic (multichannel blocker)<br><strong>Mechanism:</strong> Blocks K+, Na+, Ca2+ channels + beta-blockade<br><strong>Spectrum:</strong> Atrial fibrillation, ventricular tachycardia, ventricular fibrillation<br><strong>Key Side Effects:</strong> Thyroid dysfunction (hypo/hyper), pulmonary fibrosis, hepatotoxicity, corneal deposits, skin photosensitivity, peripheral neuropathy<br><strong>Monitoring:</strong> TSH, LFTs, PFTs, ophthalmology, ECG (QTc), level (1-2.5 mcg/mL)<br><strong>Special Notes:</strong> <span style="color:#fbbf24">EXTREMELY LONG HALF-LIFE (40-55 days)</span>. Loading takes weeks. Multiple drug interactions (inhibits CYP2D6, CYP3A4).'
 };
 
