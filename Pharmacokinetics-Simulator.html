@@ -102,12 +102,35 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
     <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Grid:</strong> Toggles background grid lines on the chart for easier reading of values.">?</span></button>
     <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Indicators:</strong> Toggles Steady State marker (purple vertical line at ~4-5 half-lives) and MIC line (cyan dashed line) on the chart.">?</span></button>
     <button class="btn btn-sm btn-success" onclick="showReport()">Report <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Report:</strong> Generates a printable dosing summary with patient data, PK parameters, predicted levels, TDM results, safety alerts, and dosing recommendations. Click Print Report to print.">?</span></button>
+    <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare</button>
     <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
   </div>
 </div>
 
 <div class="layout">
   <div class="panel" id="sidePanel">
+    <!-- CLINICAL PROTOCOLS -->
+    <div class="collapsible-header" onclick="toggleCollapse('protocolSection')">
+      <h2 style="margin:0">Quick Protocols</h2><span id="protocolArrow">&#9660;</span>
+    </div>
+    <div class="collapsible-body" id="protocolSection">
+      <div class="btn-group" style="flex-wrap:wrap">
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('vanc_mrsa')">Vanc - MRSA</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('vanc_sepsis')">Vanc - Sepsis</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('gent_od')">Gent - Once Daily</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('gent_conventional')">Gent - Conventional</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('amikacin_od')">Amikacin - OD</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('phenytoin_load')">Phenytoin - Load</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('phenytoin_maint')">Phenytoin - Maint</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('levetiracetam')">Levetiracetam</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('lithium_maint')">Lithium - Maint</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('digoxin_load')">Digoxin - Load</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('lidocaine_inf')">Lidocaine - Inf</button>
+        <button class="btn btn-sm btn-outline" onclick="applyProtocol('theophylline')">Theophylline</button>
+      </div>
+      <div id="protocolInfo" class="info-box hidden"></div>
+    </div>
+
     <h2>Drug Selection</h2>
     <div class="field">
       <select id="drugSelect" onchange="onDrugChange()">
@@ -287,13 +310,56 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="field"><label><input type="checkbox" id="interactionEnzyme" onchange="recalculate()"> CYP inducer present (rifampin, phenytoin, carbamazepine)</label></div>
       <div class="field"><label><input type="checkbox" id="interactionInhibitor" onchange="recalculate()"> CYP inhibitor present (ciprofloxacin, erythromycin, fluconazole)</label></div>
       <div id="interactionInfo" class="info-box hidden"></div>
-      <h3>Calculated PK</h3>
+        <h3>Calculated PK</h3>
       <div class="info-box" id="drugInfo"></div>
+
+      <!-- UNIT CONVERTER -->
+      <div class="collapsible-header" onclick="toggleCollapse('unitSection')">
+        <h3 style="margin:0">Unit Converter</h3><span id="unitArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="unitSection">
+        <div class="row">
+          <div class="field"><label>Value</label><input type="number" id="unitValue" value="" step="0.1" placeholder="e.g. 15" oninput="convertUnits()"></div>
+          <div class="field"><label>From</label><select id="unitFrom" onchange="convertUnits()"><option value="mg_L">mg/L</option><option value="mcg_mL">mcg/mL</option><option value="mcg_L">mcg/L</option><option value="ng_mL">ng/mL</option></select></div>
+        </div>
+        <div id="unitResult" class="info-box"></div>
+      </div>
+
+      <!-- VIAL SIZE / DOSE ROUNDING -->
+      <div class="collapsible-header" onclick="toggleCollapse('vialSection')">
+        <h3 style="margin:0">Vial Sizes / Dose Rounding</h3><span id="vialArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="vialSection">
+        <div id="vialInfo" class="info-box"></div>
+      </div>
+
+      <!-- RENAL TREND -->
+      <div class="collapsible-header" onclick="toggleCollapse('renalTrendSection')">
+        <h3 style="margin:0">Renal Trend (CrCl Change)</h3><span id="renalTrendArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="renalTrendSection">
+        <div class="row">
+          <div class="field"><label>Future CrCl (mL/min)</label><input type="number" id="futureCrCl" value="" step="5" placeholder="e.g. 30"></div>
+          <div class="field"><label>Change at dose #</label><input type="number" id="crClChangeDose" value="" step="1" placeholder="e.g. 4"></div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="recalculate()">Apply Trend</button>
+        <div id="renalTrendInfo" class="info-box hidden"></div>
+      </div>
+
+      <!-- DRUG MONOGRAPH -->
+      <div class="collapsible-header" onclick="toggleCollapse('monoSection')">
+        <h3 style="margin:0">Drug Monograph</h3><span id="monoArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="monoSection">
+        <div id="monographContent" class="info-box"></div>
+      </div>
     </div>
   </div>
 
   <div class="main">
     <div class="chart-area"><canvas id="chart"></canvas></div>
+    <div id="compInfo" class="info-box hidden" style="margin:8px 12px"></div>
+    <div id="roundedDose" class="info-box hidden" style="margin:0 12px 8px"></div>
     <div class="params-bar">
       <div class="param-card blue"><div class="label">Peak (Cmax)</div><div class="value" id="pCmax">--</div></div>
       <div class="param-card blue"><div class="label">Trough (Cmin)</div><div class="value" id="pCmin">--</div></div>
@@ -304,6 +370,9 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="param-card green"><div class="label">Css avg</div><div class="value" id="pCss">--</div></div>
       <div class="param-card cyan"><div class="label">AUC24</div><div class="value" id="pAUC24">--</div></div>
       <div class="param-card cyan"><div class="label">T>MIC</div><div class="value" id="pTMIC">--</div></div>
+      <div class="param-card purple"><div class="label">SS Trough</div><div class="value" id="pSSTrough">--</div></div>
+      <div class="param-card green"><div class="label">Time to SS</div><div class="value" id="pTimeToSS">--</div></div>
+      <div class="param-card amber"><div class="label">Inf Rate</div><div class="value" id="pInfRate">--</div></div>
     </div>
     <div class="legend">
       <div class="legend-item" title="Blue solid line: predicted drug concentration over time (sum of all doses)" style="cursor:help"><div class="legend-dot" style="background:#60a5fa"></div>Concentration</div>
@@ -313,6 +382,8 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="legend-item" title="Purple dashed line: when drug reaches steady state (~4-5 half-lives)" style="cursor:help"><div class="legend-dot" style="background:#c084fc"></div>Steady State</div>
       <div class="legend-item" title="Cyan dashed line: Minimum Inhibitory Concentration for the organism" style="cursor:help"><div class="legend-dot" style="background:#22d3ee"></div>MIC</div>
       <div class="legend-item" title="Pink dot: your actual measured drug level plotted on the chart" style="cursor:help"><div class="legend-dot" style="background:#f472b6"></div>Measured Level</div>
+      <div class="legend-item" title="Dashed line: saved comparison regimen (click Compare to enable)" style="cursor:help"><div class="legend-dot" style="background:#818cf8"></div>Comparison</div>
+      <div class="legend-item" title="Shaded band: population variability (±2 SD)" style="cursor:help"><div class="legend-dot" style="background:rgba(96,165,250,0.3)"></div>Variability</div>
     </div>
   </div>
 </div>
@@ -337,6 +408,21 @@ const DRUGS={
   theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
   methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
   custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
+};
+
+const PROTOCOLS={
+  vanc_mrsa:{drug:'vancomycin',dose:1500,interval:12,route:'iv_infusion',infusionTime:1,numDoses:8,mic:1,targetAUC:500,label:'Vancomycin - MRSA Bacteremia',note:'AUC-guided dosing. Target AUC24/MIC 400-600. Loading dose 25-30 mg/kg. Trough 15-20 for serious MRSA infections. Monitor at steady state (dose 4-5).'},
+  vanc_sepsis:{drug:'vancomycin',dose:2000,interval:12,route:'iv_infusion',infusionTime:2,numDoses:6,mic:1,targetAUC:500,label:'Vancomycin - Sepsis/ICU',note:'Aggressive loading (25-30 mg/kg TBW). Extended infusion (2h) for better PK/PD. Recheck level 24-48h after load. Adjust based on AUC/MIC.'},
+  gent_od:{drug:'gentamicin',dose:400,interval:24,route:'iv_infusion',infusionTime:0.5,numDoses:3,mic:1,targetAUC:0,label:'Gentamicin - Once Daily (5-7 mg/kg)',note:'Extended-interval aminoglycoside. Peak target 20-30 mg/L. No trough needed for OD regimens. Check level at 18-24h (Hartford nomogram). Less nephrotoxic than conventional.'},
+  gent_conventional:{drug:'gentamicin',dose:120,interval:8,route:'iv_infusion',infusionTime:0.5,numDoses:6,mic:1,targetAUC:0,label:'Gentamicin - Conventional (2 mg/kg)',note:'Conventional dosing for endocarditis synergy. Peak 5-12, Trough <2. Check peak 30min post-infusion, trough 30min pre-dose. Adjust for renal function.'},
+  amikacin_od:{drug:'amikacin',dose:1000,interval:24,route:'iv_infusion',infusionTime:0.5,numDoses:3,mic:4,targetAUC:0,label:'Amikacin - Once Daily (15-20 mg/kg)',note:'Extended-interval. Peak target 56-64 mg/L. Check level at 18-24h. Monitor renal function daily.'},
+  phenytoin_load:{drug:'phenytoin',dose:1000,interval:0,route:'iv_bolus',infusionTime:0,numDoses:1,mic:0,targetAUC:0,label:'Phenytoin - IV Loading',note:'Loading dose 15-20 mg/kg. Max infusion rate 50 mg/min (cardiac monitoring). Give as single dose, then start maintenance at 300 mg/day. Check level 1h post-load.'},
+  phenytoin_maint:{drug:'phenytoin',dose:300,interval:24,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Phenytoin - Maintenance',note:'300 mg/day (100 TID or 300 QHS). Non-linear kinetics — small dose changes cause large level changes. Monitor free and total levels. Target 10-20 mg/L total.'},
+  levetiracetam:{drug:'levetiracetam',dose:1000,interval:12,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Levetiracetam - Standard',note:'500-1500 mg BID. Wide therapeutic window (12-46 mcg/mL). Renally cleared — adjust for CrCl. IV-to-oral 1:1 conversion.'},
+  lithium_maint:{drug:'lithium',dose:300,interval:12,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Lithium - Maintenance',note:'300 mg BID-TID. Narrow therapeutic index (0.6-1.2 mmol/L). Check 12h trough level. Avoid NSAIDs, ACEi, thiazides. Maintain hydration.'},
+  digoxin_load:{drug:'digoxin',dose:0.5,interval:6,route:'oral',infusionTime:0,numDoses:3,mic:0,targetAUC:0,label:'Digoxin - Oral Loading',note:'Total loading dose 1-1.5 mg over 24h. Give 0.5 mg, then 0.25mg q6h x2. Maintenance 0.125-0.25 mg/day. Check level 6h+ post-dose. Toxic with hypokalemia.'},
+  lidocaine_inf:{drug:'lidocaine',dose:100,interval:0.5,route:'iv_bolus',infusionTime:0,numDoses:4,mic:0,targetAUC:0,label:'Lidocaine - IV Bolus + Infusion',note:'1-1.5 mg/kg bolus, then repeat q5-10min PRN (max 3mg/kg). Maintenance infusion 1-4 mg/min. Monitor for CNS toxicity (paresthesias, seizures). Reduce dose in HF/liver disease.'},
+  theophylline:{drug:'theophylline',dose:200,interval:8,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Theophylline - Standard',note:'200 mg q8h or 400 mg QHS (SR). Target 10-20 mg/L. Toxic >20 (seizures, arrhythmias). Many drug interactions. Smoking increases clearance.'}
 };
 
 let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null};
@@ -398,7 +484,7 @@ function recalculate(){
   if(state.drug!=='custom'){const drug=DRUGS[state.drug];const ae=document.activeElement;if(ae.id!=='vdInput'){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}if(ae.id!=='fInput'){state.f=drug.f;document.getElementById('fInput').value=drug.f;}if(ae.id!=='pbInput'){state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;}}
   state.ke=calcKe(state.drug);
   document.getElementById('dosePerKg').textContent='('+((state.dose/state.weight).toFixed(1))+' mg/kg)';
-  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();calcTMIC();updateAUCMode();updateParams();drawChart();
+  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();drawChart();
 }
 function onWeightChange(){recalculate();}
 function updateWeightInfo(){const ibw=calcIBW(),abw=calcABW(),tbw=state.weight,r=tbw/ibw;let m='TBW: '+tbw+' kg | IBW: '+ibw.toFixed(1)+' kg | ABW: '+abw.toFixed(1)+' kg';if(r>1.3)m+='<br><span style="color:#fbbf24">Obese (TBW/IBW='+r.toFixed(1)+'). Consider IBW or ABW for renally-cleared drugs.</span>';document.getElementById('weightInfo').innerHTML=m;}
@@ -454,6 +540,54 @@ function drawChart(){
 
   ctx.strokeStyle='#60a5fa';ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<points.length;i++){const p=points[i];if(i===0)ctx.moveTo(xS(p.t),yS(p.cp));else ctx.lineTo(xS(p.t),yS(p.cp));}ctx.stroke();
   ctx.strokeStyle='rgba(96,165,250,0.2)';ctx.lineWidth=8;ctx.beginPath();for(let i=0;i<points.length;i++){const p=points[i];if(i===0)ctx.moveTo(xS(p.t),yS(p.cp));else ctx.lineTo(xS(p.t),yS(p.cp));}ctx.stroke();
+
+  // Confidence band (±30% population variability)
+  ctx.fillStyle='rgba(96,165,250,0.08)';
+  ctx.beginPath();
+  for(let i=0;i<points.length;i++){const p=points[i];const x=xS(p.t),y=yS(p.cp*1.3);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+  for(let i=points.length-1;i>=0;i--){const p=points[i];ctx.lineTo(xS(p.t),yS(p.cp*0.7));}
+  ctx.closePath();ctx.fill();
+
+  // Comparison curve (dashed)
+  if(comparisonMode&&savedCurve){
+    ctx.strokeStyle='#818cf8';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    for(let i=0;i<points.length;i++){
+      const p=points[i];const cp=getComparisonCp(p.t);
+      if(i===0)ctx.moveTo(xS(p.t),yS(cp));else ctx.lineTo(xS(p.t),yS(cp));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
+
+  // Renal trend line (if future CrCl entered)
+  const futureCrCl=parseFloat(document.getElementById('futureCrCl').value);
+  const crClChangeDose=parseInt(document.getElementById('crClChangeDose').value);
+  if(futureCrCl>0&&crClChangeDose>0){
+    const trendInfo=document.getElementById('renalTrendInfo');
+    trendInfo.classList.remove('hidden');
+    const currentCrCl=calcCrCl();
+    const currentKe=state.ke;
+    const futureKe=0.00293*futureCrCl+0.014;
+    const changeTime=crClChangeDose*state.interval;
+    trendInfo.innerHTML='<strong>Renal Trend:</strong> CrCl '+currentCrCl.toFixed(0)+' -> '+futureCrCl+' mL/min at dose #'+crClChangeDose+' ('+changeTime+'h)<br>ke: '+currentKe.toFixed(4)+' -> '+futureKe.toFixed(4)+' h-1<br>t½: '+(0.693/currentKe).toFixed(1)+'h -> '+(0.693/futureKe).toFixed(1)+'h';
+
+    // Draw trend curve (dashed orange)
+    const w2=getEffW();
+    ctx.strokeStyle='#fb923c';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    for(let i=0;i<points.length;i++){
+      const p=points[i];
+      let cp=0;
+      for(let d=0;d<state.numDoses;d++){
+        const doseTime=d*state.interval;
+        if(doseTime>changeTime)break;
+        const ke2=d<crClChangeDose?currentKe:futureKe;
+        cp+=getCpSingle(p.t,doseTime,state.route,state.dose,ke2,state.vd,state.f,w2,state.infusionTime);
+      }
+      if(i===0)ctx.moveTo(xS(p.t),yS(cp));else ctx.lineTo(xS(p.t),yS(cp));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
 
   if(state.measuredCp!=null&&state.measuredTime!=null){const mx=xS(state.measuredTime),my=yS(state.measuredCp);ctx.fillStyle='#f472b6';ctx.beginPath();ctx.arc(mx,my,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#f472b6';ctx.font='bold 10px sans-serif';ctx.textAlign='left';ctx.fillText(state.measuredCp+' '+drug.unit,mx+10,my+4);}
 
@@ -560,6 +694,186 @@ function showParamHelp(html){
   setTimeout(()=>{const handler=(e)=>{if(!tip.contains(e.target)){tip.remove();document.removeEventListener('click',handler);}};document.addEventListener('click',handler);},10);
 }
 function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
+
+function applyProtocol(id){
+  const p=PROTOCOLS[id];if(!p)return;
+  document.getElementById('drugSelect').value=p.drug;
+  state.drug=p.drug;state.dose=p.dose;state.interval=p.interval;state.route=p.route;state.infusionTime=p.infusionTime;state.numDoses=p.numDoses;
+  state.adjustedKe=null;state.measuredCp=null;
+  document.getElementById('doseInput').value=p.dose;
+  document.getElementById('doseRange').value=Math.min(p.dose,5000);
+  document.getElementById('doseVal').textContent=p.dose+' mg';
+  document.getElementById('intervalRange').value=p.interval;
+  document.getElementById('intervalVal').textContent=p.interval+' h';
+  document.getElementById('numDosesRange').value=p.numDoses;
+  document.getElementById('numDosesVal').textContent=p.numDoses;
+  document.getElementById('infusionTimeRange').value=p.infusionTime;
+  document.getElementById('infusionTimeVal').textContent=p.infusionTime.toFixed(2)+' h';
+  if(p.mic){document.getElementById('micInput').value=p.mic;}
+  if(p.targetAUC){document.getElementById('targetAUC').value=p.targetAUC;document.getElementById('aucMode').checked=true;}
+  setRoute(p.route);
+  const info=document.getElementById('protocolInfo');
+  info.classList.remove('hidden');
+  info.innerHTML='<strong>'+p.label+'</strong><br>'+p.note;
+}
+
+// === DRUG MONOGRAPHS ===
+const MONOGRAPHS={
+  vancomycin:'<strong>Vancomycin</strong><br><br><strong>Class:</strong> Glycopeptide antibiotic<br><strong>Mechanism:</strong> Inhibits cell wall synthesis by binding D-ala-D-ala<br><strong>Spectrum:</strong> MRSA, MRSE, enterococci, C. difficile (PO)<br><strong>Key Side Effects:</strong> Red Man Syndrome (infusion-related), nephrotoxicity, ototoxicity (rare), thrombocytopenia<br><strong>Monitoring:</strong> AUC24/MIC (400-600), trough levels, renal function, CBC<br><strong>Contraindications:</strong> Known hypersensitivity<br><strong>Special Notes:</strong> Infuse over ≥1h to avoid Red Man Syndrome. Adjust for renal impairment. AUC-guided dosing preferred over trough-only.',
+  gentamicin:'<strong>Gentamicin</strong><br><br><strong>Class:</strong> Aminoglycoside<br><strong>Mechanism:</strong> Binds 30S ribosomal subunit → misreading of mRNA<br><strong>Spectrum:</strong> Gram-negative aerobes (Pseudomonas, E. coli, Klebsiella)<br><strong>Key Side Effects:</strong> Nephrotoxicity, ototoxicity (vestibular + cochlear), neuromuscular blockade<br><strong>Monitoring:</strong> Peak (5-12 or 20-30 for OD), trough (<2), renal function, audiogram<br><strong>Contraindications:</strong> Myasthenia gravis<br><strong>Special Notes:</strong> Once-daily dosing preferred (less nephrotoxic). Synergistic with beta-lactams for gram-positives.',
+  amikacin:'<strong>Amikacin</strong><br><br><strong>Class:</strong> Aminoglycoside<br><strong>Mechanism:</strong> Binds 30S ribosomal subunit<br><strong>Spectrum:</strong> Gram-negatives including gentamicin-resistant strains<br><strong>Key Side Effects:</strong> Nephrotoxicity, ototoxicity<br><strong>Monitoring:</strong> Peak (20-35), trough (<5), renal function<br><strong>Special Notes:</strong> Often reserved for resistant gram-negatives. Similar PK to gentamicin.',
+  phenytoin:'<strong>Phenytoin</strong><br><br><strong>Class:</strong> Hydantoin antiepileptic<br><strong>Mechanism:</strong> Blocks voltage-gated Na+ channels → stabilizes neuronal membranes<br><strong>Spectrum:</strong> Tonic-clonic seizures, focal seizures, status epilepticus<br><strong>Key Side Effects:</strong> Gingival hyperplasia, hirsutism, osteomalacia, SJS/TEN (HLA-B*1502), cerebellar atrophy<br><strong>Monitoring:</strong> Free + total levels, LFTs, CBC, vitamin D<br><strong>Contraindications:</strong> 2nd/3rd degree AV block, sinus bradycardia, Adams-Stokes syndrome<br><strong>Special Notes:</strong> <span style="color:#fbbf24">NON-LINEAR KINETICS</span> — small dose changes cause large level changes. Highly protein-bound (90%). Free phenytoin = total x (1-albumin/4.4).',
+  levetiracetam:'<strong>Levetiracetam</strong><br><br><strong>Class:</strong> Pyrrolidine antiepileptic<br><strong>Mechanism:</strong> Binds SV2A protein → modulates neurotransmitter release<br><strong>Spectrum:</strong> Broad-spectrum: focal, generalized tonic-clonic, myoclonic seizures<br><strong>Key Side Effects:</strong> Somnolence, dizziness, behavioral changes (irritability, aggression), rare psychosis<br><strong>Monitoring:</strong> Levels (12-46 mcg/mL), renal function<br><strong>Special Notes:</strong> Wide therapeutic window. Minimal drug interactions. IV-to-oral 1:1. Renally cleared — adjust for CrCl.',
+  lithium:'<strong>Lithium</strong><br><br><strong>Class:</strong> Mood stabilizer<br><strong>Mechanism:</strong> Uncertain — affects inositol signaling, GSK-3β, neurotransmitter systems<br><strong>Spectrum:</strong> Bipolar disorder (mania + maintenance), augmentation of antidepressants<br><strong>Key Side Effects:</strong> Tremor, polyuria/polydipsia, hypothyroidism, nephrogenic diabetes insipidus, hyperparathyroidism, teratogenic<br><strong>Monitoring:</strong> 12h trough (0.6-1.2), renal function, thyroid, Ca2+, ECG<br><strong>Contraindications:</strong> Severe renal impairment, Addison\'s disease, Brugada syndrome<br><strong>Special Notes:</strong> <span style="color:#f87171">EXTREMELY NARROW THERAPEUTIC INDEX.</span> Many drug interactions (NSAIDs, ACEi, thiazides). Maintain consistent salt intake.',
+  digoxin:'<strong>Digoxin</strong><br><br><strong>Class:</strong> Cardiac glycoside<br><strong>Mechanism:</strong> Inhibits Na+/K+ ATPase → increases intracellular Ca2+ → positive inotropy<br><strong>Spectrum:</strong> Heart failure (symptom control), atrial fibrillation/flutter (rate control)<br><strong>Key Side Effects:</strong> Nausea, visual disturbances (yellow-green halos), bradycardia, AV block, ventricular arrhythmias<br><strong>Monitoring:</strong> Level (0.8-2.0), HR, ECG, K+, Mg2+, renal function<br><strong>Contraindications:</strong> Ventricular fibrillation, hypertrophic obstructive cardiomyopathy<br><strong>Special Notes:</strong> Long half-life (~36h). Toxicity potentiated by hypokalemia. Reduce dose in renal impairment.',
+  lidocaine:'<strong>Lidocaine</strong><br><br><strong>Class:</strong> Class IB antiarrhythmic<br><strong>Mechanism:</strong> Blocks Na+ channels → shortens action potential duration<br><strong>Spectrum:</strong> Ventricular tachycardia, ventricular fibrillation (post-cardiac arrest)<br><strong>Key Side Effects:</strong> CNS toxicity (paresthesias, confusion, seizures), bradycardia, hypotension<br><strong>Monitoring:</strong> Level (1.5-5 mcg/mL), ECG, neuro status<br><strong>Contraindications:</strong> Severe SA/AV block (without pacemaker), Adams-Stokes syndrome<br><strong>Special Notes:</strong> Hepatically cleared — reduce dose in HF, liver disease, elderly. Loading bolus required.',
+  theophylline:'<strong>Theophylline</strong><br><br><strong>Class:</strong> Methylxanthine bronchodilator<br><strong>Mechanism:</strong> Phosphodiesterase inhibitor → increases cAMP; adenosine receptor antagonist<br><strong>Spectrum:</strong> COPD, asthma (adjunct), apnea of prematurity<br><strong>Key Side Effects:</strong> Nausea, tachycardia, arrhythmias, seizures (at toxic levels)<br><strong>Monitoring:</strong> Level (10-20), HR, ECG<br><strong>Special Notes:</strong> Many drug interactions. Smoking induces clearance. Narrow therapeutic index.',
+  valproic_acid:'<strong>Valproic Acid</strong><br><br><strong>Class:</strong> Broad-spectrum antiepileptic<br><strong>Mechanism:</strong> Multiple: blocks Na+ channels, increases GABA, blocks T-type Ca2+ channels<br><strong>Spectrum:</strong> Generalized seizures, absence seizures, bipolar disorder, migraine prophylaxis<br><strong>Key Side Effects:</strong> Hepatotoxicity, pancreatitis, thrombocytopenia, teratogenic (neural tube defects), weight gain, polycystic ovaries<br><strong>Monitoring:</strong> Level (50-100), LFTs, CBC, amylase<br><strong>Special Notes:</strong> Highly protein-bound. Free fraction increases with uremia and hypoalbuminemia.',
+  carbamazepine:'<strong>Carbamazepine</strong><br><br><strong>Class:</strong> Iminostilbene antiepileptic<br><strong>Mechanism:</strong> Blocks voltage-gated Na+ channels<br><strong>Spectrum:</strong> Focal seizures, trigeminal neuralgia, bipolar disorder<br><strong>Key Side Effects:</strong> SJS/TEN (HLA-B*1502), agranulocytosis, hyponatremia, hepatotoxicity, autoinduction<br><strong>Monitoring:</strong> Level (4-12), CBC, Na+, LFTs<br><strong>Special Notes:</strong> <span style="color:#fbbf24">AUTOINDUCTION</span> — half-life drops from ~30h to ~15h over 2-4 weeks. Recheck levels after stabilization.',
+  methotrexate:'<strong>Methotrexate</strong><br><br><strong>Class:</strong> Antifolate antimetabolite<br><strong>Mechanism:</strong> Inhibits dihydrofolate reductase → blocks DNA synthesis<br><strong>Spectrum:</strong> Leukemias, lymphomas, sarcomas, rheumatoid arthritis, ectopic pregnancy<br><strong>Key Side Effects:</strong> Myelosuppression, mucositis, hepatotoxicity, pneumonitis, nephrotoxicity<br><strong>Monitoring:</strong> Levels at 24h (<10), 48h (<1), 72h (<0.1 umol/L), CBC, LFTs, renal function<br><strong>Special Notes:</strong> Leucovorin rescue required for high-dose. Third-space fluid delays elimination. NSAIDs increase toxicity.',
+  tobramycin:'<strong>Tobramycin</strong><br><br><strong>Class:</strong> Aminoglycoside<br><strong>Similar to:</strong> Gentamicin. Peak 5-12, Trough <2. Slightly less nephrotoxic. Preferred for Pseudomonas in CF patients.',
+  clozapine:'<strong>Clozapine</strong><br><br><strong>Class:</strong> Atypical antipsychotic (dibenzodiazepine)<><br><strong>Mechanism:</strong> D2/5-HT2A antagonist; also affects muscarinic, histaminic, adrenergic receptors<br><strong>Spectrum:</strong> Treatment-resistant schizophrenia, suicidality in schizophrenia<br><strong>Key Side Effects:</strong> <span style="color:#f87171">AGRANULOCYTOSIS (1-2%)</span>, metabolic syndrome, seizures, myocarditis, constipation, sialorrhea<br><strong>Monitoring:</strong> ANC (weekly x6mo, then biweekly), level (350-600 ng/mL), metabolic panel, ECG<br><strong>Special Notes:</strong> REMS program required. Smoking cessation increases levels (CYP1A2). Fluvoxamine strongly inhibits metabolism.',
+  amiodarone:'<strong>Amiodarone</strong><br><br><strong>Class:</strong> Class III antiarrhythmic (multichannel blocker)<br><strong>Mechanism:</strong> Blocks K+, Na+, Ca2+ channels + beta-blockade<br><strong>Spectrum:</strong> Atrial fibrillation, ventricular tachycardia, ventricular fibrillation<br><strong>Key Side Effects:</strong> Thyroid dysfunction (hypo/hyper), pulmonary fibrosis, hepatotoxicity, corneal deposits, skin photosensitivity, peripheral neuropathy<br><strong>Monitoring:</strong> TSH, LFTs, PFTs, ophthalmology, ECG (QTc), level (1-2.5 mcg/mL)<br><strong>Special Notes:</strong> <span style="color:#fbbf24">EXTREMELY LONG HALF-LIFE (40-55 days)</span>. Loading takes weeks. Multiple drug interactions (inhibits CYP2D6, CYP3A4).'
+};
+
+// === VIAL SIZES ===
+const VIAL_SIZES={
+  vancomycin:[500,750,1000,1500],
+  gentamicin:[10,20,40,80,120,160],
+  amikacin:[100,250,500,1000],
+  tobramycin:[10,20,40,80,120],
+  phenytoin:[50,100,250,500],
+  valproic_acid:[100,250,500,1000],
+  carbamazepine:[100,200,400],
+  levetiracetam:[250,500,750,1000,1500],
+  digoxin:[0.05,0.1,0.125,0.25,0.5],
+  lidocaine:[50,100,200,400,1000],
+  amiodarone:[50,100,150,200],
+  lithium:[150,300,450,600],
+  clozapine:[25,50,100,200],
+  theophylline:[100,200,250,300,400],
+  methotrexate:[50,100,250,500,1000],
+  custom:[]
+};
+
+// === UNIT CONVERSIONS ===
+const UNIT_TABLE={
+  'mg/L':{mcg_mL:1,mcg_L:1000,ng_mL:1000,mmol_L:null},
+  'mcg/mL':{mg_L:1,mcg_L:1000,ng_mL:1000},
+  'mcg/L':{mg_L:0.001,mcg_mL:0.001,ng_mL:1},
+  'ng/mL':{mg_L:0.001,mcg_mL:0.001,mcg_L:1},
+  'mmol_L':{mg_L:null}
+};
+
+// === COMPARISON MODE ===
+let comparisonMode=false;
+let savedCurve=null;
+
+function toggleComparison(){
+  comparisonMode=!comparisonMode;
+  if(comparisonMode){
+    // Save current curve
+    savedCurve={drug:state.drug,dose:state.dose,interval:state.interval,route:state.route,numDoses:state.numDoses,infusionTime:state.infusionTime,vd:state.vd,ke:state.ke,f:state.f};
+    document.getElementById('compInfo').classList.remove('hidden');
+    document.getElementById('compInfo').innerHTML='<strong>Comparison Mode ON</strong><br>Curve saved (dashed line). Change parameters and click Compare. The dashed line = original regimen.';
+  }else{
+    savedCurve=null;
+    document.getElementById('compInfo').classList.add('hidden');
+  }
+  drawChart();
+}
+
+function getComparisonCp(t){
+  if(!savedCurve)return 0;
+  const sc=savedCurve;
+  const w=getEffW();
+  let tot=0;
+  for(let i=0;i<sc.numDoses;i++){
+    tot+=getCpSingle(t,i*sc.interval,sc.route,sc.dose,sc.ke,sc.vd,sc.f,w,sc.infusionTime);
+  }
+  return tot;
+}
+
+// === CALCULATE EXTRAS ===
+function calcExtras(){
+  const drug=DRUGS[state.drug];
+  const w=getEffW();
+  const halfLife=0.693/state.ke;
+
+  // Steady-state trough prediction
+  const ssTrough=getTotalCp(100*state.interval); // approximate SS by using many cycles
+  document.getElementById('pSSTrough').innerHTML=ssTrough.toFixed(2)+'<span class="unit">'+drug.unit+'</span>';
+  document.getElementById('pSSTrough').parentElement.className='param-card '+(ssTrough<drug.therapeutic[0]?'amber':ssTrough>drug.toxic?'red':'green');
+
+  // Time to steady state
+  const timeToSS=4*halfLife;
+  document.getElementById('pTimeToSS').innerHTML=timeToSS.toFixed(0)+'<span class="unit">h</span>';
+
+  // Infusion rate
+  if(state.route==='iv_infusion'){
+    const rate=250/state.infusionTime; // assuming 250mL bag
+    document.getElementById('pInfRate').innerHTML=rate.toFixed(0)+'<span class="unit">mL/h</span>';
+  }else{
+    document.getElementById('pInfRate').innerHTML='<span class="unit">N/A</span>';
+  }
+
+  // Update monograph
+  document.getElementById('monographContent').innerHTML=MONOGRAPHS[state.drug]||'No monograph available for custom drug.';
+
+  // Dose rounding info
+  const vials=VIAL_SIZES[state.drug]||[];
+  if(vials.length>0){
+    const best=roundToVial(state.dose,vials);
+    const roundedInfo=document.getElementById('roundedDose');
+    if(roundedInfo){
+      roundedInfo.innerHTML='Nearest vial: '+best+' mg ('+Math.round(best/state.dose*100)+'% of target)';
+    }
+  }
+}
+
+function roundToVial(dose,vials){
+  let best=vials[0];
+  let minDiff=Math.abs(dose-vials[0]);
+  for(const v of vials){
+    const diff=Math.abs(dose-v);
+    if(diff<minDiff){minDiff=diff;best=v;}
+  }
+  return best;
+}
+
+function convertUnits(){
+  const val=parseFloat(document.getElementById('unitValue').value);
+  const from=document.getElementById('unitFrom').value;
+  const res=document.getElementById('unitResult');
+  if(isNaN(val)||!val){res.innerHTML='Enter a value to convert.';return;}
+  let mgL;
+  switch(from){
+    case 'mg_L':mgL=val;break;
+    case 'mcg_mL':mgL=val;break;
+    case 'mcg_L':mgL=val/1000;break;
+    case 'ng_mL':mgL=val/1000;break;
+  }
+  res.innerHTML='<strong>'+val+' '+from.replace('_','/').replace('_','/')+'</strong> =<br>'+
+    mgL.toFixed(4)+' mg/L<br>'+
+    mgL.toFixed(4)+' mcg/mL<br>'+
+    (mgL*1000).toFixed(1)+' mcg/L<br>'+
+    (mgL*1000).toFixed(1)+' ng/mL';
+}
+
+function updateVialInfo(){
+  const drug=DRUGS[state.drug];
+  const vials=VIAL_SIZES[state.drug]||[];
+  const info=document.getElementById('vialInfo');
+  if(vials.length===0){info.innerHTML='No standard vial sizes for custom drugs.';return;}
+  const rounded=roundToVial(state.dose,vials);
+  const num=Math.ceil(state.dose/rounded);
+  let html='<strong>'+drug.name+' available vials:</strong> '+vials.join(', ')+' mg<br><br>';
+  html+='<strong>Current dose:</strong> '+state.dose+' mg<br>';
+  html+='<strong>Nearest vial:</strong> '+rounded+' mg<br>';
+  html+='<strong>Vials needed:</strong> '+num+' x '+rounded+'mg = '+(num*rounded)+' mg<br>';
+  if(num*rounded!==state.dose)html+='<span style="color:#fbbf24">Actual dose will be '+(num*rounded)+' mg ('+((num*rounded/state.dose*100).toFixed(0))+'% of target)</span>';
+  info.innerHTML=html;
+}
 function setRoute(r){state.route=r;document.getElementById('btnIVBolus').className='btn btn-sm btn-outline'+(r==='iv_bolus'?' active':'');document.getElementById('btnIVInf').className='btn btn-sm btn-outline'+(r==='iv_infusion'?' active':'');document.getElementById('btnOral').className='btn btn-sm btn-outline'+(r==='oral'?' active':'');document.getElementById('infusionTimeField').style.display=r==='iv_infusion'?'block':'none';recalculate();}
 function onDoseChange(){const v=parseFloat(document.getElementById('doseRange').value);document.getElementById('doseVal').textContent=v+' mg';document.getElementById('doseInput').value=v;recalculate();}
 function onDoseInput(){const v=parseFloat(document.getElementById('doseInput').value)||0;document.getElementById('doseRange').value=Math.min(v,5000);document.getElementById('doseVal').textContent=v+' mg';recalculate();}
