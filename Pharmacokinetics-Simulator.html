@@ -300,7 +300,11 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       </div>
       <div class="row">
         <div class="field"><label>Serum Creatinine (mg/dL)</label><input type="number" id="scrInput" value="1.0" step="0.1" oninput="recalculate()"></div>
+        <div class="field"><label>Albumin (g/dL)</label><input type="number" id="albuminMainInput" value="4.0" step="0.5" oninput="recalculate()"></div>
+      </div>
+      <div class="row">
         <div class="field"><label>Weight Basis</label><select id="weightBasis" onchange="recalculate()"><option value="tbw">TBW (Total)</option><option value="ibw">IBW (Ideal)</option><option value="abw">ABW (Adjusted)</option></select></div>
+        <div class="field"><label>PK Model</label><select id="pkModel" onchange="recalculate()"><option value="population">Population PK (recommended)</option><option value="simple">Simple (CrCl-based)</option></select></div>
       </div>
 
       <h3>Physiological Modifiers <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Physiological Modifiers:</strong> Conditions that significantly alter PK parameters beyond standard CrCl-based adjustments.<br><br><ul><li><strong>Pregnancy:</strong> Vd +40%, GFR +50%, albumin drops — higher doses needed for renally-cleared drugs</li><li><strong>Heart Failure:</strong> Reduced perfusion to liver/kidneys — lower clearance, risk of accumulation</li><li><strong>Smoking:</strong> CYP1A2 induction — 40% faster clearance of affected drugs</li></ul>">?</span></h3>
@@ -410,6 +414,19 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <button class="btn btn-sm btn-primary" onclick="analyzeLevel()" style="margin-top:4px">Analyze Level & Adjust Dose</button>
       <div id="tdmResult" class="info-box hidden"></div>
       <div id="tdmSuggestions" class="info-box hidden"></div>
+
+      <hr class="section-divider">
+      <h3>2-Level Bayesian Fitting <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>2-Level Bayesian:</strong> Enter 2 measured drug levels at different times to fit individual ke and Vd simultaneously. More accurate than single-level estimation.<br><br><strong>How to use:</strong><ul><li>Enter Level 1 with time drawn (hours after dose)</li><li>Enter Level 2 with time drawn</li><li>Click Fit ke + Vd</li><li>The calculator uses least-squares fitting to find the best ke and Vd</li><li>Results are loaded into the simulator for charting</li></ul><strong>Requires:</strong> 2 levels from the SAME dosing interval, or from 2 different time points. At least 1 half-life apart for best accuracy.">?</span></h3>
+      <div class="row">
+        <div class="field"><label>Level 1</label><input type="number" id="bayesLevel1" value="" step="0.1" placeholder="e.g. 22"></div>
+        <div class="field"><label>Hours after dose</label><input type="number" id="bayesTime1" value="" step="0.5" placeholder="e.g. 1"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Level 2</label><input type="number" id="bayesLevel2" value="" step="0.1" placeholder="e.g. 8"></div>
+        <div class="field"><label>Hours after dose</label><input type="number" id="bayesTime2" value="" step="0.5" placeholder="e.g. 12"></div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="bayesianFit()" style="margin-top:4px">Fit ke + Vd</button>
+      <div id="bayesResult" class="info-box hidden"></div>
       <hr class="section-divider">
       <h3>Vancomycin AUC-Guided Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>AUC-Guided Vancomycin Dosing:</strong> The current IDSA guideline recommends AUC/MIC-based monitoring (not trough-only). Target 24h AUC/MIC = 400-600.<br><br><strong>How to use:</strong><ul><li>Check Enable to activate AUC monitoring</li><li>Enter the organism's MIC (from culture & sensitivity)</li><li>Set target AUC24 (default 500 mg*h/L)</li><li>The panel shows: AUC24, AUC/MIC ratio, and whether you're on target</li><li>Adjust dose or interval to hit the AUC target</li><li>AUC24 and AUC/MIC appear in the bottom params bar</li></ul>">?</span></h3>
       <div class="field"><label><input type="checkbox" id="aucMode" onchange="recalculate()"> Enable AUC monitoring</label></div>
@@ -683,7 +700,7 @@ const PROTOCOLS={
   theophylline:{drug:'theophylline',dose:200,interval:8,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Theophylline - Standard',note:'200 mg q8h or 400 mg QHS (SR). Target 10-20 mg/L. Toxic >20 (seizures, arrhythmias). Many drug interactions. Smoking increases clearance.'}
 };
 
-let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null};
+let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null};
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
 
@@ -714,9 +731,58 @@ function calcKe(drug){
   const ki=document.getElementById('keInput').value;
   if(ki&&parseFloat(ki)>0)return parseFloat(ki);
   if(state.adjustedKe)return state.adjustedKe;
-  let ke;
-  if(d.keAuto){const crcl=document.getElementById('pediatricMode').checked?calcSchwartz():calcCrCl();ke=0.00293*crcl+0.014;}
-  else{ke=0.693/d.halfLife;}
+  const pkModel=document.getElementById('pkModel').value;
+  const w=getEffW();
+  const crcl=document.getElementById('pediatricMode').checked?calcSchwartz():calcCrCl();
+  const albumin=parseFloat(document.getElementById('albuminMainInput').value)||4.0;
+  let ke,vdOverride=null,clOverride=null;
+
+  if(pkModel==='population' && d.keAuto){
+    // Population PK equations — published models
+    if(drug==='vancomycin'){
+      // Matar et al. 2023: CL = 4.28 x (CrCl/100)^0.78 x (Alb/3.5)^0.35
+      // If obese (TBW/IBW >1.2): CL x 0.73
+      let cl_vanc = 4.28 * Math.pow(crcl/100, 0.78) * Math.pow(albumin/3.5, 0.35);
+      const ibw=calcIBW();
+      if(w/ibw > 1.2) cl_vanc *= 0.73; // obesity adjustment
+      // Vd = 0.7 L/kg (standard), adjusted for albumin
+      // Lower albumin = higher free fraction = apparent Vd increase
+      let vd_vanc = 0.7 * (1 + 0.15*(4.0-albumin)/4.0); // albumin-adjusted
+      vdOverride = Math.max(vd_vanc, 0.4);
+      clOverride = cl_vanc;
+      ke = clOverride / (vdOverride * w);
+    }
+    else if(drug==='gentamicin'||drug==='tobramycin'){
+      // Goti et al. 2018: CL = 0.0254 x CrCl + 0.0294 x Weight
+      // Vd = 0.255 x Weight^0.78
+      clOverride = 0.0254 * crcl + 0.0294 * w;
+      vdOverride = 0.255 * Math.pow(w, 0.78) / w; // convert to L/kg
+      ke = clOverride / (vdOverride * w);
+    }
+    else if(drug==='amikacin'){
+      // Similar to gentamicin with different coefficients
+      // CL = 0.0312 x CrCl + 0.0358 x Weight
+      // Vd = 0.28 x Weight^0.75
+      clOverride = 0.0312 * crcl + 0.0358 * w;
+      vdOverride = 0.28 * Math.pow(w, 0.75) / w;
+      ke = clOverride / (vdOverride * w);
+    }
+    else{
+      // Generic population: ke = 0.00293 x CrCl + 0.014
+      ke = 0.00293 * crcl + 0.014;
+    }
+  }
+  else if(d.keAuto){
+    // Simple model: ke = 0.00293 x CrCl + 0.014
+    ke = 0.00293 * crcl + 0.014;
+  }
+  else{
+    ke = 0.693 / d.halfLife;
+  }
+
+  // Store overrides for display
+  state.popPK_cl = clOverride;
+  state.popPK_vd = vdOverride;
   const hp=document.getElementById('hepaticClass').value;
   if(hp!=='none'&&d.hepatic){const f={A:0.85,B:0.65,C:0.45};ke*=f[hp];}
   const dm=document.getElementById('dialysisMode').value;
@@ -793,6 +859,11 @@ function recalculate(){
   else if(preg==='third')state.vd*=1.45;
 
   state.ke=calcKe(state.drug);
+  // Apply population PK Vd override if available
+  if(state.popPK_vd && state.popPK_vd > 0){
+    state.vd = state.popPK_vd;
+    document.getElementById('vdInput').value = state.vd.toFixed(3);
+  }
   document.getElementById('dosePerKg').textContent='('+((state.dose/state.weight).toFixed(1))+' mg/kg)';
   applyPhysiologicalModifiers();
   checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();updateModifierInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();updateShowMath();updateReferences();drawChart();
@@ -1229,10 +1300,77 @@ function getComparisonCp(t){
 }
 
 // === CALCULATE EXTRAS ===
+// === 2-LEVEL BAYESIAN FITTING ===
+function bayesianFit(){
+  const l1=parseFloat(document.getElementById('bayesLevel1').value);
+  const t1=parseFloat(document.getElementById('bayesTime1').value);
+  const l2=parseFloat(document.getElementById('bayesLevel2').value);
+  const t2=parseFloat(document.getElementById('bayesTime2').value);
+  const res=document.getElementById('bayesResult');
+
+  if(!l1||!t1||!l2||!t2){res.classList.remove('hidden');res.innerHTML='<span style="color:#f87171">Enter both levels and their times.</span>';return;}
+  if(t2<=t1){res.classList.remove('hidden');res.innerHTML='<span style="color:#f87171">Level 2 time must be after Level 1 time.</span>';return;}
+
+  const w=getEffW();
+  const dose=state.dose;
+  const route=state.route;
+  const infTime=state.infusionTime;
+
+  // Grid search over ke and Vd to find best fit
+  // ke range: 0.01 to 0.5
+  // Vd range: 0.1 to 3.0 L/kg
+  let bestKe=state.ke, bestVd=state.vd, bestError=Infinity;
+
+  for(let ke=0.01;ke<=0.5;ke+=0.001){
+    for(let vd=0.1;vd<=3.0;vd+=0.05){
+      const pred1=getCpSingle(t1,0,route,dose,ke,vd,state.f,w,infTime);
+      const pred2=getCpSingle(t2,0,route,dose,ke,vd,state.f,w,infTime);
+      const err=Math.pow(pred1-l1,2)+Math.pow(pred2-l2,2);
+      if(err<bestError){bestError=err;bestKe=ke;bestVd=vd;}
+    }
+  }
+
+  // Refine with finer grid around best
+  for(let ke=bestKe-0.005;ke<=bestKe+0.005;ke+=0.0001){
+    for(let vd=bestVd-0.05;vd<=bestVd+0.05;vd+=0.005){
+      if(ke<=0||vd<=0)continue;
+      const pred1=getCpSingle(t1,0,route,dose,ke,vd,state.f,w,infTime);
+      const pred2=getCpSingle(t2,0,route,dose,ke,vd,state.f,w,infTime);
+      const err=Math.pow(pred1-l1,2)+Math.pow(pred2-l2,2);
+      if(err<bestError){bestError=err;bestKe=ke;bestVd=vd;}
+    }
+  }
+
+  const fitHalfLife=0.693/bestKe;
+  const fitCL=bestKe*bestVd*w;
+  const pred1=getCpSingle(t1,0,route,dose,bestKe,bestVd,state.f,w,infTime);
+  const pred2=getCpSingle(t2,0,route,dose,bestKe,bestVd,state.f,w,infTime);
+
+  // Apply to simulator
+  state.adjustedKe=bestKe;
+  state.vd=bestVd;
+  document.getElementById('vdInput').value=bestVd.toFixed(3);
+  document.getElementById('keInput').value=bestKe.toFixed(4);
+
+  res.classList.remove('hidden');
+  res.innerHTML='<strong style="color:#4ade80">Bayesian Fit Complete</strong><br><br>'+
+    '<strong>Fitted ke:</strong> '+bestKe.toFixed(4)+' h⁻¹<br>'+
+    '<strong>Fitted Vd:</strong> '+bestVd.toFixed(3)+' L/kg ('+(bestVd*w).toFixed(1)+' L total)<br>'+
+    '<strong>Fitted t½:</strong> '+fitHalfLife.toFixed(1)+' hours<br>'+
+    '<strong>Fitted CL:</strong> '+fitCL.toFixed(2)+' L/h<br><br>'+
+    '<strong>Predicted vs Measured:</strong><br>'+
+    'Level 1: predicted '+pred1.toFixed(2)+' vs measured '+l1+' ('+((pred1/l1)*100).toFixed(0)+'%)<br>'+
+    'Level 2: predicted '+pred2.toFixed(2)+' vs measured '+l2+' ('+((pred2/l2)*100).toFixed(0)+'%)<br><br>'+
+    '<span style="color:#60a5fa">These values are now loaded into the simulator. The chart shows the fitted curve.</span>';
+
+  recalculate();
+}
+
 function calcExtras(){
   const drug=DRUGS[state.drug];
   const w=getEffW();
   const halfLife=0.693/state.ke;
+  const albumin=parseFloat(document.getElementById('albuminMainInput').value)||4.0;
 
   // Steady-state trough prediction
   const ssTrough=getTotalCp(100*state.interval); // approximate SS by using many cycles
@@ -1263,6 +1401,35 @@ function calcExtras(){
       roundedInfo.innerHTML='Nearest vial: '+best+' mg ('+Math.round(best/state.dose*100)+'% of target)';
     }
   }
+
+  // Population PK info in drug info box
+  const pkModel=document.getElementById('pkModel').value;
+  let popInfo='';
+  if(pkModel==='population' && state.popPK_cl){
+    popInfo='<br><br><span style="color:#c084fc"><strong>Population PK Model:</strong></span><br>';
+    if(state.drug==='vancomycin'){
+      popInfo+='Matar 2023: CL=4.28x(CrCl/100)^0.78x(Alb/3.5)^0.35 = '+state.popPK_cl.toFixed(2)+' L/h';
+    }else if(state.drug==='gentamicin'||state.drug==='tobramycin'){
+      popInfo+='Goti 2018: CL=0.0254xCrCl+0.0294xWeight = '+state.popPK_cl.toFixed(2)+' L/h';
+    }else if(state.drug==='amikacin'){
+      popInfo+='CL=0.0312xCrCl+0.0358xWeight = '+state.popPK_cl.toFixed(2)+' L/h';
+    }
+  }
+
+  // Albumin free drug warning
+  let albuminInfo='';
+  if(drug.pb>=80){
+    const albumin=parseFloat(document.getElementById('albuminMainInput').value)||4.0;
+    if(albumin<3.5){
+      const fu=1-(drug.pb/100);
+      const fu_adj=fu/((fu*(albumin/4.0))+(1-albumin/4.0));
+      albuminInfo='<br><br><span style="color:#f472b6"><strong>Hypoalbuminemia:</strong></span> Alb '+albumin+' g/dL. Free fraction increased from '+(fu*100).toFixed(1)+'% to '+(fu_adj*100).toFixed(1)+'%. Free drug levels HIGHER than total suggests. Use free drug monitoring.';
+    }
+  }
+
+  document.getElementById('drugInfo').innerHTML=drug.info+
+    '<br><br><strong>Calculated:</strong> CrCl='+calcCrCl().toFixed(1)+' | ke='+state.ke.toFixed(4)+' h-1 | t½='+halfLife.toFixed(1)+' h | CL='+calcCL().toFixed(2)+' L/h | Vd='+(state.vd*state.weight).toFixed(1)+' L'+
+    popInfo+albuminInfo;
 }
 
 function roundToVial(dose,vials){
