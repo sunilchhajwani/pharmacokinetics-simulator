@@ -118,6 +118,14 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 .sim-score.bad{color:#f87171}
 .numeric-input-row{display:flex;gap:8px;margin:8px 0}
 .numeric-input-row input{flex:1;padding:6px 8px;background:#0f1729;border:1px solid #334155;border-radius:5px;color:#e0e6f0;font-size:12px}
+.sim-calc{background:#0d1321;border:1px solid #1e3055;border-radius:8px;padding:12px;margin-top:8px;font-family:monospace;font-size:11px;line-height:2;color:#94a3b8;overflow-x:auto}
+.sim-calc .formula{color:#60a5fa;font-weight:600}
+.sim-calc .value{color:#fbbf24}
+.sim-calc .result{color:#4ade80;font-weight:700}
+.sim-calc .note{color:#f472b6;font-style:italic}
+.sim-calc canvas{display:block;margin:10px auto;border-radius:6px}
+.sim-calc-toggle{display:inline-block;padding:6px 14px;background:#1e293b;border:1px solid #334155;border-radius:6px;color:#60a5fa;font-size:11px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .15s}
+.sim-calc-toggle:hover{border-color:#3b82f6;background:rgba(59,130,246,.1)}
 </style>
 </head>
 <body>
@@ -1452,13 +1460,252 @@ function simCheckAnswer(){
   }
   simState.answers.push({step:simState.currentStep,correct:isCorrect});
   if(isCorrect)simState.score++;
+
+  // Load patient into simulator and draw chart
+  simAutoLoadAndDraw(sim,step);
+
   const fb=document.getElementById('simFeedbackArea');
-  fb.innerHTML='<div class="sim-feedback '+(isCorrect?'correct':'wrong')+'"><strong>'+(isCorrect?'Correct!':'Incorrect')+'</strong><br>'+step.explanation+'</div>';
+  const calcHtml=simBuildCalculation(sim,step,isCorrect);
+  fb.innerHTML='<div class="sim-feedback '+(isCorrect?'correct':'wrong')+'"><strong>'+(isCorrect?'Correct!':'Incorrect')+'</strong><br>'+step.explanation+'</div>'+
+    '<div class="sim-calc-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent.includes(\'Show\')?\'Hide PK Calculations\':\'Show PK Calculations\'">Show PK Calculations</div>'+
+    '<div class="sim-calc" style="display:none">'+calcHtml+'</div>';
   fb.scrollIntoView({behavior:'smooth',block:'nearest'});
   simState.feedbackShown=true;
   document.getElementById('simCheckBtn').style.display='none';
   document.getElementById('simNextBtn').style.display='inline-block';
   document.getElementById('simNextBtn').textContent=simState.currentStep<sim.steps.length-1?'Next Step':'Finish';
+}
+
+function simAutoLoadAndDraw(sim,step){
+  // Find patient params from current or previous vignette step
+  let patient=null;
+  for(let i=simState.currentStep;i>=0;i--){
+    if(sim.steps[i].patient){patient=sim.steps[i].patient;break;}
+  }
+  if(!patient)return;
+  document.getElementById('weightInput').value=patient.weight;
+  document.getElementById('heightInput').value=patient.height;
+  document.getElementById('ageInput').value=patient.age;
+  document.getElementById('sexSelect').value=patient.sex;
+  document.getElementById('scrInput').value=patient.scr;
+  document.getElementById('drugSelect').value=sim.drug;
+  onDrugChange();
+}
+
+function simBuildCalculation(sim,step,isCorrect){
+  const drug=DRUGS[sim.drug];
+  let patient=null;
+  for(let i=simState.currentStep;i>=0;i--){
+    if(sim.steps[i].patient){patient=sim.steps[i].patient;break;}
+  }
+  if(!patient)return'<em>No patient data for this step.</em>';
+
+  const w=patient.weight;
+  const scr=patient.scr;
+  const age=patient.age;
+  const sex=patient.sex;
+  const ht=patient.height||170;
+  const vd=drug.vd;
+  const halfLife=drug.halfLife;
+
+  // CrCl
+  let crcl=((140-age)*w)/(72*scr);
+  if(sex==='female')crcl*=0.85;
+  crcl=Math.max(crcl,5);
+
+  // IBW
+  const ibw=sex==='male'?50+0.91*(ht-152.4):45.5+0.91*(ht-152.4);
+
+  // ke
+  let ke;
+  if(drug.keAuto){ke=0.00293*crcl+0.014;}else{ke=0.693/halfLife;}
+  const hl=0.693/ke;
+  const vdL=vd*w;
+  const cl=ke*vdL;
+
+  let html='<strong style="color:#60a5fa">Step-by-Step PK Calculations</strong><br><br>';
+
+  // Step 1: Patient parameters
+  html+='<span class="formula">1. Patient Parameters</span><br>';
+  html+='Weight: <span class="value">'+w+' kg</span> | Age: <span class="value">'+age+' yr</span> | Sex: <span class="value">'+sex+'</span> | SCr: <span class="value">'+scr+' mg/dL</span><br>';
+  html+='IBW: <span class="value">'+ibw.toFixed(1)+' kg</span><br><br>';
+
+  // Step 2: CrCl
+  html+='<span class="formula">2. Creatinine Clearance (Cockcroft-Gault)</span><br>';
+  html+='<code>CrCl = [(140 - '+age+') x '+w+'] / (72 x '+scr+')'+(sex==='female'?' x 0.85':'')+'</code><br>';
+  html+='<code>CrCl = ['+(140-age)+' x '+w+'] / '+(72*scr).toFixed(1)+(sex==='female'?' x 0.85':'')+'</code><br>';
+  html+='<code class="result">CrCl = '+crcl.toFixed(1)+' mL/min</code><br><br>';
+
+  // Step 3: ke
+  html+='<span class="formula">3. Elimination Rate Constant (ke)</span><br>';
+  if(drug.keAuto){
+    html+='<code>ke = 0.00293 x CrCl + 0.014</code><br>';
+    html+='<code>ke = 0.00293 x '+crcl.toFixed(1)+' + 0.014</code><br>';
+  }else{
+    html+='<code>ke = 0.693 / t1/2</code><br>';
+    html+='<code>ke = 0.693 / '+halfLife+'</code><br>';
+  }
+  html+='<code class="result">ke = '+ke.toFixed(4)+' h-1</code><br><br>';
+
+  // Step 4: Half-life
+  html+='<span class="formula">4. Half-life</span><br>';
+  html+='<code>t1/2 = 0.693 / ke = 0.693 / '+ke.toFixed(4)+'</code><br>';
+  html+='<code class="result">t1/2 = '+hl.toFixed(1)+' hours</code><br><br>';
+
+  // Step 5: Vd
+  html+='<span class="formula">5. Volume of Distribution</span><br>';
+  html+='<code>Vd = '+vd+' L/kg x '+w+' kg</code><br>';
+  html+='<code class="result">Vd = '+vdL.toFixed(1)+' L</code><br><br>';
+
+  // Step 6: CL
+  html+='<span class="formula">6. Clearance</span><br>';
+  html+='<code>CL = ke x Vd = '+ke.toFixed(4)+' x '+vdL.toFixed(1)+'</code><br>';
+  html+='<code class="result">CL = '+cl.toFixed(2)+' L/h</code><br><br>';
+
+  // Step 7: Context-specific calculations
+  if(step.type==='question_mc'&&step.text&&step.text.toLowerCase().includes('loading dose')){
+    html+='<span class="formula">7. Loading Dose Calculation</span><br>';
+    const target=drug.therapeutic[1];
+    const ld=(target*vdL)/drug.f;
+    html+='<code>LD = (Cp_target x Vd) / F</code><br>';
+    html+='<code>LD = ('+target+' x '+vdL.toFixed(1)+') / '+drug.f+'</code><br>';
+    html+='<code class="result">LD = '+ld.toFixed(0)+' mg</code><br>';
+    html+='<code class="note">Standard: '+drug.loadingDose+' '+drug.loadingUnit+' = '+(drug.loadingDose*w).toFixed(0)+' mg</code><br><br>';
+  }
+
+  if(step.type==='question_mc'&&step.text&&step.text.toLowerCase().includes('maintenance')){
+    html+='<span class="formula">7. Maintenance Dose Estimation</span><br>';
+    const targetCss=(drug.therapeutic[0]+drug.therapeutic[1])/2;
+    const md=(targetCss*cl*state.interval)/drug.f;
+    html+='<code>MD = (Css x CL x tau) / F</code><br>';
+    html+='<code>MD = ('+targetCss.toFixed(1)+' x '+cl.toFixed(2)+' x '+state.interval+') / '+drug.f+'</code><br>';
+    html+='<code class="result">MD = '+md.toFixed(0)+' mg q'+state.interval+'h</code><br><br>';
+  }
+
+  if(step.labValue!==undefined){
+    html+='<span class="formula">7. Level Interpretation</span><br>';
+    html+='<code>Measured: '+step.labValue+' '+step.labUnit+'</code><br>';
+    html+='<code>Therapeutic range: '+drug.therapeutic[0]+' - '+drug.therapeutic[1]+' '+drug.unit+'</code><br>';
+    html+='<code>Toxic threshold: >'+drug.toxic+' '+drug.unit+'</code><br>';
+    if(step.labValue<drug.therapeutic[0])html+='<code class="note">Level BELOW therapeutic range</code><br>';
+    else if(step.labValue>drug.toxic)html+='<code class="note">Level ABOVE toxic threshold</code><br>';
+    else if(step.labValue>drug.therapeutic[1])html+='<code class="note">Level above upper therapeutic (borderline)</code><br>';
+    else html+='<code class="result">Level WITHIN therapeutic range</code><br>';
+
+    // Predicted level
+    const predicted=getTotalCp((state.numDoses-1)*state.interval+state.interval);
+    html+='<br><code>Predicted trough (model): '+predicted.toFixed(2)+' '+drug.unit+'</code><br>';
+    html+='<code>Measured vs predicted ratio: '+(step.labValue/predicted).toFixed(2)+'</code><br>';
+    html+='<code class="note">Ratio >1.2 = clearance lower than expected. Ratio <0.8 = clearance higher than expected.</code><br>';
+  }
+
+  // Mini chart canvas
+  html+='<br><strong style="color:#60a5fa">Concentration-Time Curve</strong><br>';
+  html+='<canvas id="simMiniChart" width="400" height="200"></canvas>';
+  html+='<script>setTimeout(function(){drawSimMiniChart('+JSON.stringify(sim.drug)+','+JSON.stringify(patient)+','+ke+','+vdL+')},100)<\/script>';
+
+  return html;
+}
+
+function drawSimMiniChart(drugKey,patient,ke,vdL){
+  const canvas=document.getElementById('simMiniChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const d=DRUGS[drugKey];
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const m={top:20,right:15,bottom:35,left:50};
+  const pW=w-m.left-m.right,pH=h-m.top-m.bottom;
+  const doses=4,interval=state.interval||12;
+  const tEnd=doses*interval*1.2;
+  const dt=0.1;
+
+  // Calculate curve
+  const points=[];
+  let maxY=0;
+  const route=state.route||d.route;
+  const dose=state.dose||d.defaultDose;
+  const infTime=state.infusionTime||d.infusionTime||1;
+  const vd=vdL/patient.weight;
+
+  for(let t=0;t<=tEnd;t+=dt){
+    let cp=0;
+    for(let i=0;i<doses;i++){
+      cp+=getCpSingle(t,i*interval,route,dose,ke,vd,d.f,patient.weight,infTime);
+    }
+    points.push({t,cp});
+    if(cp>maxY)maxY=cp;
+  }
+  maxY=Math.max(maxY*1.2,d.toxic*1.3);
+
+  const xS=t=>m.left+(t/tEnd)*pW;
+  const yS=cp=>m.top+pH-(cp/maxY)*pH;
+
+  // Grid
+  ctx.strokeStyle='rgba(148,163,184,0.08)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=m.top+(pH/4)*i;ctx.beginPath();ctx.moveTo(m.left,y);ctx.lineTo(w-m.right,y);ctx.stroke();}
+
+  // Therapeutic window
+  const tY1=yS(d.therapeutic[1]),tY0=yS(d.therapeutic[0]);
+  ctx.fillStyle='rgba(34,197,94,0.1)';
+  ctx.fillRect(m.left,tY1,pW,tY0-tY1);
+  ctx.strokeStyle='rgba(34,197,94,0.5)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(m.left,tY1);ctx.lineTo(w-m.right,tY1);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(m.left,tY0);ctx.lineTo(w-m.right,tY0);ctx.stroke();
+  // Toxic line
+  const toxY=yS(d.toxic);
+  ctx.strokeStyle='rgba(239,68,68,0.4)';
+  ctx.beginPath();ctx.moveTo(m.left,toxY);ctx.lineTo(w-m.right,toxY);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.font='9px sans-serif';ctx.textAlign='right';
+  ctx.fillStyle='rgba(34,197,94,0.7)';
+  ctx.fillText(d.therapeutic[1]+' '+d.unit,w-m.right-2,tY1-2);
+  ctx.fillText(d.therapeutic[0]+' '+d.unit,w-m.right-2,tY0+10);
+  ctx.fillStyle='rgba(239,68,68,0.7)';
+  ctx.fillText('Toxic: '+d.toxic,w-m.right-2,toxY-2);
+
+  // Curve
+  ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<points.length;i++){
+    if(i===0)ctx.moveTo(xS(points[i].t),yS(points[i].cp));
+    else ctx.lineTo(xS(points[i].t),yS(points[i].cp));
+  }
+  ctx.stroke();
+
+  // Glow
+  ctx.strokeStyle='rgba(96,165,250,0.15)';ctx.lineWidth=6;
+  ctx.beginPath();
+  for(let i=0;i<points.length;i++){
+    if(i===0)ctx.moveTo(xS(points[i].t),yS(points[i].cp));
+    else ctx.lineTo(xS(points[i].t),yS(points[i].cp));
+  }
+  ctx.stroke();
+
+  // Dose markers
+  ctx.fillStyle='rgba(245,158,11,0.5)';
+  for(let i=0;i<doses;i++){
+    const x=xS(i*interval);
+    ctx.fillRect(x-1,m.top,2,pH);
+  }
+
+  // Axes
+  ctx.strokeStyle='#334155';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(m.left,m.top);ctx.lineTo(m.left,h-m.bottom);ctx.lineTo(w-m.right,h-m.bottom);ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.textAlign='center';
+  ctx.fillText('Time (h)',w/2,h-4);
+  for(let i=0;i<=4;i++){const t=(tEnd/4)*i;ctx.fillText(t.toFixed(0),xS(t),h-m.bottom+12);}
+  ctx.textAlign='right';
+  for(let i=0;i<=4;i++){const cp=(maxY/4)*i;ctx.fillText(cp.toFixed(cp<1?1:0),m.left-4,yS(cp)+3);}
+
+  // Title
+  ctx.fillStyle='#e0e6f0';ctx.font='bold 10px sans-serif';ctx.textAlign='left';
+  ctx.fillText(d.name+' — '+doses+' doses x '+dose+'mg q'+interval+'h',m.left,m.top-6);
 }
 
 function simNextStep(){
