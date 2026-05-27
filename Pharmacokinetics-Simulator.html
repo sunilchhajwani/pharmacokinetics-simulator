@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacokinetics Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e6f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f1729,#1a2744);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e3055}
+.header h1{font-size:20px;font-weight:600;color:#60a5fa}
+.header .subtitle{font-size:12px;color:#64748b}
+.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 60px)}
+.panel{background:#111827;border-right:1px solid #1e3055;overflow-y:auto;padding:16px}
+.panel h2{font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.panel h3{font-size:13px;font-weight:600;color:#60a5fa;margin:16px 0 8px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#94a3b8;margin-bottom:4px}
+.field select,.field input{width:100%;padding:8px 10px;background:#1e293b;border:1px solid #334155;border-radius:6px;color:#e0e6f0;font-size:13px}
+.field select:focus,.field input:focus{outline:none;border-color:#3b82f6}
+.field input[type=range]{padding:0;height:6px;-webkit-appearance:none;background:#334155;border-radius:3px;border:none}
+.field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#3b82f6;border-radius:50%;cursor:pointer}
+.range-row{display:flex;align-items:center;gap:10px}
+.range-val{min-width:60px;text-align:right;font-size:13px;color:#60a5fa;font-weight:600}
+.btn{padding:10px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:#2563eb;color:#fff;width:100%}
+.btn-primary:hover{background:#1d4ed8}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-outline{background:transparent;border:1px solid #334155;color:#94a3b8}
+.btn-outline:hover{border-color:#3b82f6;color:#60a5fa}
+.btn-outline.active{border-color:#3b82f6;color:#60a5fa;background:rgba(59,130,246,.1)}
+.btn-group{display:flex;gap:6px;margin-bottom:12px}
+.main{display:flex;flex-direction:column;overflow:hidden}
+.chart-area{flex:1;position:relative;padding:16px}
+canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
+.params-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:12px 16px;background:#111827;border-top:1px solid #1e3055}
+.param-card{background:#1e293b;border-radius:8px;padding:10px 12px;text-align:center}
+.param-card .label{font-size:11px;color:#64748b;text-transform:uppercase}
+.param-card .value{font-size:17px;font-weight:700;margin-top:2px}
+.param-card .unit{font-size:11px;color:#64748b;margin-left:2px}
+.param-card.blue .value{color:#60a5fa}
+.param-card.green .value{color:#4ade80}
+.param-card.amber .value{color:#fbbf24}
+.param-card.red .value{color:#f87171}
+.param-card.purple .value{color:#c084fc}
+.legend{display:flex;gap:16px;padding:8px 16px;background:#0f1729;border-top:1px solid #1e3055;font-size:12px}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.info-box{background:#1e293b;border-radius:8px;padding:12px;margin-top:12px;font-size:12px;line-height:1.6;color:#94a3b8}
+.info-box strong{color:#e0e6f0}
+.warning-box{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:12px;color:#fbbf24}
+.hidden{display:none}
+.row{display:flex;gap:8px}
+.row .field{flex:1}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>Pharmacokinetics Simulator</h1>
+    <div class="subtitle">One-Compartment Model &middot; Interactive Dosing Explorer &middot; Therapeutic Drug Monitoring</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic Window</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid</button>
+    <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h2>Drug Selection</h2>
+    <div class="field">
+      <select id="drugSelect" onchange="onDrugChange()">
+        <optgroup label="Antibiotics">
+          <option value="vancomycin">Vancomycin</option>
+          <option value="gentamicin">Gentamicin</option>
+          <option value="amikacin">Amikacin</option>
+          <option value="tobramycin">Tobramycin</option>
+        </optgroup>
+        <optgroup label="Antiepileptics">
+          <option value="phenytoin">Phenytoin</option>
+          <option value="valproic_acid">Valproic Acid</option>
+          <option value="carbamazepine">Carbamazepine</option>
+          <option value="levetiracetam">Levetiracetam</option>
+        </optgroup>
+        <optgroup label="Cardioactive">
+          <option value="digoxin">Digoxin</option>
+          <option value="lidocaine">Lidocaine</option>
+          <option value="amiodarone">Amiodarone (oral)</option>
+        </optgroup>
+        <optgroup label="Psychiatric">
+          <option value="lithium">Lithium</option>
+          <option value="clozapine">Clozapine</option>
+        </optgroup>
+        <optgroup label="Respiratory">
+          <option value="theophylline">Theophylline</option>
+        </optgroup>
+        <optgroup label="Oncology">
+          <option value="methotrexate">Methotrexate</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="custom">Custom Drug</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <h3>Route & Dosing</h3>
+    <div class="btn-group">
+      <button class="btn btn-sm btn-outline active" id="btnIVBolus" onclick="setRoute('iv_bolus')">IV Bolus</button>
+      <button class="btn btn-sm btn-outline" id="btnIVInf" onclick="setRoute('iv_infusion')">IV Infusion</button>
+      <button class="btn btn-sm btn-outline" id="btnOral" onclick="setRoute('oral')">Oral</button>
+    </div>
+
+    <div class="field">
+      <label>Dose (mg)</label>
+      <div class="range-row">
+        <input type="range" id="doseRange" min="1" max="5000" step="1" value="1000" oninput="onDoseChange()">
+        <span class="range-val" id="doseVal">1000 mg</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Manual Dose</label>
+        <input type="number" id="doseInput" value="1000" oninput="onDoseInput()">
+      </div>
+    </div>
+
+    <div class="field" id="infusionTimeField" style="display:none">
+      <label>Infusion Duration (h)</label>
+      <div class="range-row">
+        <input type="range" id="infusionTimeRange" min="0.25" max="8" step="0.25" value="1" oninput="onInfusionChange()">
+        <span class="range-val" id="infusionTimeVal">1.00 h</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dosing Interval (h)</label>
+      <div class="range-row">
+        <input type="range" id="intervalRange" min="1" max="72" step="1" value="12" oninput="onIntervalChange()">
+        <span class="range-val" id="intervalVal">12 h</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Number of Doses</label>
+      <div class="range-row">
+        <input type="range" id="numDosesRange" min="1" max="24" step="1" value="6" oninput="onNumDosesChange()">
+        <span class="range-val" id="numDosesVal">6</span>
+      </div>
+    </div>
+
+    <h3>Patient Parameters</h3>
+    <div class="row">
+      <div class="field">
+        <label>Weight (kg)</label>
+        <input type="number" id="weightInput" value="70" oninput="recalculate()">
+      </div>
+      <div class="field">
+        <label>Age (yr)</label>
+        <input type="number" id="ageInput" value="50" oninput="recalculate()">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Serum Creatinine (mg/dL)</label>
+        <input type="number" id="scrInput" value="1.0" step="0.1" oninput="recalculate()">
+      </div>
+      <div class="field">
+        <label>Sex</label>
+        <select id="sexSelect" onchange="recalculate()">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="renalWarning" class="warning-box hidden">
+      <strong>Renal Impairment Detected</strong><br>
+      <span id="renalMsg"></span>
+    </div>
+
+    <h3>PK Parameters</h3>
+    <div class="row">
+      <div class="field">
+        <label>Vd (L/kg)</label>
+        <input type="number" id="vdInput" value="0.7" step="0.01" oninput="recalculate()">
+      </div>
+      <div class="field">
+        <label>ke (h⁻¹) <small style="color:#64748b">auto if blank</small></label>
+        <input type="number" id="keInput" value="" step="0.001" placeholder="Auto">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Bioavailability (F)</label>
+        <input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1">
+      </div>
+      <div class="field">
+        <label>Protein Binding (%)</label>
+        <input type="number" id="pbInput" value="0" step="1" min="0" max="99" oninput="recalculate()">
+      </div>
+    </div>
+
+    <div class="info-box" id="drugInfo"></div>
+  </div>
+
+  <div class="main">
+    <div class="chart-area">
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="params-bar">
+      <div class="param-card blue"><div class="label">Peak (Cmax)</div><div class="value" id="pCmax">—</div></div>
+      <div class="param-card blue"><div class="label">Trough (Cmin)</div><div class="value" id="pCmin">—</div></div>
+      <div class="param-card green"><div class="label">Half-life</div><div class="value" id="pHalf">—</div></div>
+      <div class="param-card amber"><div class="label">Clearance</div><div class="value" id="pCL">—</div></div>
+      <div class="param-card purple"><div class="label">Vd</div><div class="value" id="pVd">—</div></div>
+      <div class="param-card red"><div class="label">AUC per dose</div><div class="value" id="pAUC">—</div></div>
+      <div class="param-card green"><div class="label">Css (avg)</div><div class="value" id="pCss">—</div></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Concentration</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Therapeutic Range</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Toxic Threshold</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Dose Markers</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(96,165,250,0.15)"></div>Individual Doses</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DRUGS = {
+  vancomycin:{name:'Vancomycin',vd:0.7,keAuto:true,halfLife:6,f:1.0,pb:30,therapeutic:[15,20],toxic:30,unit:'mg/L',
+    info:'<strong>Vancomycin</strong> — Glycopeptide. Target AUC/MIC ≥400. Trough 15–20 mg/L for serious infections. Nephrotoxic >20. AUC-guided dosing preferred (24h AUC 400–600).',
+    defaultDose:1000,defaultInterval:12,route:'iv_infusion',infusionTime:1},
+  gentamicin:{name:'Gentamicin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',
+    info:'<strong>Gentamicin</strong> — Aminoglycoside. Conventional: Peak 5–12, Trough &lt;2. Extended-interval (once-daily): Peak 20–30, no trough needed. Nephro+ototoxic. Adjust for renal impairment.',
+    defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5},
+  amikacin:{name:'Amikacin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[20,35],toxic:35,unit:'mg/L',
+    info:'<strong>Amikacin</strong> — Aminoglycoside. Peak 20–35, Trough &lt;5. Similar PK to gentamicin.',
+    defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5},
+  tobramycin:{name:'Tobramycin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',
+    info:'<strong>Tobramycin</strong> — Aminoglycoside. Peak 5–12, Trough &lt;2. Nearly identical PK to gentamicin.',
+    defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5},
+  phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,therapeutic:[10,20],toxic:20,unit:'mg/L',
+    info:'<strong>Phenytoin</strong> — <span style="color:#fbbf24">Non-linear (Michaelis-Menten) kinetics.</span> This simulator uses first-order approximation. Therapeutic 10–20. Highly protein-bound (90%). Free = total × (1 − PB/100). Saturates at high doses — small dose increases cause large level jumps.',
+    defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0},
+  valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,therapeutic:[50,100],toxic:100,unit:'mg/L',
+    info:'<strong>Valproic Acid</strong> — Therapeutic 50–100. Highly protein-bound. Free fraction increases with hypoalbuminemia and uremia.',
+    defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0},
+  carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,therapeutic:[4,12],toxic:12,unit:'mg/L',
+    info:'<strong>Carbamazepine</strong> — Therapeutic 4–12. Autoinduction: half-life drops from ~30h to ~15h over 2–4 weeks. Active epoxide metabolite.',
+    defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0},
+  levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,therapeutic:[12,46],toxic:46,unit:'µg/mL',
+    info:'<strong>Levetiracetam</strong> — Therapeutic 12–46 µg/mL. Renally cleared. Minimal protein binding. Wide therapeutic window.',
+    defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0},
+  digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,therapeutic:[0.8,2.0],toxic:2.0,unit:'µg/L',
+    info:'<strong>Digoxin</strong> — Therapeutic 0.8–2.0 µg/L. Long t½ ~36h. Renally cleared. Toxicity risk with hypokalemia, hypothyroid, renal decline.',
+    defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0},
+  lidocaine:{name:'Lidocaine',vd:1.5,keAuto:false,halfLife:1.8,f:0.35,pb:70,therapeutic:[1.5,5.0],toxic:5.0,unit:'µg/mL',
+    info:'<strong>Lidocaine</strong> — Antiarrhythmic. Therapeutic 1.5–5 µg/mL. Hepatic metabolism — reduced in heart failure, liver disease. CNS toxicity >5.',
+    defaultDose:100,defaultInterval:0.5,route:'iv_bolus',infusionTime:0},
+  amiodarone:{name:'Amiodarone',vd:60,keAuto:false,halfLife:55,f:0.35,pb:96,therapeutic:[1.0,2.5],toxic:2.5,unit:'µg/mL',
+    info:'<strong>Amiodarone (oral steady-state)</strong> — Extremely long t½ (40–55 days). Loading takes weeks. Therapeutic 1–2.5 µg/mL. Multiple organ toxicity (thyroid, lung, liver, cornea, skin).',
+    defaultDose:200,defaultInterval:24,route:'oral',infusionTime:0},
+  lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',
+    info:'<strong>Lithium</strong> — Mood stabilizer. Therapeutic 0.6–1.2 mmol/L (12h trough). Toxic >1.5. Narrow index. Renally cleared. Dehydration, NSAIDs, ACEi, thiazides increase levels.',
+    defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0},
+  clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,therapeutic:[350,600],toxic:1000,unit:'ng/mL',
+    info:'<strong>Clozapine</strong> — Atypical antipsychotic. Therapeutic 350–600 ng/mL. Smoking induces CYP1A2 (increases clearance). Monitor for agranulocytosis.',
+    defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0},
+  theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,therapeutic:[10,20],toxic:20,unit:'mg/L',
+    info:'<strong>Theophylline</strong> — Bronchodilator. Therapeutic 10–20. Toxic >20 (seizures, arrhythmias). Hepatic metabolism. Ciprofloxacin, erythromycin inhibit clearance.',
+    defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0},
+  methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'µmol/L',
+    info:'<strong>Methotrexate</strong> — High-dose: monitor 24h (<10 µmol/L), 48h (<1), 72h (<0.1). Rescue with leucovorin. Third-space fluid accumulation delays clearance.',
+    defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4},
+  custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',
+    info:'<strong>Custom Drug</strong> — Adjust all parameters manually.',
+    defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1}
+};
+
+let state = {
+  drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,
+  weight:70,scr:1.0,age:50,sex:'male',
+  vd:0.7,ke:null,f:1.0,pb:30,infusionTime:1,
+  showTherapeutic:true,showGrid:true
+};
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  canvas.style.width = rect.width+'px';
+  canvas.style.height = rect.height+'px';
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+
+function calcCrCl(){
+  const s=state;
+  let crcl=((140-s.age)*s.weight)/(72*s.scr);
+  if(s.sex==='female') crcl*=0.85;
+  return Math.max(crcl,5);
+}
+
+function calcKe(drug){
+  const d=DRUGS[drug];
+  const keInput=document.getElementById('keInput').value;
+  if(keInput&&parseFloat(keInput)>0) return parseFloat(keInput);
+  if(d.keAuto){
+    const crcl=calcCrCl();
+    return 0.00293*crcl+0.014;
+  }
+  return 0.693/d.halfLife;
+}
+
+function calcCL(){ return state.ke*state.weight*state.vd; }
+
+function getCpSingle(t,doseTime,route,dose,ke,vd,f,weight,infusionTime){
+  const elapsed=t-doseTime;
+  if(elapsed<0) return 0;
+  const vdL=vd*weight;
+  if(route==='iv_bolus'){
+    return (dose/vdL)*Math.exp(-ke*elapsed);
+  }else if(route==='iv_infusion'){
+    const k0=dose/infusionTime;
+    if(elapsed<=infusionTime){
+      return (k0/(ke*vdL))*(1-Math.exp(-ke*elapsed));
+    }else{
+      const cEnd=(k0/(ke*vdL))*(1-Math.exp(-ke*infusionTime));
+      return cEnd*Math.exp(-ke*(elapsed-infusionTime));
+    }
+  }else{
+    const ka=1.5;
+    const c0=(f*dose)/vdL;
+    return c0*(ka/(ka-ke))*(Math.exp(-ke*elapsed)-Math.exp(-ka*elapsed));
+  }
+}
+
+function getTotalCp(t){
+  let total=0;
+  for(let i=0;i<state.numDoses;i++){
+    total+=getCpSingle(t,i*state.interval,state.route,state.dose,state.ke,state.vd,state.f,state.weight,state.infusionTime);
+  }
+  return total;
+}
+
+function recalculate(){
+  state.weight=parseFloat(document.getElementById('weightInput').value)||70;
+  state.scr=parseFloat(document.getElementById('scrInput').value)||1.0;
+  state.age=parseFloat(document.getElementById('ageInput').value)||50;
+  state.sex=document.getElementById('sexSelect').value;
+  state.dose=parseFloat(document.getElementById('doseInput').value)||1000;
+  state.interval=parseFloat(document.getElementById('intervalRange').value);
+  state.numDoses=parseInt(document.getElementById('numDosesRange').value);
+  state.vd=parseFloat(document.getElementById('vdInput').value)||0.7;
+  state.f=parseFloat(document.getElementById('fInput').value)||1.0;
+  state.pb=parseFloat(document.getElementById('pbInput').value)||0;
+  state.infusionTime=parseFloat(document.getElementById('infusionTimeRange').value);
+
+  if(state.drug!=='custom'){
+    const drug=DRUGS[state.drug];
+    const ae=document.activeElement;
+    if(ae.id!=='vdInput'){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}
+    if(ae.id!=='fInput'){state.f=drug.f;document.getElementById('fInput').value=drug.f;}
+    if(ae.id!=='pbInput'){state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;}
+  }
+
+  state.ke=calcKe(state.drug);
+  checkRenal();
+  updateParams();
+  drawChart();
+}
+
+function checkRenal(){
+  const crcl=calcCrCl();
+  const warn=document.getElementById('renalWarning');
+  const msg=document.getElementById('renalMsg');
+  if(crcl<30){warn.classList.remove('hidden');msg.textContent=`CrCl ${crcl.toFixed(1)} mL/min — Significant renal impairment. Consider dose reduction or extended interval.`;}
+  else if(crcl<60){warn.classList.remove('hidden');msg.textContent=`CrCl ${crcl.toFixed(1)} mL/min — Mild-moderate impairment. Monitor levels closely.`;}
+  else warn.classList.add('hidden');
+}
+
+function updateParams(){
+  const tEnd=state.numDoses*state.interval;
+  const dt=0.05;
+  let cmax=0,cmin=Infinity;
+
+  // Cmax from peak after last dose
+  const lastDoseStart=(state.numDoses-1)*state.interval;
+  const searchEnd=lastDoseStart+state.interval*2;
+  for(let t=lastDoseStart;t<=searchEnd;t+=dt){
+    const cp=getTotalCp(t);
+    if(cp>cmax) cmax=cp;
+  }
+  // Cmin = trough at end of last interval
+  cmin=getTotalCp(tEnd);
+
+  // If only 1 dose, get peak right after dose
+  if(state.numDoses===1){
+    cmax=0;
+    const peakSearchEnd=state.interval*0.5;
+    for(let t=0;t<=peakSearchEnd;t+=dt){
+      const cp=getTotalCp(t);
+      if(cp>cmax) cmax=cp;
+    }
+    cmin=getTotalCp(tEnd);
+  }
+
+  const halfLife=0.693/state.ke;
+  const cl=calcCL();
+  const vdL=state.vd*state.weight;
+
+  // AUC of last dose (trapezoidal)
+  let auc=0;
+  const aucStart=(state.numDoses-1)*state.interval;
+  let prevCp=getTotalCp(aucStart);
+  for(let t=aucStart+dt;t<=aucStart+state.interval;t+=dt){
+    const cp=getTotalCp(t);
+    auc+=(prevCp+cp)/2*dt;
+    prevCp=cp;
+  }
+
+  // Css average
+  const css=auc/state.interval;
+  const drug=DRUGS[state.drug];
+
+  document.getElementById('pCmax').innerHTML=`${cmax.toFixed(2)}<span class="unit">${drug.unit}</span>`;
+  document.getElementById('pCmin').innerHTML=`${cmin.toFixed(2)}<span class="unit">${drug.unit}</span>`;
+  document.getElementById('pHalf').innerHTML=`${halfLife.toFixed(1)}<span class="unit">h</span>`;
+  document.getElementById('pCL').innerHTML=`${cl.toFixed(2)}<span class="unit">L/h</span>`;
+  document.getElementById('pVd').innerHTML=`${vdL.toFixed(1)}<span class="unit">L</span>`;
+  document.getElementById('pAUC').innerHTML=`${auc.toFixed(1)}<span class="unit">mg·h/L</span>`;
+  document.getElementById('pCss').innerHTML=`${css.toFixed(2)}<span class="unit">${drug.unit}</span>`;
+
+  // Color coding
+  const cmaxEl=document.getElementById('pCmax').parentElement;
+  const cminEl=document.getElementById('pCmin').parentElement;
+  cmaxEl.className='param-card '+(cmax>drug.toxic?'red':cmax>drug.therapeutic[1]?'amber':'blue');
+  cminEl.className='param-card '+(cmin<drug.therapeutic[0]?'amber':cmin>drug.toxic?'red':'blue');
+
+  // Update drug info
+  document.getElementById('drugInfo').innerHTML=drug.info+
+    `<br><br><strong>Calculated:</strong> CrCl=${calcCrCl().toFixed(1)} mL/min | ke=${state.ke.toFixed(4)} h⁻¹ | t½=${halfLife.toFixed(1)} h | CL=${cl.toFixed(2)} L/h | Vd=${vdL.toFixed(1)} L`;
+}
+
+function drawChart(){
+  const w=canvas.width/devicePixelRatio;
+  const h=canvas.height/devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+
+  const drug=DRUGS[state.drug];
+  const m={top:30,right:30,bottom:50,left:70};
+  const pW=w-m.left-m.right;
+  const pH=h-m.top-m.bottom;
+
+  const tEnd=(state.numDoses+0.5)*state.interval;
+  const dt=0.05;
+
+  // Collect points and find max
+  let maxY=0;
+  const points=[];
+  for(let t=0;t<=tEnd;t+=dt){
+    const cp=getTotalCp(t);
+    points.push({t,cp});
+    if(cp>maxY) maxY=cp;
+  }
+  maxY=Math.max(maxY*1.15,drug.toxic*1.3,drug.therapeutic[1]*1.5);
+
+  const xS=t=>m.left+(t/tEnd)*pW;
+  const yS=cp=>m.top+pH-(cp/maxY)*pH;
+
+  // Grid
+  if(state.showGrid){
+    ctx.strokeStyle='rgba(148,163,184,0.06)';
+    ctx.lineWidth=1;
+    for(let i=0;i<=8;i++){
+      const y=m.top+(pH/8)*i;
+      ctx.beginPath();ctx.moveTo(m.left,y);ctx.lineTo(w-m.right,y);ctx.stroke();
+    }
+    const xTicks=Math.min(state.numDoses+2,12);
+    for(let i=0;i<=xTicks;i++){
+      const x=m.left+(pW/xTicks)*i;
+      ctx.beginPath();ctx.moveTo(x,m.top);ctx.lineTo(x,h-m.bottom);ctx.stroke();
+    }
+  }
+
+  // Therapeutic window
+  if(state.showTherapeutic){
+    const tY1=yS(drug.therapeutic[1]);
+    const tY0=yS(drug.therapeutic[0]);
+    ctx.fillStyle='rgba(34,197,94,0.07)';
+    ctx.fillRect(m.left,tY1,pW,tY0-tY1);
+    ctx.strokeStyle='rgba(34,197,94,0.4)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.moveTo(m.left,tY1);ctx.lineTo(w-m.right,tY1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(m.left,tY0);ctx.lineTo(w-m.right,tY0);ctx.stroke();
+    // Toxic line
+    const toxY=yS(drug.toxic);
+    ctx.strokeStyle='rgba(239,68,68,0.4)';
+    ctx.beginPath();ctx.moveTo(m.left,toxY);ctx.lineTo(w-m.right,toxY);ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font='10px sans-serif';ctx.textAlign='right';
+    ctx.fillStyle='rgba(34,197,94,0.6)';
+    ctx.fillText(`Upper: ${drug.therapeutic[1]} ${drug.unit}`,w-m.right-4,tY1-3);
+    ctx.fillText(`Lower: ${drug.therapeutic[0]} ${drug.unit}`,w-m.right-4,tY0+12);
+    ctx.fillStyle='rgba(239,68,68,0.6)';
+    ctx.fillText(`Toxic: ${drug.toxic} ${drug.unit}`,w-m.right-4,toxY-3);
+  }
+
+  // Individual dose traces (faded)
+  ctx.globalAlpha=0.15;
+  ctx.strokeStyle='#60a5fa';
+  ctx.lineWidth=1;
+  for(let i=0;i<state.numDoses;i++){
+    ctx.beginPath();
+    let started=false;
+    const doseTime=i*state.interval;
+    for(let t=doseTime;t<=tEnd;t+=dt){
+      const cp=getCpSingle(t,doseTime,state.route,state.dose,state.ke,state.vd,state.f,state.weight,state.infusionTime);
+      const x=xS(t),y=yS(cp);
+      if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // Dose markers
+  ctx.fillStyle='rgba(245,158,11,0.5)';
+  for(let i=0;i<state.numDoses;i++){
+    const x=xS(i*state.interval);
+    ctx.fillRect(x-1,m.top,2,pH);
+    ctx.beginPath();ctx.moveTo(x,m.top+2);ctx.lineTo(x-4,m.top+9);ctx.lineTo(x+4,m.top+9);ctx.fill();
+  }
+
+  // Main curve
+  ctx.strokeStyle='#60a5fa';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();
+  for(let i=0;i<points.length;i++){
+    const p=points[i];
+    if(i===0) ctx.moveTo(xS(p.t),yS(p.cp));
+    else ctx.lineTo(xS(p.t),yS(p.cp));
+  }
+  ctx.stroke();
+
+  // Glow
+  ctx.strokeStyle='rgba(96,165,250,0.2)';
+  ctx.lineWidth=8;
+  ctx.beginPath();
+  for(let i=0;i<points.length;i++){
+    const p=points[i];
+    if(i===0) ctx.moveTo(xS(p.t),yS(p.cp));
+    else ctx.lineTo(xS(p.t),yS(p.cp));
+  }
+  ctx.stroke();
+
+  // Axes
+  ctx.strokeStyle='#334155';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(m.left,m.top);ctx.lineTo(m.left,h-m.bottom);ctx.lineTo(w-m.right,h-m.bottom);ctx.stroke();
+
+  // Labels
+  ctx.fillStyle='#64748b';ctx.font='12px sans-serif';ctx.textAlign='center';
+  ctx.fillText('Time (hours)',w/2,h-8);
+  ctx.save();ctx.translate(16,h/2);ctx.rotate(-Math.PI/2);ctx.fillText(`Concentration (${drug.unit})`,0,0);ctx.restore();
+
+  // X ticks
+  ctx.font='10px sans-serif';ctx.textAlign='center';
+  const xLabelCount=Math.min(state.numDoses+2,10);
+  for(let i=0;i<=xLabelCount;i++){
+    const t=(tEnd/xLabelCount)*i;
+    ctx.fillText(t.toFixed(0)+'h',xS(t),h-m.bottom+16);
+  }
+
+  // Y ticks
+  ctx.textAlign='right';
+  for(let i=0;i<=6;i++){
+    const cp=(maxY/6)*i;
+    ctx.fillText(cp<1?cp.toFixed(2):cp.toFixed(1),m.left-8,yS(cp)+4);
+  }
+
+  // Title
+  ctx.fillStyle='#e0e6f0';ctx.font='bold 13px sans-serif';ctx.textAlign='left';
+  const routeLabel=state.route==='iv_bolus'?'IV Bolus':state.route==='iv_infusion'?'IV Infusion':'Oral';
+  ctx.fillText(`${drug.name} — ${state.numDoses} × ${state.dose}mg ${routeLabel} q${state.interval}h`,m.left,m.top-10);
+}
+
+function onDrugChange(){
+  state.drug=document.getElementById('drugSelect').value;
+  const drug=DRUGS[state.drug];
+  state.dose=drug.defaultDose;
+  state.interval=drug.defaultInterval;
+  state.route=drug.route;
+  state.infusionTime=drug.infusionTime;
+
+  document.getElementById('doseInput').value=drug.defaultDose;
+  document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);
+  document.getElementById('doseVal').textContent=drug.defaultDose+' mg';
+  document.getElementById('intervalRange').value=drug.defaultInterval;
+  document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';
+  document.getElementById('infusionTimeRange').value=drug.infusionTime;
+  document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';
+
+  setRoute(drug.route);
+}
+
+function setRoute(r){
+  state.route=r;
+  document.getElementById('btnIVBolus').className='btn btn-sm btn-outline'+(r==='iv_bolus'?' active':'');
+  document.getElementById('btnIVInf').className='btn btn-sm btn-outline'+(r==='iv_infusion'?' active':'');
+  document.getElementById('btnOral').className='btn btn-sm btn-outline'+(r==='oral'?' active':'');
+  document.getElementById('infusionTimeField').style.display=r==='iv_infusion'?'block':'none';
+  recalculate();
+}
+
+function onDoseChange(){
+  const v=parseFloat(document.getElementById('doseRange').value);
+  document.getElementById('doseVal').textContent=v+' mg';
+  document.getElementById('doseInput').value=v;
+  recalculate();
+}
+function onDoseInput(){
+  const v=parseFloat(document.getElementById('doseInput').value)||0;
+  document.getElementById('doseRange').value=Math.min(v,5000);
+  document.getElementById('doseVal').textContent=v+' mg';
+  recalculate();
+}
+function onIntervalChange(){
+  document.getElementById('intervalVal').textContent=document.getElementById('intervalRange').value+' h';
+  recalculate();
+}
+function onNumDosesChange(){
+  document.getElementById('numDosesVal').textContent=document.getElementById('numDosesRange').value;
+  recalculate();
+}
+function onInfusionChange(){
+  document.getElementById('infusionTimeVal').textContent=parseFloat(document.getElementById('infusionTimeRange').value).toFixed(2)+' h';
+  recalculate();
+}
+function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;drawChart();}
+function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
+function resetAll(){document.getElementById('drugSelect').value='vancomycin';onDrugChange();}
+
+window.addEventListener('resize',()=>{resizeCanvas();drawChart();});
+resizeCanvas();
+onDrugChange();
+recalculate();
+</script>
+</body>
+</html>
