@@ -198,7 +198,23 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <optgroup label="Oncology">
           <option value="methotrexate">Methotrexate</option>
         </optgroup>
-        <optgroup label="Other">
+        <optgroup label="Other Beta-Lactams">
+          <option value="meropenem">Meropenem</option>
+          <option value="piperacillin">Piperacillin-Tazobactam</option>
+          <option value="ceftriaxone">Ceftriaxone</option>
+        </optgroup>
+        <optgroup label="Antifungals">
+          <option value="fluconazole">Fluconazole</option>
+          <option value="amphotericin">Amphotericin B (Liposomal)</option>
+        </optgroup>
+        <optgroup label="Other Antibiotics">
+          <option value="linezolid">Linezolid</option>
+          <option value="azithromycin">Azithromycin</option>
+          <option value="metronidazole">Metronidazole</option>
+          <option value="clindamycin">Clindamycin</option>
+          <option value="vancomycin_oral">Vancomycin (Oral)</option>
+        </optgroup>
+        <optgroup label="Custom">
           <option value="custom">Custom Drug</option>
         </optgroup>
       </select>
@@ -329,29 +345,6 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
     <!-- ADVANCED TAB -->
     <div class="tab-content" id="tab-advanced">
-      <!-- DRUG BUILDER -->
-      <div class="collapsible-header" onclick="toggleCollapse('builderSection')">
-        <h3 style="margin:0">Drug Builder — Add Any Drug <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Drug Builder:</strong> Simulate ANY drug by loading presets or entering custom PK parameters.<br><br><strong>10 preset drugs:</strong> Meropenem, Pip-Tazo, Ceftriaxone, Fluconazole, Linezolid, Azithromycin, Amphotericin B, Metronidazole, Clindamycin, Oral Vancomycin.<br><br><strong>How to use:</strong><ul><li>Click a preset drug button to load its parameters</li><li>Or switch to Custom Drug and manually enter Vd, ke, F, PB, therapeutic range</li><li>All features work: renal/hepatic adjustment, loading dose, TDM, AUC, simulations</li><li>Enter your patient weight, SCr, age — the simulator calculates everything</li></ul>">?</span></h3><span id="builderArrow">&#9660;</span>
-      </div>
-      <div class="collapsible-body" id="builderSection">
-        <div class="btn-group" style="flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('meropenem')">Meropenem</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('piperacillin')">Pip-Tazo</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('ceftriaxone')">Ceftriaxone</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('fluconazole')">Fluconazole</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('linezolid')">Linezolid</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('azithromycin')">Azithromycin</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('amphotericin')">Amphotericin B</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('metronidazole')">Metronidazole</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('clindamycin')">Clindamycin</button>
-          <button class="btn btn-sm btn-outline" onclick="loadDrugPreset('vancomycin_oral')">Vanc (Oral)</button>
-        </div>
-        <div id="builderInfo" class="info-box hidden"></div>
-        <div class="info-box" style="margin-top:8px">
-          <strong style="color:#60a5fa">Or enter manually:</strong> Select "Custom Drug" from the dropdown above, then set Vd, half-life, F, protein binding, and therapeutic range below.
-        </div>
-      </div>
-
       <h3>PK Parameters (Override) <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Manual PK Override:</strong> Override auto-calculated PK parameters for special scenarios or when you have patient-specific data from previous TDM.<br><br><strong>Parameters:</strong><ul><li><strong>Vd (L/kg):</strong> Volume of distribution — how widely the drug distributes. Auto-fills from drug profile</li><li><strong>ke (h-1):</strong> Elimination rate constant — leave blank for auto-calculation from CrCl</li><li><strong>F (bioavailability):</strong> Fraction absorbed (1.0 for IV, 0.5-0.9 for oral)</li><li><strong>Protein Binding:</strong> Affects free (active) drug concentration. High PB drugs: phenytoin (90%), valproic acid (90%)</li></ul>">?</span></h3>
       <div class="row">
         <div class="field"><label>Vd (L/kg)</label><input type="number" id="vdInput" value="0.7" step="0.01" oninput="recalculate()"></div>
@@ -555,11 +548,48 @@ const DRUGS={
   clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
   theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
   methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
-  custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Use the Drug Builder below to enter any drug parameters.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
+  meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',
+    info:'<strong>Meropenem</strong> -- Carbapenem. Time-dependent killing: T>MIC target 40% for bacteremia, 100% for meningitis. Extended infusion (3-4h) improves PK/PD. Adjust for renal impairment.',
+    defaultDose:1000,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions.',
+    renalNote:'CrCl 26-50: 1g q12h. CrCl 10-25: 500mg q12h. CrCl <10: 500mg q24h. HD: dose after HD.'},
+  piperacillin:{name:'Piperacillin-Tazobactam',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:30,therapeutic:[0,100],toxic:200,unit:'mg/L',
+    info:'<strong>Pip-Tazo</strong> -- Beta-lactam + beta-lactamase inhibitor. Time-dependent: T>MIC target 50%. Extended infusion (4h) preferred. Nephrotoxic risk especially with vancomycin.',
+    defaultDose:4500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin.',
+    renalNote:'CrCl 20-40: 3.375g q8h. CrCl <20: 2.25g q8h. HD: 2.25g q8h + dose after HD.'},
+  ceftriaxone:{name:'Ceftriaxone',vd:0.16,keAuto:false,halfLife:8,f:1.0,pb:95,therapeutic:[0,100],toxic:300,unit:'mg/L',
+    info:'<strong>Ceftriaxone</strong> -- 3rd-gen cephalosporin. Long half-life (8h). Dual elimination (renal + hepatic). No renal adjustment needed unless CrCl <10. Highly protein-bound.',
+    defaultDose:2000,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Displaces bilirubin from albumin. Avoid in neonates.',
+    renalNote:'No adjustment unless CrCl <10: max 2g/day.'},
+  fluconazole:{name:'Fluconazole',vd:0.7,keAuto:true,halfLife:30,f:0.9,pb:12,therapeutic:[0,100],toxic:80,unit:'mg/L',
+    info:'<strong>Fluconazole</strong> -- Triazole antifungal. High oral bioavailability (90%). Renally cleared. CYP2C9 inhibitor. Loading dose 2x maintenance on day 1.',
+    defaultDose:400,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:800,loadingUnit:'mg (day 1)',hepatic:false,dialyzable:true,interactionNote:'Inhibits CYP2C9, CYP2C19, CYP3A4. Increases phenytoin, warfarin levels.',
+    renalNote:'CrCl 11-50: 50% dose reduction. HD: full dose after HD.'},
+  vancomycin_oral:{name:'Vancomycin (Oral)',vd:0.7,keAuto:false,halfLife:6,f:0.0,pb:30,therapeutic:[0,100],toxic:100,unit:'mg/L',
+    info:'<strong>Oral Vancomycin</strong> -- For C. difficile colitis. NOT absorbed systemically (F=0). Works locally in gut. No TDM needed.',
+    defaultDose:125,defaultInterval:6,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'No systemic interactions (not absorbed).',
+    renalNote:'No renal adjustment needed (not absorbed).'},
+  linezolid:{name:'Linezolid',vd:0.6,keAuto:false,halfLife:5,f:1.0,pb:31,therapeutic:[0,100],toxic:20,unit:'mg/L',
+    info:'<strong>Linezolid</strong> -- Oxazolidinone. MRSA/VRE coverage. Monitor for thrombocytopenia (>14 days). MAO inhibitor.',
+    defaultDose:600,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'MAO inhibitor. Avoid SSRIs, tramadol, tyramine foods.',
+    renalNote:'No renal adjustment. Accumulation of metabolites in severe CKD.'},
+  azithromycin:{name:'Azithromycin',vd:30,keAuto:false,halfLife:68,f:0.37,pb:7,therapeutic:[0,100],toxic:1,unit:'mg/L',
+    info:'<strong>Azithromycin</strong> -- Macrolide. Extremely high Vd (tissue tropic). Very long half-life (68h). Short course provides extended coverage.',
+    defaultDose:500,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:500,loadingUnit:'mg (day 1)',hepatic:true,dialyzable:false,interactionNote:'QTc prolongation risk.',
+    renalNote:'No renal adjustment (hepatic elimination).'},
+  amphotericin:{name:'Amphotericin B (Liposomal)',vd:0.5,keAuto:false,halfLife:15,f:1.0,pb:90,therapeutic:[0,100],toxic:5,unit:'mg/L',
+    info:'<strong>Liposomal Amphotericin B</strong> -- Antifungal. Nephrotoxic. Electrolyte wasting (K+, Mg2+). Liposomal form less nephrotoxic.',
+    defaultDose:300,defaultInterval:24,route:'iv_infusion',infusionTime:2,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Additive nephrotoxicity with aminoglycosides.',
+    renalNote:'No dose adjustment for renal impairment.'},
+  metronidazole:{name:'Metronidazole',vd:0.7,keAuto:false,halfLife:8,f:1.0,pb:20,therapeutic:[0,100],toxic:25,unit:'mg/L',
+    info:'<strong>Metronidazole</strong> -- Nitroimidazole. Anaerobic coverage, C. difficile. CNS toxicity at high doses. Disulfiram reaction with alcohol.',
+    defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:true,interactionNote:'Warfarin potentiation. Disulfiram reaction with alcohol.',
+    renalNote:'No significant renal adjustment.'},
+  clindamycin:{name:'Clindamycin',vd:1.1,keAuto:false,halfLife:3,f:0.9,pb:90,therapeutic:[0,100],toxic:10,unit:'mg/L',
+    info:'<strong>Clindamycin</strong> -- Lincosamide. Anaerobic + gram-positive. Excellent tissue/bone penetration. C. difficile risk.',
+    defaultDose:600,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor.',
+    renalNote:'No renal adjustment (hepatic metabolism).'},
+  custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
 };
-
-// === DRUG BUILDER ===
-const DRUG_PRESETS={
   meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',
     info:'<strong>Meropenem</strong> -- Carbapenem. Time-dependent killing: T>MIC target 40% for bacteremia, 100% for meningitis. Extended infusion (3-4h) improves PK/PD. Adjust for renal impairment.',
     defaultDose:1000,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions.',
@@ -1290,40 +1320,6 @@ function onInfusionChange(){document.getElementById('infusionTimeVal').textConte
 function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;drawChart();}
 function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
 function toggleIndicators(){state.showIndicators=!state.showIndicators;drawChart();}
-function loadDrugPreset(key){
-  const p=DRUG_PRESETS[key];if(!p)return;
-  // Inject into DRUGS as custom
-  DRUGS.custom={
-    name:p.name,vd:p.vd,keAuto:p.keAuto,halfLife:p.halfLife,f:p.f,pb:p.pb,
-    therapeutic:p.therapeutic,toxic:p.toxic,unit:p.unit,
-    info:p.info,defaultDose:p.defaultDose,defaultInterval:p.defaultInterval,
-    route:p.route,infusionTime:p.infusionTime,loadingDose:p.loadingDose,
-    loadingUnit:p.loadingUnit,hepatic:p.hepatic,dialyzable:p.dialyzable,
-    interactionNote:p.interactionNote
-  };
-  document.getElementById('drugSelect').value='custom';
-  state.drug='custom';
-  state.dose=p.defaultDose;state.interval=p.defaultInterval;state.route=p.route;state.infusionTime=p.infusionTime;
-  state.adjustedKe=null;state.measuredCp=null;
-  document.getElementById('doseInput').value=p.defaultDose;
-  document.getElementById('doseRange').value=Math.min(p.defaultDose,5000);
-  document.getElementById('doseVal').textContent=p.defaultDose+' mg';
-  document.getElementById('intervalRange').value=p.defaultInterval;
-  document.getElementById('intervalVal').textContent=p.defaultInterval+' h';
-  document.getElementById('infusionTimeRange').value=p.infusionTime;
-  document.getElementById('infusionTimeVal').textContent=p.infusionTime.toFixed(2)+' h';
-  document.getElementById('vdInput').value=p.vd;
-  document.getElementById('fInput').value=p.f;
-  document.getElementById('pbInput').value=p.pb;
-  document.getElementById('ldTarget').value=p.therapeutic[1];
-  setRoute(p.route);
-  const info=document.getElementById('builderInfo');
-  info.classList.remove('hidden');
-  let html='<strong>'+p.name+' loaded</strong><br>'+p.info;
-  if(p.renalNote)html+='<br><br><strong style="color:#fbbf24">Renal dosing:</strong> '+p.renalNote;
-  info.innerHTML=html;
-}
-
 function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElementById('drugSelect').value='vancomycin';document.getElementById('keInput').value='';document.getElementById('hepaticClass').value='none';document.getElementById('dialysisMode').value='none';document.getElementById('interactionEnzyme').checked=false;document.getElementById('interactionInhibitor').checked=false;document.getElementById('pediatricMode').checked=false;document.getElementById('aucMode').checked=false;document.getElementById('measuredLevel').value='';document.getElementById('hoursAfterDose').value='';document.getElementById('doseNumAtDraw').value='';document.getElementById('tdmResult').classList.add('hidden');document.getElementById('tdmSuggestions').classList.add('hidden');document.getElementById('ldResult').classList.add('hidden');onDrugChange();}
 // === CLINICAL SIMULATIONS ===
 const SIMULATIONS = [
