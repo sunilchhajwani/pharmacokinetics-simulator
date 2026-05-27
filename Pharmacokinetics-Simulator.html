@@ -1599,113 +1599,14 @@ function simBuildCalculation(sim,step,isCorrect){
     html+='<code class="note">Ratio >1.2 = clearance lower than expected. Ratio <0.8 = clearance higher than expected.</code><br>';
   }
 
-  // Mini chart canvas
-  html+='<br><strong style="color:#60a5fa">Concentration-Time Curve</strong><br>';
-  html+='<canvas id="simMiniChart" width="400" height="200"></canvas>';
-  html+='<script>setTimeout(function(){drawSimMiniChart('+JSON.stringify(sim.drug)+','+JSON.stringify(patient)+','+ke+','+vdL+')},100)<\/script>';
+  // Chart reference
+  html+='<br><div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:6px;padding:8px 12px;margin-top:8px;font-size:11px;color:#60a5fa">';
+  html+='<strong>See the main chart on the right</strong> — it now shows this patient\'s concentration-time curve. ';
+  html+='Look for: <span style="color:#22c55e">green band</span> = therapeutic range, <span style="color:#ef4444">red line</span> = toxic threshold, <span style="color:#60a5fa">blue curve</span> = predicted levels, <span style="color:#f59e0b">orange markers</span> = dose times.';
+  if(step.labValue!==undefined)html+=' The measured level ('+step.labValue+' '+step.labUnit+') is plotted as a <span style="color:#f472b6">pink dot</span> on the chart.';
+  html+='</div>';
 
   return html;
-}
-
-function drawSimMiniChart(drugKey,patient,ke,vdL){
-  const canvas=document.getElementById('simMiniChart');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const d=DRUGS[drugKey];
-  const w=canvas.width,h=canvas.height;
-  ctx.clearRect(0,0,w,h);
-
-  const m={top:20,right:15,bottom:35,left:50};
-  const pW=w-m.left-m.right,pH=h-m.top-m.bottom;
-  const doses=4,interval=state.interval||12;
-  const tEnd=doses*interval*1.2;
-  const dt=0.1;
-
-  // Calculate curve
-  const points=[];
-  let maxY=0;
-  const route=state.route||d.route;
-  const dose=state.dose||d.defaultDose;
-  const infTime=state.infusionTime||d.infusionTime||1;
-  const vd=vdL/patient.weight;
-
-  for(let t=0;t<=tEnd;t+=dt){
-    let cp=0;
-    for(let i=0;i<doses;i++){
-      cp+=getCpSingle(t,i*interval,route,dose,ke,vd,d.f,patient.weight,infTime);
-    }
-    points.push({t,cp});
-    if(cp>maxY)maxY=cp;
-  }
-  maxY=Math.max(maxY*1.2,d.toxic*1.3);
-
-  const xS=t=>m.left+(t/tEnd)*pW;
-  const yS=cp=>m.top+pH-(cp/maxY)*pH;
-
-  // Grid
-  ctx.strokeStyle='rgba(148,163,184,0.08)';ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){const y=m.top+(pH/4)*i;ctx.beginPath();ctx.moveTo(m.left,y);ctx.lineTo(w-m.right,y);ctx.stroke();}
-
-  // Therapeutic window
-  const tY1=yS(d.therapeutic[1]),tY0=yS(d.therapeutic[0]);
-  ctx.fillStyle='rgba(34,197,94,0.1)';
-  ctx.fillRect(m.left,tY1,pW,tY0-tY1);
-  ctx.strokeStyle='rgba(34,197,94,0.5)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
-  ctx.beginPath();ctx.moveTo(m.left,tY1);ctx.lineTo(w-m.right,tY1);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(m.left,tY0);ctx.lineTo(w-m.right,tY0);ctx.stroke();
-  // Toxic line
-  const toxY=yS(d.toxic);
-  ctx.strokeStyle='rgba(239,68,68,0.4)';
-  ctx.beginPath();ctx.moveTo(m.left,toxY);ctx.lineTo(w-m.right,toxY);ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Labels
-  ctx.font='9px sans-serif';ctx.textAlign='right';
-  ctx.fillStyle='rgba(34,197,94,0.7)';
-  ctx.fillText(d.therapeutic[1]+' '+d.unit,w-m.right-2,tY1-2);
-  ctx.fillText(d.therapeutic[0]+' '+d.unit,w-m.right-2,tY0+10);
-  ctx.fillStyle='rgba(239,68,68,0.7)';
-  ctx.fillText('Toxic: '+d.toxic,w-m.right-2,toxY-2);
-
-  // Curve
-  ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;
-  ctx.beginPath();
-  for(let i=0;i<points.length;i++){
-    if(i===0)ctx.moveTo(xS(points[i].t),yS(points[i].cp));
-    else ctx.lineTo(xS(points[i].t),yS(points[i].cp));
-  }
-  ctx.stroke();
-
-  // Glow
-  ctx.strokeStyle='rgba(96,165,250,0.15)';ctx.lineWidth=6;
-  ctx.beginPath();
-  for(let i=0;i<points.length;i++){
-    if(i===0)ctx.moveTo(xS(points[i].t),yS(points[i].cp));
-    else ctx.lineTo(xS(points[i].t),yS(points[i].cp));
-  }
-  ctx.stroke();
-
-  // Dose markers
-  ctx.fillStyle='rgba(245,158,11,0.5)';
-  for(let i=0;i<doses;i++){
-    const x=xS(i*interval);
-    ctx.fillRect(x-1,m.top,2,pH);
-  }
-
-  // Axes
-  ctx.strokeStyle='#334155';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(m.left,m.top);ctx.lineTo(m.left,h-m.bottom);ctx.lineTo(w-m.right,h-m.bottom);ctx.stroke();
-
-  // Axis labels
-  ctx.fillStyle='#64748b';ctx.font='9px sans-serif';ctx.textAlign='center';
-  ctx.fillText('Time (h)',w/2,h-4);
-  for(let i=0;i<=4;i++){const t=(tEnd/4)*i;ctx.fillText(t.toFixed(0),xS(t),h-m.bottom+12);}
-  ctx.textAlign='right';
-  for(let i=0;i<=4;i++){const cp=(maxY/4)*i;ctx.fillText(cp.toFixed(cp<1?1:0),m.left-4,yS(cp)+3);}
-
-  // Title
-  ctx.fillStyle='#e0e6f0';ctx.font='bold 10px sans-serif';ctx.textAlign='left';
-  ctx.fillText(d.name+' — '+doses+' doses x '+dose+'mg q'+interval+'h',m.left,m.top-6);
 }
 
 function simNextStep(){
