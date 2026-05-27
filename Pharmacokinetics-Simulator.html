@@ -82,6 +82,13 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 #reportBox .warning{background:#fef3c7;padding:8px 12px;border-radius:6px;margin:8px 0;font-size:12px}
 #reportBox .ok{background:#dcfce7;padding:8px 12px;border-radius:6px;margin:8px 0;font-size:12px}
 @media print{body{background:#fff;color:#000}.header,.panel,.legend,.params-bar{display:none}.layout{display:block;height:auto}#reportBox{max-width:100%;box-shadow:none;padding:0}}
+.help-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#334155;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;margin-left:6px;flex-shrink:0;transition:all .15s;position:relative;vertical-align:middle}
+.help-icon:hover{background:#3b82f6;color:#fff}
+.help-tip{display:none;position:absolute;left:0;top:22px;width:280px;background:#1e293b;border:1px solid #3b82f6;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:400;line-height:1.5;color:#94a3b8;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4);white-space:normal}
+.help-tip.show{display:block}
+.help-tip strong{color:#60a5fa}
+.help-tip ul{margin:4px 0 0 14px;padding:0}
+.help-tip li{margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -91,10 +98,10 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
     <div class="subtitle">One-Compartment Model &middot; TDM &middot; Bayesian Adjustment &middot; Clinical Dosing</div>
   </div>
   <div style="display:flex;gap:6px">
-    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic Window</button>
-    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid</button>
-    <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators</button>
-    <button class="btn btn-sm btn-success" onclick="showReport()">Report</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic Window <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Therapeutic Window:</strong> Toggles the green shaded band showing the drug's therapeutic range and the red toxic threshold line on the chart.">?</span></button>
+    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Grid:</strong> Toggles background grid lines on the chart for easier reading of values.">?</span></button>
+    <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Indicators:</strong> Toggles Steady State marker (purple vertical line at ~4-5 half-lives) and MIC line (cyan dashed line) on the chart.">?</span></button>
+    <button class="btn btn-sm btn-success" onclick="showReport()">Report <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Report:</strong> Generates a printable dosing summary with patient data, PK parameters, predicted levels, TDM results, safety alerts, and dosing recommendations. Click Print Report to print.">?</span></button>
     <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
   </div>
 </div>
@@ -145,7 +152,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
     <!-- DOSING TAB -->
     <div class="tab-content active" id="tab-dosing">
-      <h3>Route & Dosing</h3>
+      <h3>Route & Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>How to use:</strong><ul><li>Select drug from dropdown — defaults auto-populate</li><li>Choose route: IV Bolus (instant), IV Infusion (over time), Oral (with absorption)</li><li>Adjust dose, interval, and number of doses using sliders or manual input</li><li>The chart updates in real-time as you change parameters</li><li>Dose per kg is shown next to the dose field</li></ul>">?</span></h3>
       <div class="btn-group">
         <button class="btn btn-sm btn-outline active" id="btnIVBolus" onclick="setRoute('iv_bolus')">IV Bolus</button>
         <button class="btn btn-sm btn-outline" id="btnIVInf" onclick="setRoute('iv_infusion')">IV Infusion</button>
@@ -183,7 +190,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- LOADING DOSE -->
       <div class="collapsible-header" onclick="toggleCollapse('ldSection')">
-        <h3 style="margin:0">Loading Dose Calculator</h3><span id="ldArrow">&#9660;</span>
+        <h3 style="margin:0">Loading Dose Calculator <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Loading Dose (LD):</strong> A higher first dose given to rapidly achieve therapeutic levels — critical for drugs with long half-lives (vancomycin, amiodarone, digoxin).<br><br><strong>Formula:</strong> LD = (Target Cp x Vd) / F<br><br><strong>How to use:</strong><ul><li>Target peak auto-fills from drug's upper therapeutic range</li><li>Or enter a custom target concentration</li><li>Click Calculate to see the loading dose</li><li>Compare with standard mg/kg-based loading dose</li></ul>">?</span></h3><span id="ldArrow">&#9660;</span>
       </div>
       <div class="collapsible-body" id="ldSection">
         <div class="row">
@@ -195,7 +202,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- MIC / T>MIC -->
       <div class="collapsible-header" onclick="toggleCollapse('micSection')">
-        <h3 style="margin:0">MIC / T>MIC</h3><span id="micArrow">&#9660;</span>
+        <h3 style="margin:0">MIC / T>MIC <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>T>MIC (Time above MIC):</strong> The percentage of the dosing interval that the drug concentration stays above the Minimum Inhibitory Concentration of the bacteria. Critical for time-dependent antibiotics (beta-lactams, vancomycin).<br><br><strong>How to use:</strong><ul><li>Enter the MIC from your culture & sensitivity report</li><li>Set target T>MIC (typically 40% for beta-lactams, 100% for vancomycin)</li><li>The chart shows a cyan shaded region where concentration > MIC</li><li>Cyan dashed line on chart = MIC level</li><li>Adjust dose/interval to meet the T>MIC target</li></ul>">?</span></h3><span id="micArrow">&#9660;</span>
       </div>
       <div class="collapsible-body" id="micSection">
         <div class="row">
@@ -205,7 +212,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div id="tMicResult" class="info-box"></div>
       </div>
 
-      <h3>Patient Parameters</h3>
+      <h3>Patient Parameters <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Patient data affects PK calculations:</strong><ul><li><strong>Weight:</strong> Used to calculate Vd (L/kg) and CrCl. Obese patients: select IBW or ABW</li><li><strong>Height:</strong> Used for IBW calculation (Devine formula)</li><li><strong>Age:</strong> Affects CrCl (Cockcroft-Gault). Elderly = lower clearance</li><li><strong>Sex:</strong> Females get 0.85x multiplier on CrCl</li><li><strong>Serum Creatinine:</strong> Key input for CrCl. Higher = worse renal function</li><li><strong>Weight Basis:</strong> TBW=actual, IBW=ideal, ABW=adjusted (for obese patients on renally-cleared drugs)</li></ul>">?</span></h3>
       <div class="row">
         <div class="field"><label>Total Body Weight (kg)</label><input type="number" id="weightInput" value="70" oninput="onWeightChange()"></div>
         <div class="field"><label>Height (cm)</label><input type="number" id="heightInput" value="170" oninput="onWeightChange()"></div>
@@ -223,7 +230,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- PEDIATRIC MODE -->
       <div class="collapsible-header" onclick="toggleCollapse('pedSection')">
-        <h3 style="margin:0">Pediatric Mode</h3><span id="pedArrow">&#9654;</span>
+        <h3 style="margin:0">Pediatric Mode <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Pediatric Dosing:</strong> Children have different PK — higher Vd per kg, faster clearance, different CrCl calculation.<br><br><strong>How to use:</strong><ul><li>Check Enable to switch to weight-based (mg/kg) dosing</li><li>Enter mg/kg dose — total dose auto-calculates</li><li>Set max dose cap to prevent accidental overdose</li><li>CrCl uses Schwartz equation (age-appropriate k-factor)</li><li>Enter height in cm for accurate Schwartz calculation</li></ul>">?</span></h3><span id="pedArrow">&#9654;</span>
       </div>
       <div class="collapsible-body collapsed" id="pedSection">
         <div class="field"><label><input type="checkbox" id="pediatricMode" onchange="recalculate()"> Enable pediatric dosing (mg/kg)</label></div>
@@ -237,7 +244,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
     <!-- TDM TAB -->
     <div class="tab-content" id="tab-tdm">
-      <h3>Measured Level Entry</h3>
+      <h3>Measured Level Entry <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Therapeutic Drug Monitoring (TDM):</strong> Enter a real measured drug level to back-calculate the patient's individual PK parameters (Bayesian approach).<br><br><strong>How to use:</strong><ul><li>Enter the lab-reported drug level</li><li>Select when it was drawn (trough, peak, random)</li><li>Enter hours after the dose was given</li><li>Enter which dose number it was drawn at</li><li>Click Analyze — the calculator estimates individual ke, t½, and CL</li><li>3 dose adjustment options are generated (change dose, interval, or both)</li><li>A pink dot appears on the chart at the measured level</li><li>The dashed line shows the Bayesian-adjusted curve</li></ul>">?</span></h3>
       <div class="row">
         <div class="field"><label>Measured Level</label><input type="number" id="measuredLevel" value="" step="0.1" placeholder="e.g. 12.5"></div>
         <div class="field"><label>Time Drawn</label><select id="levelType"><option value="trough">Trough (pre-dose)</option><option value="peak">Peak (post-infusion)</option><option value="random">Random</option><option value="steady">Steady-state trough</option></select></div>
@@ -250,7 +257,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div id="tdmResult" class="info-box hidden"></div>
       <div id="tdmSuggestions" class="info-box hidden"></div>
       <hr class="section-divider">
-      <h3>Vancomycin AUC-Guided Dosing</h3>
+      <h3>Vancomycin AUC-Guided Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>AUC-Guided Vancomycin Dosing:</strong> The current IDSA guideline recommends AUC/MIC-based monitoring (not trough-only). Target 24h AUC/MIC = 400-600.<br><br><strong>How to use:</strong><ul><li>Check Enable to activate AUC monitoring</li><li>Enter the organism's MIC (from culture & sensitivity)</li><li>Set target AUC24 (default 500 mg*h/L)</li><li>The panel shows: AUC24, AUC/MIC ratio, and whether you're on target</li><li>Adjust dose or interval to hit the AUC target</li><li>AUC24 and AUC/MIC appear in the bottom params bar</li></ul>">?</span></h3>
       <div class="field"><label><input type="checkbox" id="aucMode" onchange="recalculate()"> Enable AUC monitoring</label></div>
       <div class="row">
         <div class="field"><label>MIC (mg/L)</label><input type="number" id="vancMIC" value="1" step="0.5" oninput="recalculate()"></div>
@@ -261,7 +268,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
     <!-- ADVANCED TAB -->
     <div class="tab-content" id="tab-advanced">
-      <h3>PK Parameters (Override)</h3>
+      <h3>PK Parameters (Override) <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Manual PK Override:</strong> Override auto-calculated PK parameters for special scenarios or when you have patient-specific data from previous TDM.<br><br><strong>Parameters:</strong><ul><li><strong>Vd (L/kg):</strong> Volume of distribution — how widely the drug distributes. Auto-fills from drug profile</li><li><strong>ke (h-1):</strong> Elimination rate constant — leave blank for auto-calculation from CrCl</li><li><strong>F (bioavailability):</strong> Fraction absorbed (1.0 for IV, 0.5-0.9 for oral)</li><li><strong>Protein Binding:</strong> Affects free (active) drug concentration. High PB drugs: phenytoin (90%), valproic acid (90%)</li></ul>">?</span></h3>
       <div class="row">
         <div class="field"><label>Vd (L/kg)</label><input type="number" id="vdInput" value="0.7" step="0.01" oninput="recalculate()"></div>
         <div class="field"><label>ke (h-1) <small style="color:#64748b">blank=auto</small></label><input type="number" id="keInput" value="" step="0.001" placeholder="Auto"></div>
@@ -270,13 +277,13 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div class="field"><label>Bioavailability (F)</label><input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1"></div>
         <div class="field"><label>Protein Binding (%)</label><input type="number" id="pbInput" value="0" step="1" min="0" max="99" oninput="recalculate()"></div>
       </div>
-      <h3>Hepatic Impairment</h3>
+      <h3>Hepatic Impairment <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Child-Pugh Classification:</strong> Assesses liver disease severity. Affects clearance of hepatically-metabolized drugs (phenytoin, theophylline, carbamazepine, clozapine, lidocaine, amiodarone).<br><br><strong>Adjustments:</strong><ul><li><strong>Class A (5-6 pts):</strong> Mild — clearance reduced ~15%</li><li><strong>Class B (7-9 pts):</strong> Moderate — clearance reduced ~35%</li><li><strong>Class C (10-15 pts):</strong> Severe — clearance reduced ~55%</li></ul>Only affects drugs marked as hepatically-metabolized. Renally-cleared drugs show a note that hepatic adjustment has minimal effect.">?</span></h3>
       <div class="field"><label>Child-Pugh Class</label><select id="hepaticClass" onchange="recalculate()"><option value="none">None (Normal)</option><option value="A">Class A (5-6 pts)</option><option value="B">Class B (7-9 pts)</option><option value="C">Class C (10-15 pts)</option></select></div>
       <div id="hepaticInfo" class="info-box hidden"></div>
-      <h3>Dialysis / CRRT</h3>
+      <h3>Dialysis / CRRT <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Renal Replacement Therapy:</strong> Select the type of dialysis the patient is on. Increases ke for dialyzable drugs.<br><br><strong>Modes:</strong><ul><li><strong>IHD (Intermittent HD):</strong> 4h session, removes 50-70% of drug. Redose after each session</li><li><strong>CVVHD (Continuous):</strong> 24h continuous clearance. May need higher/more frequent doses</li><li><strong>SLED (Extended):</strong> 8-12h sessions. Intermediate clearance between IHD and CVVHD</li><li><strong>PD (Peritoneal):</strong> Minimal drug removal (5-15%). Rarely affects dosing significantly</li></ul>Only affects drugs marked as dialyzable (aminoglycosides, vancomycin, levetiracetam, lithium, methotrexate).">?</span></h3>
       <div class="field"><label>Renal Replacement</label><select id="dialysisMode" onchange="recalculate()"><option value="none">None</option><option value="ihd">Intermittent HD (4h)</option><option value="cvvhd">CVVHD (Continuous)</option><option value="sled">SLED (Extended)</option><option value="pd">Peritoneal Dialysis</option></select></div>
       <div id="dialysisInfo" class="info-box hidden"></div>
-      <h3>Drug Interactions</h3>
+      <h3>Drug Interactions <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>CYP Drug Interactions:</strong> Enzyme inducers increase drug clearance (lower levels). Inhibitors decrease clearance (higher levels).<br><br><strong>CYP Inducers</strong> (ke increases ~40%):<ul><li>Rifampin, phenytoin, carbamazepine, phenobarbital, St. John's Wort</li></ul><strong>CYP Inhibitors</strong> (ke decreases ~35%):<ul><li>Ciprofloxacin, erythromycin, fluconazole, ketoconazole, cimetidine, grapefruit juice</li></ul>Each drug has specific interaction notes shown when checked. The interaction checkboxes apply a general modifier — for precise adjustments, override ke manually in PK Parameters.">?</span></h3>
       <div class="field"><label><input type="checkbox" id="interactionEnzyme" onchange="recalculate()"> CYP inducer present (rifampin, phenytoin, carbamazepine)</label></div>
       <div class="field"><label><input type="checkbox" id="interactionInhibitor" onchange="recalculate()"> CYP inhibitor present (ciprofloxacin, erythromycin, fluconazole)</label></div>
       <div id="interactionInfo" class="info-box hidden"></div>
@@ -299,13 +306,13 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="param-card cyan"><div class="label">T>MIC</div><div class="value" id="pTMIC">--</div></div>
     </div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Concentration</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Therapeutic</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Toxic</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Dose Markers</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Steady State</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>MIC</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Measured Level</div>
+      <div class="legend-item" title="Blue solid line: predicted drug concentration over time (sum of all doses)" style="cursor:help"><div class="legend-dot" style="background:#60a5fa"></div>Concentration</div>
+      <div class="legend-item" title="Green shaded band: safe therapeutic range for this drug" style="cursor:help"><div class="legend-dot" style="background:#22c55e"></div>Therapeutic</div>
+      <div class="legend-item" title="Red dashed line: concentration above which toxicity is likely" style="cursor:help"><div class="legend-dot" style="background:#ef4444"></div>Toxic</div>
+      <div class="legend-item" title="Orange triangles: when each dose is administered" style="cursor:help"><div class="legend-dot" style="background:#f59e0b"></div>Dose Markers</div>
+      <div class="legend-item" title="Purple dashed line: when drug reaches steady state (~4-5 half-lives)" style="cursor:help"><div class="legend-dot" style="background:#c084fc"></div>Steady State</div>
+      <div class="legend-item" title="Cyan dashed line: Minimum Inhibitory Concentration for the organism" style="cursor:help"><div class="legend-dot" style="background:#22d3ee"></div>MIC</div>
+      <div class="legend-item" title="Pink dot: your actual measured drug level plotted on the chart" style="cursor:help"><div class="legend-dot" style="background:#f472b6"></div>Measured Level</div>
     </div>
   </div>
 </div>
@@ -510,6 +517,48 @@ function showReport(){
 
 function switchTab(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');event.target.classList.add('active');}
 function toggleCollapse(id){const el=document.getElementById(id),ar=document.getElementById(id.replace('Section','Arrow'));el.classList.toggle('collapsed');if(ar)ar.textContent=el.classList.contains('collapsed')?'&#9654;':'&#9660;';}
+function toggleHelp(icon){
+  // Close all other tips
+  document.querySelectorAll('.help-tip.show').forEach(t=>t.remove());
+  // Check if this icon already has a visible tip
+  const existing=icon.querySelector('.help-tip.show');
+  if(existing){existing.remove();return;}
+  const tip=document.createElement('div');
+  tip.className='help-tip show';
+  tip.innerHTML=icon.getAttribute('data-tip');
+  icon.appendChild(tip);
+  // Close on click outside
+  setTimeout(()=>{const handler=(e)=>{if(!icon.contains(e.target)){tip.remove();document.removeEventListener('click',handler);}};document.addEventListener('click',handler);},10);
+}
+// Add help tooltips to param bar labels
+document.querySelectorAll('.param-card .label').forEach(el=>{
+  const tips={
+    'Peak (Cmax)':'<strong>Cmax (Peak):</strong> Highest drug concentration after a dose. Must stay below toxic threshold.',
+    'Trough (Cmin)':'<strong>Cmin (Trough):</strong> Lowest concentration before next dose. Must stay above therapeutic lower limit.',
+    'Half-life':'<strong>Half-life (t½):</strong> Time for drug concentration to decrease by 50%. Determines time to steady state (~4-5 half-lives).',
+    'Clearance':'<strong>Clearance (CL):</strong> Volume of blood cleared of drug per hour. CL = ke x Vd. Higher CL = faster elimination.',
+    'Vd':'<strong>Volume of Distribution (Vd):</strong> Apparent volume into which drug distributes. Larger Vd = lower peak concentration.',
+    'AUC/dose':'<strong>AUC (Area Under Curve):</strong> Total drug exposure per dose. Calculated by trapezoidal rule over one dosing interval.',
+    'Css avg':'<strong>Css (Average Steady State):</strong> Mean concentration at steady state. Css = AUC / interval. Used for dose proportionality.',
+    'AUC24':'<strong>AUC24:</strong> 24-hour AUC. Critical for vancomycin dosing (target 400-600 mg*h/L).',
+    'T>MIC':'<strong>T>MIC:</strong> Percentage of dosing interval spent above MIC. For time-dependent antibiotics, target >=40% (beta-lactams) or >=100% (vancomycin).'
+  };
+  const text=el.textContent.trim();
+  if(tips[text]){
+    el.style.cursor='help';
+    el.title='Click for info';
+    el.onclick=()=>{showParamHelp(tips[text]);};
+  }
+});
+function showParamHelp(html){
+  document.querySelectorAll('.help-tip.show').forEach(t=>t.remove());
+  const tip=document.createElement('div');
+  tip.className='help-tip show';
+  tip.innerHTML=html;
+  tip.style.position='fixed';tip.style.left='50%';tip.style.top='50%';tip.style.transform='translate(-50%,-50%)';tip.style.width='320px';tip.style.zIndex='200';
+  document.body.appendChild(tip);
+  setTimeout(()=>{const handler=(e)=>{if(!tip.contains(e.target)){tip.remove();document.removeEventListener('click',handler);}};document.addEventListener('click',handler);},10);
+}
 function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
 function setRoute(r){state.route=r;document.getElementById('btnIVBolus').className='btn btn-sm btn-outline'+(r==='iv_bolus'?' active':'');document.getElementById('btnIVInf').className='btn btn-sm btn-outline'+(r==='iv_infusion'?' active':'');document.getElementById('btnOral').className='btn btn-sm btn-outline'+(r==='oral'?' active':'');document.getElementById('infusionTimeField').style.display=r==='iv_infusion'?'block':'none';recalculate();}
 function onDoseChange(){const v=parseFloat(document.getElementById('doseRange').value);document.getElementById('doseVal').textContent=v+' mg';document.getElementById('doseInput').value=v;recalculate();}
