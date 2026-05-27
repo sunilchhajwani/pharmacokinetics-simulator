@@ -425,6 +425,22 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div class="field"><label>Level 2</label><input type="number" id="bayesLevel2" value="" step="0.1" placeholder="e.g. 8"></div>
         <div class="field"><label>Hours after dose</label><input type="number" id="bayesTime2" value="" step="0.5" placeholder="e.g. 12"></div>
       </div>
+      <div class="row">
+        <div class="field">
+          <label>Timing Uncertainty</label>
+          <select id="bayesUncertainty" onchange="document.getElementById('bayesResult').classList.contains('hidden')?null:bayesianFit()">
+            <option value="0">Exact times (ideal)</option>
+            <option value="15" selected>±15 min (realistic ICU)</option>
+            <option value="30">±30 min (poor documentation)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div class="info-box" style="margin:0;font-size:10px">
+            <strong style="color:#fbbf24">Timing matters:</strong> 15-min error = ~10-20% ke error. 30-min error = ~20-40%. Use exact times when available.
+          </div>
+        </div>
+      </div>
       <button class="btn btn-sm btn-primary" onclick="bayesianFit()" style="margin-top:4px">Fit ke + Vd</button>
       <div id="bayesResult" class="info-box hidden"></div>
       <hr class="section-divider">
@@ -1352,6 +1368,44 @@ function bayesianFit(){
   document.getElementById('vdInput').value=bestVd.toFixed(3);
   document.getElementById('keInput').value=bestKe.toFixed(4);
 
+  // Calculate uncertainty range
+  const uncertainty=parseInt(document.getElementById('bayesUncertainty').value)||0;
+  let uncertaintyHtml='';
+  if(uncertainty>0){
+    const dt=uncertainty/60; // convert min to hours
+    // Fit with times shifted forward
+    let keFwd=bestKe,vdFwd=bestVd,errFwd=Infinity;
+    for(let ke=0.01;ke<=0.5;ke+=0.002){
+      for(let vd=0.1;vd<=3.0;vd+=0.1){
+        const p1=getCpSingle(t1+dt,0,route,dose,ke,vd,state.f,w,infTime);
+        const p2=getCpSingle(t2+dt,0,route,dose,ke,vd,state.f,w,infTime);
+        const e=Math.pow(p1-l1,2)+Math.pow(p2-l2,2);
+        if(e<errFwd){errFwd=e;keFwd=ke;vdFwd=vd;}
+      }
+    }
+    // Fit with times shifted backward
+    let keBck=bestKe,vdBck=bestVd,errBck=Infinity;
+    for(let ke=0.01;ke<=0.5;ke+=0.002){
+      for(let vd=0.1;vd<=3.0;vd+=0.1){
+        const p1=getCpSingle(Math.max(t1-dt,0.1),0,route,dose,ke,vd,state.f,w,infTime);
+        const p2=getCpSingle(Math.max(t2-dt,t1-dt+0.1),0,route,dose,ke,vd,state.f,w,infTime);
+        const e=Math.pow(p1-l1,2)+Math.pow(p2-l2,2);
+        if(e<errBck){errBck=e;keBck=ke;vdBck=vd;}
+      }
+    }
+    const keLow=Math.min(keBck,keFwd,bestKe);
+    const keHigh=Math.max(keBck,keFwd,bestKe);
+    const vdLow=Math.min(vdBck,vdFwd,bestVd);
+    const vdHigh=Math.max(vdBck,vdFwd,bestVd);
+    const hlLow=0.693/keHigh;
+    const hlHigh=0.693/keLow;
+    uncertaintyHtml='<br><br><strong style="color:#fbbf24">Uncertainty Range (±'+uncertainty+' min timing error):</strong><br>'+
+      'ke: '+keLow.toFixed(4)+' – '+keHigh.toFixed(4)+' h⁻¹<br>'+
+      'Vd: '+vdLow.toFixed(3)+' – '+vdHigh.toFixed(3)+' L/kg<br>'+
+      't½: '+hlLow.toFixed(1)+' – '+hlHigh.toFixed(1)+' hours<br>'+
+      '<span style="color:#94a3b8">Narrow range = good timing precision. Wide range = collect better-timed levels.</span>';
+  }
+
   res.classList.remove('hidden');
   res.innerHTML='<strong style="color:#4ade80">Bayesian Fit Complete</strong><br><br>'+
     '<strong>Fitted ke:</strong> '+bestKe.toFixed(4)+' h⁻¹<br>'+
@@ -1360,8 +1414,9 @@ function bayesianFit(){
     '<strong>Fitted CL:</strong> '+fitCL.toFixed(2)+' L/h<br><br>'+
     '<strong>Predicted vs Measured:</strong><br>'+
     'Level 1: predicted '+pred1.toFixed(2)+' vs measured '+l1+' ('+((pred1/l1)*100).toFixed(0)+'%)<br>'+
-    'Level 2: predicted '+pred2.toFixed(2)+' vs measured '+l2+' ('+((pred2/l2)*100).toFixed(0)+'%)<br><br>'+
-    '<span style="color:#60a5fa">These values are now loaded into the simulator. The chart shows the fitted curve.</span>';
+    'Level 2: predicted '+pred2.toFixed(2)+' vs measured '+l2+' ('+((pred2/l2)*100).toFixed(0)+'%)'+
+    uncertaintyHtml+
+    '<br><br><span style="color:#60a5fa">These values are loaded into the simulator. Chart shows the fitted curve.</span>';
 
   recalculate();
 }
