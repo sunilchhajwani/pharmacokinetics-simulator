@@ -145,6 +145,7 @@ body.quick-start .warning-box{display:none!important}
   <div>
     <h1>Pharmacokinetics Simulator</h1>
     <div class="subtitle">One-Compartment Model &middot; TDM &middot; Bayesian Adjustment &middot; Clinical Dosing</div>
+    <div style="font-size:10px;color:#f87171;margin-top:2px;font-weight:600">FOR EDUCATIONAL PURPOSES ONLY. NOT FOR CLINICAL DECISION-MAKING.</div>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     <button class="btn btn-sm btn-primary" onclick="toggleQuickStart()" id="btnQuickStart">Quick Start</button>
@@ -1176,7 +1177,7 @@ function showReport(){
   if(crcl<30)warns.push('Significant renal impairment (CrCl '+crcl.toFixed(0)+')');
   if(document.getElementById('hepaticClass').value==='C')warns.push('Severe hepatic impairment');
   if(warns.length){html+='<div class="warning">';warns.forEach(w=>{html+='Warning: '+w+'<br>';});html+='</div>';}else html+='<div class="ok">No safety alerts.</div>';
-  html+='<br><p style="color:#94a3b8;font-size:11px"><em>For educational purposes only. Clinical decisions should be based on institutional protocols and validated lab results.</em></p><br><button onclick="window.print()" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Print Report</button>';
+  html+='<br><div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;margin:12px 0"><p style="color:#dc2626;font-size:12px;font-weight:600;margin:0">DISCLAIMER: For educational purposes only. NOT for clinical decision-making. All dosing decisions must be validated by a licensed clinical pharmacist or physician using institutional protocols and validated laboratory results.</p></div><br><button onclick="window.print()" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Print Report</button>';
   document.getElementById('reportBox').innerHTML=html;document.getElementById('reportOverlay').classList.add('show');
 }
 
@@ -2183,10 +2184,11 @@ function showSimScore(){
   const area=document.getElementById('simScoreArea');
   area.classList.remove('hidden');
   area.innerHTML='<div class="sim-score '+cls+'">'+pct+'%</div>'+
-    '<div style="text-align:center;font-size:12px;color:#94a3b8">'+simState.score+' of '+total+' correct</div>'+
+    '<div style="text-align:center;font-size:12px;color:#94a3b8">'+simState.score+' of '+total+' decisions correct</div>'+
     '<div style="text-align:center;margin-top:8px;font-size:12px;color:#94a3b8">'+
     (pct>=80?'Excellent clinical reasoning!':pct>=50?'Good effort. Review missed questions.':'Keep practicing. Review drug monographs and Show the Math.')+'</div>'+
-    '<div style="text-align:center;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="simReset()">Try Another Case</button></div>';
+    '<div style="text-align:center;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="simReset()">Try Another Case</button></div>'+
+    '<div style="text-align:center;margin-top:10px;font-size:10px;color:#94a3b8"><em>For educational purposes only. Not for clinical decision-making.</em></div>';
 }
 
 function simReset(){
