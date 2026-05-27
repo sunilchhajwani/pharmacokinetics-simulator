@@ -1473,6 +1473,297 @@ function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;drawCh
 function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
 function toggleIndicators(){state.showIndicators=!state.showIndicators;drawChart();}
 function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElementById('drugSelect').value='vancomycin';document.getElementById('keInput').value='';document.getElementById('hepaticClass').value='none';document.getElementById('dialysisMode').value='none';document.getElementById('interactionEnzyme').checked=false;document.getElementById('interactionInhibitor').checked=false;document.getElementById('pediatricMode').checked=false;document.getElementById('aucMode').checked=false;document.getElementById('measuredLevel').value='';document.getElementById('hoursAfterDose').value='';document.getElementById('doseNumAtDraw').value='';document.getElementById('tdmResult').classList.add('hidden');document.getElementById('tdmSuggestions').classList.add('hidden');document.getElementById('ldResult').classList.add('hidden');onDrugChange();}
+// === CLINICAL SIMULATIONS ===
+const SIMULATIONS = [
+  {
+    id:'vanc_icu', title:'Vancomycin in ICU — MRSA Pneumonia', difficulty:'Intermediate', drug:'vancomycin',
+    steps:[
+      {type:'vignette', text:'A 65-year-old male (85kg, 178cm) is admitted to ICU with MRSA pneumonia. SCr 1.2, Albumin 2.8. He is febrile 39.2C, BP 90/60 on vasopressors. Blood cultures pending. Start vancomycin.',
+       patient:{weight:85,height:178,age:65,sex:'male',scr:1.2}},
+      {type:'question_mc', text:'What loading dose do you want to give?',
+       options:['1000mg IV over 1h','1500mg IV over 1h','2000mg IV over 2h','2500mg IV over 2h'], correct:2,
+       explanation:'Loading dose = 25-30 mg/kg TBW = 2125-2550mg. 2000mg is appropriate. In sepsis, use TBW. Extended infusion (2h) improves PK/PD.'},
+      {type:'question_mc', text:'What maintenance dose and interval?',
+       options:['1000mg q12h','1500mg q12h','1000mg q8h','1500mg q24h'], correct:0,
+       explanation:'Start 1000mg q12h. Adjust based on AUC/MIC after steady state. Extended infusion preferred in ICU.'},
+      {type:'lab_result', text:'Day 3: Trough (30min before 6th dose) = 8 mg/L. SCr now 1.5.',
+       labValue:8, labUnit:'mg/L',
+       options:['Increase dose to 1500mg q12h','Shorten interval to 1000mg q8h','No change — within range','Hold vancomycin — nephrotoxicity'], correct:0,
+       explanation:'Trough 8 is below target 15-20. Increase dose. Rising SCr is concerning but trough is low, not vancomycin toxicity.'},
+      {type:'lab_result', text:'Day 5: Trough = 18 mg/L. SCr 1.8. AUC24 = 520. Patient afebrile, improving.',
+       labValue:18, labUnit:'mg/L',
+       options:['Continue current regimen','Reduce dose to 1000mg q12h','Hold vancomycin','Switch to linezolid'], correct:0,
+       explanation:'Trough 18 in range. AUC24 520 in range (400-600). SCr rising likely from sepsis/vasopressors. Continue and monitor.'},
+      {type:'outcome', text:'Day 7: Clinically improved. SCr stable 1.8. Trough 16. AUC24 480. Blood cultures negative. Complete 14-day course. Monitor SCr q48h.', score:100}
+    ]
+  },
+  {
+    id:'gent_od', title:'Gentamicin Once-Daily — Pyelonephritis', difficulty:'Beginner', drug:'gentamicin',
+    steps:[
+      {type:'vignette', text:'A 45-year-old female (62kg, 162cm) with complicated pyelonephritis. SCr 0.8. Blood culture: E. coli, fluoroquinolone-resistant, gentamicin-sensitive (MIC 1). On pip-tazo. Adding once-daily gentamicin.',
+       patient:{weight:62,height:162,age:45,sex:'female',scr:0.8}},
+      {type:'question_mc', text:'What dose of once-daily gentamicin?',
+       options:['120mg q24h','250mg q24h','350mg q24h','500mg q24h'], correct:2,
+       explanation:'Extended-interval = 5-7 mg/kg = 310-434mg. 350mg q24h is appropriate (5.6 mg/kg).'},
+      {type:'question_mc', text:'When do you check the level? (Hartford nomogram)',
+       options:['6-14h after start of infusion','30min after end of infusion','Before next dose (trough)','At 18-24h'], correct:0,
+       explanation:'Hartford nomogram: check level at 6-14h after start of extended-interval infusion. Single level determines interval.'},
+      {type:'lab_result', text:'Level at 10h post-infusion start = 6 mg/L.',
+       labValue:6, labUnit:'mg/L',
+       options:['Continue q24h','Extend to q36h','Extend to q48h','Reduce dose'], correct:0,
+       explanation:'Hartford: 10h level 6 mg/L falls in q24h zone. Continue current regimen.'},
+      {type:'outcome', text:'Day 3: 10h level 5 mg/L (q24h zone). SCr stable. Continue x 3 more days. Total 5-day course.', score:100}
+    ]
+  },
+  {
+    id:'phenytoin_status', title:'Phenytoin Loading — Status Epilepticus', difficulty:'Advanced', drug:'phenytoin',
+    steps:[
+      {type:'vignette', text:'A 55-year-old male (75kg) with status epilepticus. Seizures controlled with lorazepam. Starting phenytoin load. SCr 0.9, Albumin 3.2. No prior phenytoin.',
+       patient:{weight:75,height:175,age:55,sex:'male',scr:0.9}},
+      {type:'question_mc', text:'What IV loading dose of phenytoin?',
+       options:['500mg IV','750mg IV','1000mg IV','1500mg IV'], correct:2,
+       explanation:'Loading dose = 15-20 mg/kg = 1125-1500mg. 1000mg is standard. Max rate 50 mg/min with cardiac monitoring.'},
+      {type:'question_mc', text:'What maintenance dose do you start?',
+       options:['100mg TID','200mg BID','300mg QHS','400mg daily'], correct:2,
+       explanation:'Standard maintenance = 300mg/day. Non-linear kinetics: levels take 5-7 days to stabilize.'},
+      {type:'lab_result', text:'Level 1h post-load = 18 mg/L. Albumin 3.2. What is the FREE phenytoin level?',
+       labValue:18, labUnit:'mg/L',
+       options:['1.8 mg/L','2.4 mg/L','3.6 mg/L','5.4 mg/L'], correct:1,
+       explanation:'Free = Total x (1-PB). With low albumin: fu = 0.1/[(0.1 x 3.2/4.0)+(1-3.2/4.0)] = 0.357. Free = 18 x 0.357 = 6.4. But simplified: Free = 18 x 0.1 x (4.0/3.2) = 2.25. Answer ~2.4 mg/L. Free therapeutic = 1-2 mg/L.'},
+      {type:'lab_result', text:'Day 5: Total level = 28 mg/L (TOXIC). Patient confused, ataxic. Albumin 3.0.',
+       labValue:28, labUnit:'mg/L',
+       options:['Reduce to 200mg/day','Reduce to 250mg/day','Hold 1 dose then restart 300mg','No change'], correct:0,
+       explanation:'Level 28 toxic (>20). Non-linear kinetics: reduce by 50-100mg. 200mg/day appropriate. Recheck in 5-7 days.'},
+      {type:'outcome', text:'Day 10: Total level 16. Free 2.1. Patient lucid. Continue 200mg/day. Recheck in 2 weeks.', score:100}
+    ]
+  },
+  {
+    id:'lithium_tox', title:'Lithium Toxicity — Drug Interaction', difficulty:'Advanced', drug:'lithium',
+    steps:[
+      {type:'vignette', text:'A 52-year-old female (58kg) with bipolar on lithium 300mg BID. Presents with tremor, nausea, polyuria. Started ibuprofen 3 days ago. SCr 1.4 (baseline 0.9).',
+       patient:{weight:58,height:160,age:52,sex:'female',scr:1.4}},
+      {type:'question_mc', text:'Most likely cause of symptoms?',
+       options:['Lithium toxicity from NSAID interaction','Bipolar manic episode','Serotonin syndrome','Dehydration only'], correct:0,
+       explanation:'NSAIDs reduce renal lithium clearance 15-25%. Rising SCr compounds this. Tremor + nausea + polyuria = lithium toxicity.'},
+      {type:'lab_result', text:'Lithium 12h trough = 1.8 mmol/L (TOXIC). SCr 1.4.',
+       labValue:1.8, labUnit:'mmol/L',
+       options:['Hold lithium, stop NSAID, IV fluids','Reduce lithium to 150mg BID','Switch to valproic acid','Give sodium bicarbonate'], correct:0,
+       explanation:'Level 1.8 toxic (>1.5). Hold lithium. Stop ibuprofen. IV hydration to restore renal clearance. Monitor q6-12h.'},
+      {type:'lab_result', text:'24h later: Lithium = 1.2 mmol/L. SCr 1.1. Improving.',
+       labValue:1.2, labUnit:'mmol/L',
+       options:['Restart lithium 150mg BID','Restart lithium 300mg BID','Wait until level <0.6','Switch to carbamazepine'], correct:0,
+       explanation:'Level 1.2 therapeutic but no longer toxic. Restart at reduced dose (150mg BID). Avoid NSAIDs permanently.'},
+      {type:'outcome', text:'Day 7: Lithium 0.8 on 150mg BID. SCr 0.9. Stable. Educate: avoid NSAIDs, maintain hydration, check level if meds change.', score:100}
+    ]
+  },
+  {
+    id:'ped_vanc', title:'Pediatric Vancomycin — Neonatal Sepsis', difficulty:'Intermediate', drug:'vancomycin',
+    steps:[
+      {type:'vignette', text:'A 2-week-old neonate (3.2kg, 48cm) with late-onset sepsis. Blood culture: MRSA. SCr 0.4.',
+       patient:{weight:3.2,height:48,age:0,sex:'male',scr:0.4}},
+      {type:'question_mc', text:'What vancomycin dose for this neonate? (term, 2 weeks old)',
+       options:['10mg/kg q12h','15mg/kg q8h','15mg/kg q12h','20mg/kg q12h'], correct:1,
+       explanation:'Term neonate 2 weeks: 15 mg/kg q8h. Younger (<7 days) gets q12h. Neonatal targets lower (10-15 mg/L).'},
+      {type:'lab_result', text:'Trough before 4th dose = 12 mg/L. Target 10-15 for neonates.',
+       labValue:12, labUnit:'mg/L',
+       options:['Increase to 20mg/kg q8h','Decrease to 10mg/kg q8h','Continue current dose','Extend to q12h'], correct:2,
+       explanation:'Trough 12 is within neonatal target (10-15). Continue current regimen. Monitor renal function closely.'},
+      {type:'outcome', text:'Day 5: Trough 14. SCr 0.5. Cultures negative. Continue 10 more days. Monitor SCr q72h.', score:100}
+    ]
+  },
+  {
+    id:'renal_decline', title:'Vancomycin with Renal Decline — AKI', difficulty:'Intermediate', drug:'vancomycin',
+    steps:[
+      {type:'vignette', text:'A 70-year-old male (80kg) on vancomycin 1g q12h for MRSA bacteremia. Day 1: SCr 1.0. Day 3: SCr 1.8. Day 4: SCr 2.5. Trough pending.',
+       patient:{weight:80,height:175,age:70,sex:'male',scr:2.5}},
+      {type:'question_mc', text:'SCr rising rapidly. What is your concern?',
+       options:['Vancomycin nephrotoxicity — hold immediately','AKI from sepsis — adjust vancomycin','Contrast nephropathy — continue monitoring','Both A and B are possible'], correct:3,
+       explanation:'Rising SCr on vancomycin could be vancomycin nephrotoxicity (if trough >20) OR sepsis AKI. Check trough to determine.'},
+      {type:'lab_result', text:'Trough = 22 mg/L (ELEVATED). SCr 2.5. CrCl ~25 mL/min.',
+       labValue:22, labUnit:'mg/L',
+       options:['Hold vancomycin, check level in 24h','Reduce to 500mg q24h','Extend to 1g q48h','Switch to linezolid'], correct:0,
+       explanation:'Trough 22 above toxic threshold. CrCl 25 = significant impairment. HOLD vancomycin. Recheck 24h. Consider linezolid.'},
+      {type:'lab_result', text:'24h later: Trough = 16. SCr 2.3 (improving).',
+       labValue:16, labUnit:'mg/L',
+       options:['Restart 500mg q48h','Restart 750mg q24h','Switch to linezolid','Continue holding'], correct:0,
+       explanation:'Level 16 now therapeutic. CrCl ~25 = extend interval. 500mg q48h appropriate. Recheck before 3rd dose.'},
+      {type:'outcome', text:'Day 8: SCr 1.5 (recovering). Trough on 500mg q48h = 14. Continue. SCr trending toward baseline.', score:100}
+    ]
+  },
+  {
+    id:'drug_interaction', title:'Drug Interaction — Phenytoin + Warfarin', difficulty:'Advanced', drug:'phenytoin',
+    steps:[
+      {type:'vignette', text:'A 60-year-old male (70kg) on warfarin (INR 2.5) for AF. Develops seizures. Started phenytoin 300mg/day. Day 7: phenytoin 12 mg/L. INR now = 1.3.',
+       patient:{weight:70,height:175,age:60,sex:'male',scr:1.0}},
+      {type:'question_mc', text:'Why did INR drop from 2.5 to 1.3?',
+       options:['Phenytoin inhibits warfarin metabolism','Phenytoin induces warfarin metabolism (CYP2C9)','Phenytoin displaces warfarin from albumin','Lab error'], correct:1,
+       explanation:'Phenytoin is a CYP inducer. Induces CYP2C9/CYP3A4 which metabolize warfarin. Reduces warfarin levels, lowers INR.'},
+      {type:'question_mc', text:'What is your next step?',
+       options:['Increase warfarin dose by 25-50%','Double the warfarin dose','Add more phenytoin','Stop phenytoin'], correct:0,
+       explanation:'Increase warfarin 25-50% to compensate. Do NOT double. Recheck INR in 3-5 days. Phenytoin level therapeutic (12).'},
+      {type:'lab_result', text:'After 50% warfarin increase: INR = 2.2. Phenytoin = 14 mg/L.',
+       labValue:14, labUnit:'mg/L',
+       options:['Continue current regimen','Reduce phenytoin — approaching toxic','Reduce warfarin — INR too high','Add vitamin K'], correct:0,
+       explanation:'INR 2.2 in range (2-3). Phenytoin 14 therapeutic (10-20). Both appropriate. Continue. Monitor INR weekly.'},
+      {type:'outcome', text:'INR stable 2.4. Phenytoin 14. No seizures. Key lesson: phenytoin induces CYP2C9, increases warfarin clearance.', score:100}
+    ]
+  },
+  {
+    id:'ag_tdm', title:'Aminoglycoside TDM — Peak/Trough', difficulty:'Beginner', drug:'gentamicin',
+    steps:[
+      {type:'vignette', text:'A 55-year-old male (75kg) with Pseudomonas bacteremia on gentamicin 120mg q8h (conventional). SCr 1.1. Peak and trough pending.',
+       patient:{weight:75,height:172,age:55,sex:'male',scr:1.1}},
+      {type:'lab_result', text:'Peak (30min post) = 4.2 mg/L. Trough (30min pre) = 2.8 mg/L.',
+       labValue:4.2, labUnit:'mg/L',
+       options:['Both therapeutic','Peak too low, trough too high','Peak OK, trough too high','Peak too low, trough OK'], correct:1,
+       explanation:'Conventional targets: Peak 5-12, Trough <2. Peak 4.2 BELOW (subtherapeutic). Trough 2.8 ABOVE (nephrotoxicity risk).'},
+      {type:'question_mc', text:'What adjustment?',
+       options:['Increase dose to 160mg q8h','Extend to 120mg q12h','Increase dose AND extend interval','Switch to once-daily'], correct:2,
+       explanation:'Peak low = increase dose. Trough high = extend interval. Try 160mg q12h. Or switch to extended-interval (400mg q24h).'},
+      {type:'lab_result', text:'After 160mg q12h: Peak = 7.8, Trough = 1.2.',
+       labValue:7.8, labUnit:'mg/L',
+       options:['Both therapeutic — continue','Peak too high','Trough too low','Switch to OD'], correct:0,
+       explanation:'Peak 7.8 in range (5-12). Trough 1.2 in range (<2). Continue. Monitor SCr and levels weekly.'},
+      {type:'outcome', text:'Day 5: Peak 8.1, Trough 1.0. SCr 1.1. Cultures negative. Continue x 5 more days (total 10 for Pseudomonas).', score:100}
+    ]
+  }
+];
+
+let simState={active:false,simId:null,currentStep:0,score:0,answers:[],feedbackShown:false};
+
+function renderSimSelector(){
+  let html='';
+  SIMULATIONS.forEach(s=>{
+    const dc=s.difficulty.toLowerCase();
+    html+='<div class="sim-card" onclick="startSimulation(\''+s.id+'\')">'+
+      '<div class="sim-title">'+s.title+'</div>'+
+      '<div class="sim-meta">'+s.steps.length+' steps &middot; '+DRUGS[s.drug].name+
+      ' <span class="sim-diff '+dc+'">'+s.difficulty+'</span></div></div>';
+  });
+  document.getElementById('simSelector').innerHTML=html;
+}
+
+function startSimulation(id){
+  const sim=SIMULATIONS.find(s=>s.id===id);if(!sim)return;
+  simState={active:true,simId:id,currentStep:0,score:0,answers:[],feedbackShown:false};
+  document.getElementById('simSelector').classList.add('hidden');
+  document.getElementById('simActive').classList.remove('hidden');
+  document.getElementById('simScoreArea').classList.add('hidden');
+  renderSimStep();
+}
+
+function renderSimStep(){
+  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
+  const step=sim.steps[simState.currentStep];
+  const total=sim.steps.length;
+  const pct=((simState.currentStep)/total*100).toFixed(0);
+  document.getElementById('simProgress').style.width=pct+'%';
+  document.getElementById('simHeader').innerHTML='<strong style="color:#60a5fa;font-size:14px">'+sim.title+'</strong>'+
+    '<div style="font-size:11px;color:#64748b;margin-top:2px">Step '+(simState.currentStep+1)+' of '+total+' &middot; '+sim.difficulty+'</div>';
+  let html='<div class="sim-step"><div class="step-num">Step '+(simState.currentStep+1)+'</div>';
+  if(step.type==='vignette'){
+    html+='<div class="step-text">'+step.text+'</div>';
+    document.getElementById('simCheckBtn').style.display='none';
+    document.getElementById('simNextBtn').style.display='inline-block';
+    document.getElementById('simNextBtn').textContent='Start Case';
+  }else if(step.type==='question_mc'||step.type==='lab_result'){
+    html+='<div class="step-text">'+step.text+'</div>';
+    if(step.labValue!==undefined)html+='<div class="lab-value">'+step.labValue+' '+step.labUnit+'</div>';
+    html+='<div style="margin-top:8px">';
+    step.options.forEach((opt,i)=>{html+='<button class="sim-option" onclick="simSelectOption('+i+',this)">'+opt+'</button>';});
+    html+='</div>';
+    document.getElementById('simCheckBtn').style.display='inline-block';
+    document.getElementById('simNextBtn').style.display='none';
+  }else if(step.type==='outcome'){
+    html+='<div class="step-text">'+step.text+'</div>';
+    document.getElementById('simCheckBtn').style.display='none';
+    document.getElementById('simNextBtn').style.display='none';
+  }
+  html+='</div>';
+  document.getElementById('simStepArea').innerHTML=html;
+  document.getElementById('simFeedbackArea').innerHTML='';
+  document.getElementById('simLoadBtn').style.display=step.patient?'inline-block':'none';
+  simState.feedbackShown=false;
+  if(step.type==='outcome')showSimScore();
+}
+
+let simSelectedOption=-1;
+function simSelectOption(idx,el){
+  simSelectedOption=idx;
+  document.querySelectorAll('#simStepArea .sim-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function simCheckAnswer(){
+  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
+  const step=sim.steps[simState.currentStep];
+  if(simState.feedbackShown)return;
+  let isCorrect=false;
+  if(step.type==='question_mc'||step.type==='lab_result'){
+    if(simSelectedOption<0){alert('Select an option first.');return;}
+    isCorrect=simSelectedOption===step.correct;
+    document.querySelectorAll('#simStepArea .sim-option').forEach((o,i)=>{
+      if(i===step.correct)o.classList.add('correct');
+      else if(i===simSelectedOption&&!isCorrect)o.classList.add('wrong');
+    });
+  }
+  simState.answers.push({step:simState.currentStep,correct:isCorrect});
+  if(isCorrect)simState.score++;
+  const fb=document.getElementById('simFeedbackArea');
+  fb.innerHTML='<div class="sim-feedback '+(isCorrect?'correct':'wrong')+'"><strong>'+(isCorrect?'Correct!':'Incorrect')+'</strong><br>'+step.explanation+'</div>';
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+  simState.feedbackShown=true;
+  document.getElementById('simCheckBtn').style.display='none';
+  document.getElementById('simNextBtn').style.display='inline-block';
+  document.getElementById('simNextBtn').textContent=simState.currentStep<sim.steps.length-1?'Next Step':'Finish';
+}
+
+function simNextStep(){
+  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
+  simState.currentStep++;
+  simSelectedOption=-1;
+  if(simState.currentStep>=sim.steps.length){showSimScore();return;}
+  renderSimStep();
+}
+
+function simLoadPatient(){
+  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
+  const step=sim.steps[simState.currentStep];
+  if(!step.patient)return;
+  const p=step.patient;
+  document.getElementById('weightInput').value=p.weight;
+  document.getElementById('heightInput').value=p.height;
+  document.getElementById('ageInput').value=p.age;
+  document.getElementById('sexSelect').value=p.sex;
+  document.getElementById('scrInput').value=p.scr;
+  document.getElementById('drugSelect').value=sim.drug;
+  switchTab('dosing',document.querySelector('.tab-btn'));
+  onDrugChange();
+}
+
+function showSimScore(){
+  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
+  const total=sim.steps.filter(s=>s.type!=='vignette'&&s.type!=='outcome').length;
+  const pct=Math.round(simState.score/total*100);
+  const cls=pct>=80?'good':pct>=50?'ok':'bad';
+  document.getElementById('simProgress').style.width='100%';
+  const area=document.getElementById('simScoreArea');
+  area.classList.remove('hidden');
+  area.innerHTML='<div class="sim-score '+cls+'">'+pct+'%</div>'+
+    '<div style="text-align:center;font-size:12px;color:#94a3b8">'+simState.score+' of '+total+' correct</div>'+
+    '<div style="text-align:center;margin-top:8px;font-size:12px;color:#94a3b8">'+
+    (pct>=80?'Excellent clinical reasoning!':pct>=50?'Good effort. Review missed questions.':'Keep practicing. Review drug monographs and Show the Math.')+'</div>'+
+    '<div style="text-align:center;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="simReset()">Try Another Case</button></div>';
+}
+
+function simReset(){
+  simState={active:false,simId:null,currentStep:0,score:0,answers:[],feedbackShown:false};
+  simSelectedOption=-1;
+  document.getElementById('simSelector').classList.remove('hidden');
+  document.getElementById('simActive').classList.add('hidden');
+  renderSimSelector();
+}
+
 window.addEventListener('resize',()=>{resizeCanvas();drawChart();});
 resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();recalculate();
 </script>
