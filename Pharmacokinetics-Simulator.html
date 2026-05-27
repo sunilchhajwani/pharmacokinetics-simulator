@@ -102,7 +102,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
     <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Grid:</strong> Toggles background grid lines on the chart for easier reading of values.">?</span></button>
     <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Indicators:</strong> Toggles Steady State marker (purple vertical line at ~4-5 half-lives) and MIC line (cyan dashed line) on the chart.">?</span></button>
     <button class="btn btn-sm btn-success" onclick="showReport()">Report <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Report:</strong> Generates a printable dosing summary with patient data, PK parameters, predicted levels, TDM results, safety alerts, and dosing recommendations. Click Print Report to print.">?</span></button>
-    <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Comparison Mode:</strong> Overlay two dosing regimens side by side on the same chart.<br><br><strong>How to use:</strong><ul><li>Click Compare to save the current curve (shown as dashed purple line)</li><li>Change any parameter (dose, interval, drug)</li><li>The chart shows both curves overlaid</li><li>Click Compare again to exit comparison mode</li></ul><strong>Clinical use:</strong> Compare 1g q12h vs 1.5g q24h, or IV bolus vs infusion, or standard vs renal-adjusted dosing.">?</span></button>
     <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
   </div>
 </div>
@@ -111,7 +111,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
   <div class="panel" id="sidePanel">
     <!-- CLINICAL PROTOCOLS -->
     <div class="collapsible-header" onclick="toggleCollapse('protocolSection')">
-      <h2 style="margin:0">Quick Protocols</h2><span id="protocolArrow">&#9660;</span>
+      <h2 style="margin:0">Quick Protocols <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Protocols:</strong> One-click dosing templates that auto-fill all parameters for common clinical scenarios.<br><br><strong>How to use:</strong><ul><li>Click a protocol button to load its preset</li><li>Drug, dose, interval, route, MIC, and AUC targets all auto-fill</li><li>Patient parameters (weight, CrCl, age) remain unchanged</li><li>Adjust any parameter after loading if needed</li><li>Protocol info box shows clinical context and monitoring guidance</li></ul><strong>Available protocols:</strong> Vanc-MRSA, Vanc-Sepsis, Gent-OD, Gent-Conventional, Amikacin-OD, Phenytoin-Load, Phenytoin-Maint, Levetiracetam, Lithium, Digoxin-Load, Lidocaine, Theophylline">?</span></h2><span id="protocolArrow">&#9660;</span>
     </div>
     <div class="collapsible-body" id="protocolSection">
       <div class="btn-group" style="flex-wrap:wrap">
@@ -315,7 +315,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- UNIT CONVERTER -->
       <div class="collapsible-header" onclick="toggleCollapse('unitSection')">
-        <h3 style="margin:0">Unit Converter</h3><span id="unitArrow">&#9654;</span>
+        <h3 style="margin:0">Unit Converter <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Concentration Unit Converter:</strong> Convert between different drug concentration units used by different labs.<br><br><strong>Supported units:</strong><ul><li>mg/L (same as mcg/mL)</li><li>mcg/mL (same as mg/L)</li><li>mcg/L (1000 mcg/L = 1 mg/L)</li><li>ng/mL (1000 ng/mL = 1 mcg/mL)</li></ul><strong>Common conversions:</strong> Digoxin: ng/mL ↔ mcg/L. Vancomycin: mg/L ↔ mcg/mL. Phenytoin: mcg/mL ↔ mg/L.">?</span></h3><span id="unitArrow">&#9654;</span>
       </div>
       <div class="collapsible-body collapsed" id="unitSection">
         <div class="row">
@@ -327,7 +327,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- VIAL SIZE / DOSE ROUNDING -->
       <div class="collapsible-header" onclick="toggleCollapse('vialSection')">
-        <h3 style="margin:0">Vial Sizes / Dose Rounding</h3><span id="vialArrow">&#9654;</span>
+        <h3 style="margin:0">Vial Sizes / Dose Rounding <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Dose Rounding:</strong> Rounds your calculated dose to the nearest practical vial size available for each drug.<br><br><strong>How to use:</strong><ul><li>Open this section to see available vial sizes for the selected drug</li><li>Shows nearest vial size to your dose</li><li>Calculates how many vials are needed</li><li>Shows actual dose vs target dose (may differ slightly)</li></ul><strong>Example:</strong> Vancomycin 1300mg target → nearest 1000mg vial → 2 vials = 2000mg (154% of target). Adjust interval instead of dose for better targeting.">?</span></h3><span id="vialArrow">&#9654;</span>
       </div>
       <div class="collapsible-body collapsed" id="vialSection">
         <div id="vialInfo" class="info-box"></div>
@@ -335,7 +335,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- RENAL TREND -->
       <div class="collapsible-header" onclick="toggleCollapse('renalTrendSection')">
-        <h3 style="margin:0">Renal Trend (CrCl Change)</h3><span id="renalTrendArrow">&#9654;</span>
+        <h3 style="margin:0">Renal Trend (CrCl Change) <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Renal Trend Plotting:</strong> Shows how your curve changes if renal function changes during therapy (AKI, recovery, new nephrotoxin).<br><br><strong>How to use:</strong><ul><li>Enter the expected future CrCl (e.g., if CrCl is dropping from 90 to 30)</li><li>Enter which dose number the change happens at</li><li>Click Apply Trend</li><li>An orange dashed line appears showing the curve with the new ke</li><li>Compare with the original blue curve to see the impact</li></ul><strong>Clinical use:</strong> Planning ahead when patient is on vancomycin + piperacillin-tazobactam (nephrotoxic combo) or when AKI is developing.">?</span></h3><span id="renalTrendArrow">&#9654;</span>
       </div>
       <div class="collapsible-body collapsed" id="renalTrendSection">
         <div class="row">
@@ -348,7 +348,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
       <!-- DRUG MONOGRAPH -->
       <div class="collapsible-header" onclick="toggleCollapse('monoSection')">
-        <h3 style="margin:0">Drug Monograph</h3><span id="monoArrow">&#9654;</span>
+        <h3 style="margin:0">Drug Monograph <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Drug Monograph:</strong> Quick-reference clinical information for the selected drug.<br><br><strong>Includes:</strong><ul><li>Drug class and mechanism of action</li><li>Antibacterial/clinical spectrum</li><li>Key side effects and toxicity</li><li>Monitoring requirements</li><li>Contraindications</li><li>Special clinical notes (non-linear kinetics, autoinduction, narrow index, etc.)</li></ul>Open this section when you need a refresher on the drug's clinical profile while dosing.">?</span></h3><span id="monoArrow">&#9654;</span>
       </div>
       <div class="collapsible-body collapsed" id="monoSection">
         <div id="monographContent" class="info-box"></div>
@@ -675,7 +675,10 @@ document.querySelectorAll('.param-card .label').forEach(el=>{
     'AUC/dose':'<strong>AUC (Area Under Curve):</strong> Total drug exposure per dose. Calculated by trapezoidal rule over one dosing interval.',
     'Css avg':'<strong>Css (Average Steady State):</strong> Mean concentration at steady state. Css = AUC / interval. Used for dose proportionality.',
     'AUC24':'<strong>AUC24:</strong> 24-hour AUC. Critical for vancomycin dosing (target 400-600 mg*h/L).',
-    'T>MIC':'<strong>T>MIC:</strong> Percentage of dosing interval spent above MIC. For time-dependent antibiotics, target >=40% (beta-lactams) or >=100% (vancomycin).'
+    'T>MIC':'<strong>T>MIC:</strong> Percentage of dosing interval spent above MIC. For time-dependent antibiotics, target >=40% (beta-lactams) or >=100% (vancomycin).',
+    'SS Trough':'<strong>Steady-State Trough:</strong> Predicted trough concentration at steady state (after ~4-5 half-lives). This is what your patient\'s trough will be once the drug accumulates fully. Compare with therapeutic range to check if dosing is appropriate BEFORE patient reaches steady state.',
+    'Time to SS':'<strong>Time to Steady State:</strong> How long until drug accumulation is complete (~4-5 half-lives). Until then, levels will keep rising with each dose. Don\'t check levels for dose adjustment until steady state is reached (unless checking for toxicity).',
+    'Inf Rate':'<strong>Infusion Rate:</strong> mL/hour rate for IV infusions, calculated assuming a 250mL NS bag. Adjust based on your actual bag volume. Slower infusion = lower peak, less Red Man Syndrome (vancomycin). Faster infusion = higher peak but more adverse effects.'
   };
   const text=el.textContent.trim();
   if(tips[text]){
