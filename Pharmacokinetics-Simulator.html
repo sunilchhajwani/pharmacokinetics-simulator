@@ -171,6 +171,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <button class="tab-btn active" onclick="switchTab('dosing',this)">Dosing</button>
       <button class="tab-btn" onclick="switchTab('tdm',this)">TDM</button>
       <button class="tab-btn" onclick="switchTab('advanced',this)">Advanced</button>
+      <button class="tab-btn" onclick="switchTab('study',this)">Study</button>
     </div>
 
     <!-- DOSING TAB -->
@@ -333,6 +334,22 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div id="vialInfo" class="info-box"></div>
       </div>
 
+      <!-- PROTEIN BINDING CALCULATOR -->
+      <div class="collapsible-header" onclick="toggleCollapse('pbCalcSection')">
+        <h3 style="margin:0">Protein Binding / Free Drug <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Free Drug Calculator:</strong> Highly protein-bound drugs (phenytoin 90%, valproic acid 90%) have variable free fractions in disease states.<br><br><strong>How to use:</strong><ul><li>Enter serum albumin (normal 3.5-5.0 g/dL)</li><li>Enter total drug level from lab</li><li>Calculator estimates free (unbound) drug using Sheiner-Tozer equation</li><li>Free drug is the pharmacologically active fraction</li></ul><strong>Clinical use:</strong> Uremia, burns, pregnancy, hypoalbuminemia all increase free fraction. Adjust target levels accordingly.">?</span></h3><span id="pbCalcArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="pbCalcSection">
+        <div class="row">
+          <div class="field"><label>Albumin (g/dL)</label><input type="number" id="albuminInput" value="4.0" step="0.5" oninput="calcFreeDrug()"></div>
+          <div class="field"><label>Total Drug Level</label><input type="number" id="totalLevelInput" value="" step="0.5" placeholder="e.g. 15" oninput="calcFreeDrug()"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Normal PB (%)</label><input type="number" id="normalPBInput" value="90" step="1" oninput="calcFreeDrug()"></div>
+          <div class="field"><label>&nbsp;</label><button class="btn btn-sm btn-primary" onclick="calcFreeDrug()">Calculate Free Drug</button></div>
+        </div>
+        <div id="freeDrugResult" class="info-box hidden"></div>
+      </div>
+
       <!-- RENAL TREND -->
       <div class="collapsible-header" onclick="toggleCollapse('renalTrendSection')">
         <h3 style="margin:0">Renal Trend (CrCl Change) <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Renal Trend Plotting:</strong> Shows how your curve changes if renal function changes during therapy (AKI, recovery, new nephrotoxin).<br><br><strong>How to use:</strong><ul><li>Enter the expected future CrCl (e.g., if CrCl is dropping from 90 to 30)</li><li>Enter which dose number the change happens at</li><li>Click Apply Trend</li><li>An orange dashed line appears showing the curve with the new ke</li><li>Compare with the original blue curve to see the impact</li></ul><strong>Clinical use:</strong> Planning ahead when patient is on vancomycin + piperacillin-tazobactam (nephrotoxic combo) or when AKI is developing.">?</span></h3><span id="renalTrendArrow">&#9654;</span>
@@ -352,6 +369,65 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       </div>
       <div class="collapsible-body collapsed" id="monoSection">
         <div id="monographContent" class="info-box"></div>
+      </div>
+
+      <!-- REFERENCES -->
+      <div class="collapsible-header" onclick="toggleCollapse('refSection')">
+        <h3 style="margin:0">References & Sources <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>References:</strong> Source guidelines and textbooks for all PK parameters and therapeutic ranges used in this simulator.<br><br>Click to expand and see the full reference list with guideline citations.">?</span></h3><span id="refArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="refSection">
+        <div id="refContent" class="info-box"></div>
+      </div>
+    </div>
+
+    <!-- STUDY TAB -->
+    <div class="tab-content" id="tab-study">
+      <!-- SHOW THE MATH -->
+      <div class="collapsible-header" onclick="toggleCollapse('mathSection')">
+        <h3 style="margin:0">Show the Math <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Show the Math:</strong> See the actual formulas and step-by-step calculations behind every PK parameter.<br><br><strong>Includes:</strong><ul><li>Elimination rate constant (ke) calculation from CrCl</li><li>Half-life derivation</li><li>Clearance calculation</li><li>Volume of distribution</li><li>Concentration-time equations (IV bolus, infusion, oral)</li><li>Loading dose formula</li><li>Steady-state equations</li><li>AUC calculation (trapezoidal rule)</li></ul>Expand each section to see the formula with your patient's actual values substituted.">?</span></h3><span id="mathArrow">&#9660;</span>
+      </div>
+      <div class="collapsible-body" id="mathSection">
+        <div id="mathContent" class="info-box" style="font-family:monospace;font-size:11px;line-height:1.8"></div>
+      </div>
+
+      <!-- CONCEPT EXPLORER -->
+      <div class="collapsible-header" onclick="toggleCollapse('explorerSection')">
+        <h3 style="margin:0">PK Concept Explorer <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>PK Concept Explorer:</strong> Visualize how changing each parameter affects the concentration-time curve.<br><br><strong>How to use:</strong><ul><li>Drag the sliders to change Vd, CL, ke, or F in real-time</li><li>Watch the curve reshape on the chart</li><li>Compare with the original curve (dashed line)</li></ul><strong>Learn:</strong><ul><li>Doubling Vd → halves the peak concentration</li><li>Doubling CL → halves the half-life</li><li>Doubling ke → faster elimination, lower trough</li><li>Reducing F → lower oral bioavailability</li></ul>">?</span></h3><span id="explorerArrow">&#9660;</span>
+      </div>
+      <div class="collapsible-body" id="explorerSection">
+        <div class="field">
+          <label>Volume of Distribution (L/kg): <span id="explorerVdVal" style="color:#60a5fa">0.70</span></label>
+          <input type="range" id="explorerVd" min="0.05" max="10" step="0.05" value="0.7" oninput="updateExplorer()">
+        </div>
+        <div class="field">
+          <label>Clearance (L/h): <span id="explorerCLVal" style="color:#60a5fa">4.10</span></label>
+          <input type="range" id="explorerCL" min="0.1" max="20" step="0.1" value="4.1" oninput="updateExplorer()">
+        </div>
+        <div class="field">
+          <label>Bioavailability (F): <span id="explorerFVal" style="color:#60a5fa">1.00</span></label>
+          <input type="range" id="explorerF" min="0.05" max="1" step="0.05" value="1" oninput="updateExplorer()">
+        </div>
+        <div class="info-box" id="explorerInfo">
+          Drag sliders to see how parameters affect the curve. The chart shows the explorer curve overlaid on the current regimen.
+        </div>
+      </div>
+
+      <!-- QUIZ MODE -->
+      <div class="collapsible-header" onclick="toggleCollapse('quizSection')">
+        <h3 style="margin:0">Quiz / Case Studies <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Quiz Mode:</strong> Test your PK knowledge with random patient cases.<br><br><strong>How to use:</strong><ul><li>Click New Case to generate a random patient scenario</li><li>Read the clinical vignette</li><li>Calculate the dose, loading dose, or predicted level</li><li>Enter your answer and check against the simulator</li><li>The simulator auto-fills the case parameters so you can verify</li></ul>Great for therapeutics course exam prep and clinical rotation readiness.">?</span></h3><span id="quizArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="quizSection">
+        <button class="btn btn-sm btn-primary" onclick="generateQuiz()" style="margin-bottom:8px">New Case</button>
+        <div id="quizCase" class="info-box hidden" style="line-height:1.8"></div>
+        <div id="quizAnswer" class="info-box hidden"></div>
+      </div>
+
+      <!-- GLOSSARY -->
+      <div class="collapsible-header" onclick="toggleCollapse('glossarySection')">
+        <h3 style="margin:0">PK Glossary <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>PK Glossary:</strong> Quick-reference definitions for all pharmacokinetic terms used in this simulator.<br><br>Scroll through or search for any PK concept. Each entry includes the term, definition, units, and clinical significance.">?</span></h3><span id="glossaryArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="glossarySection">
+        <div id="glossaryContent" class="info-box" style="max-height:400px;overflow-y:auto;line-height:2"></div>
       </div>
     </div>
   </div>
@@ -384,6 +460,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="legend-item" title="Pink dot: your actual measured drug level plotted on the chart" style="cursor:help"><div class="legend-dot" style="background:#f472b6"></div>Measured Level</div>
       <div class="legend-item" title="Dashed line: saved comparison regimen (click Compare to enable)" style="cursor:help"><div class="legend-dot" style="background:#818cf8"></div>Comparison</div>
       <div class="legend-item" title="Shaded band: population variability (±2 SD)" style="cursor:help"><div class="legend-dot" style="background:rgba(96,165,250,0.3)"></div>Variability</div>
+      <div class="legend-item" title="Orange dashed: concept explorer curve (drag sliders in Study tab)" style="cursor:help"><div class="legend-dot" style="background:#fb923c"></div>Explorer</div>
     </div>
   </div>
 </div>
@@ -484,7 +561,7 @@ function recalculate(){
   if(state.drug!=='custom'){const drug=DRUGS[state.drug];const ae=document.activeElement;if(ae.id!=='vdInput'){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}if(ae.id!=='fInput'){state.f=drug.f;document.getElementById('fInput').value=drug.f;}if(ae.id!=='pbInput'){state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;}}
   state.ke=calcKe(state.drug);
   document.getElementById('dosePerKg').textContent='('+((state.dose/state.weight).toFixed(1))+' mg/kg)';
-  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();drawChart();
+  checkRenal();updateWeightInfo();updateHepaticInfo();updateDialysisInfo();updateInteractionInfo();calcTMIC();updateAUCMode();updateParams();calcExtras();updateVialInfo();updateShowMath();updateReferences();drawChart();
 }
 function onWeightChange(){recalculate();}
 function updateWeightInfo(){const ibw=calcIBW(),abw=calcABW(),tbw=state.weight,r=tbw/ibw;let m='TBW: '+tbw+' kg | IBW: '+ibw.toFixed(1)+' kg | ABW: '+abw.toFixed(1)+' kg';if(r>1.3)m+='<br><span style="color:#fbbf24">Obese (TBW/IBW='+r.toFixed(1)+'). Consider IBW or ABW for renally-cleared drugs.</span>';document.getElementById('weightInfo').innerHTML=m;}
@@ -547,6 +624,17 @@ function drawChart(){
   for(let i=0;i<points.length;i++){const p=points[i];const x=xS(p.t),y=yS(p.cp*1.3);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
   for(let i=points.length-1;i>=0;i--){const p=points[i];ctx.lineTo(xS(p.t),yS(p.cp*0.7));}
   ctx.closePath();ctx.fill();
+
+  // Explorer curve (orange dashed)
+  if(explorerEnabled){
+    ctx.strokeStyle='#fb923c';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    for(let i=0;i<points.length;i++){
+      const p=points[i];const cp=getExplorerCp(p.t);
+      if(i===0)ctx.moveTo(xS(p.t),yS(cp));else ctx.lineTo(xS(p.t),yS(cp));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
 
   // Comparison curve (dashed)
   if(comparisonMode&&savedCurve){
@@ -863,6 +951,249 @@ function convertUnits(){
     (mgL*1000).toFixed(1)+' ng/mL';
 }
 
+// === SHOW THE MATH ===
+function updateShowMath(){
+  const drug=DRUGS[state.drug];
+  const w=getEffW();
+  const crcl=calcCrCl();
+  const vdL=state.vd*w;
+  const halfLife=0.693/state.ke;
+  const cl=calcCL();
+  const c0=state.dose/vdL;
+
+  let html='<strong style="color:#60a5fa;font-size:13px">Step-by-Step PK Calculations</strong><br><br>';
+
+  // CrCl
+  html+='<strong>1. Creatinine Clearance (Cockcroft-Gault)</strong><br>';
+  html+='<code>CrCl = [(140 - Age) x Weight] / (72 x SCr)' + (state.sex==='female'?' x 0.85':'') + '</code><br>';
+  html+='<code>CrCl = [(140 - '+state.age+') x '+w.toFixed(0)+'] / (72 x '+state.scr+')' + (state.sex==='female'?' x 0.85':'') + '</code><br>';
+  html+='<code style="color:#4ade80">CrCl = '+crcl.toFixed(1)+' mL/min</code><br><br>';
+
+  // ke
+  html+='<strong>2. Elimination Rate Constant (ke)</strong><br>';
+  if(DRUGS[state.drug].keAuto){
+    html+='<code>ke = 0.00293 x CrCl + 0.014</code><br>';
+    html+='<code>ke = 0.00293 x '+crcl.toFixed(1)+' + 0.014</code><br>';
+  }else{
+    html+='<code>ke = 0.693 / t½</code><br>';
+    html+='<code>ke = 0.693 / '+DRUGS[state.drug].halfLife+'</code><br>';
+  }
+  html+='<code style="color:#4ade80">ke = '+state.ke.toFixed(4)+' h⁻¹</code><br><br>';
+
+  // Half-life
+  html+='<strong>3. Half-life</strong><br>';
+  html+='<code>t½ = 0.693 / ke</code><br>';
+  html+='<code>t½ = 0.693 / '+state.ke.toFixed(4)+'</code><br>';
+  html+='<code style="color:#4ade80">t½ = '+halfLife.toFixed(1)+' hours</code><br><br>';
+
+  // Vd
+  html+='<strong>4. Volume of Distribution</strong><br>';
+  html+='<code>Vd = Vd(L/kg) x Weight</code><br>';
+  html+='<code>Vd = '+state.vd+' x '+w.toFixed(0)+'</code><br>';
+  html+='<code style="color:#4ade80">Vd = '+vdL.toFixed(1)+' L</code><br><br>';
+
+  // CL
+  html+='<strong>5. Clearance</strong><br>';
+  html+='<code>CL = ke x Vd</code><br>';
+  html+='<code>CL = '+state.ke.toFixed(4)+' x '+vdL.toFixed(1)+'</code><br>';
+  html+='<code style="color:#4ade80">CL = '+cl.toFixed(2)+' L/h</code><br><br>';
+
+  // Concentration equation
+  html+='<strong>6. Concentration-Time Equation</strong><br>';
+  if(state.route==='iv_bolus'){
+    html+='<code>Cp = (Dose / Vd) x e^(-ke x t)</code><br>';
+    html+='<code>Cp = ('+state.dose+' / '+vdL.toFixed(1)+') x e^(-'+state.ke.toFixed(4)+' x t)</code><br>';
+    html+='<code>Cp = '+c0.toFixed(2)+' x e^(-'+state.ke.toFixed(4)+'t)</code><br>';
+  }else if(state.route==='iv_infusion'){
+    html+='<code>During infusion: Cp = (R0 / CL) x (1 - e^(-ke x t))</code><br>';
+    html+='<code>R0 (infusion rate) = '+state.dose+' / '+state.infusionTime+' = '+(state.dose/state.infusionTime).toFixed(0)+' mg/h</code><br>';
+  }else{
+    html+='<code>Cp = (F x Dose / Vd) x [ka/(ka-ke)] x (e^(-ke x t) - e^(-ka x t))</code><br>';
+    html+='<code>ka (absorption rate) = 1.5 h⁻¹ (assumed)</code><br>';
+  }
+  html+='<br>';
+
+  // Loading dose
+  html+='<strong>7. Loading Dose</strong><br>';
+  html+='<code>LD = (Cp_target x Vd) / F</code><br>';
+  const ldTarget=drug.therapeutic[1];
+  html+='<code>LD = ('+ldTarget+' x '+vdL.toFixed(1)+') / '+state.f+'</code><br>';
+  html+='<code style="color:#4ade80">LD = '+((ldTarget*vdL)/state.f).toFixed(0)+' mg</code><br><br>';
+
+  // Steady state
+  html+='<strong>8. Steady State</strong><br>';
+  html+='<code>Time to SS ≈ 4-5 x t½</code><br>';
+  html+='<code>Time to SS ≈ 4 x '+halfLife.toFixed(1)+' = '+(4*halfLife).toFixed(0)+' hours ('+((4*halfLife)/24).toFixed(1)+' days)</code><br>';
+  html+='<code>Css_avg = (F x Dose) / (CL x tau)</code><br>';
+  html+='<code>Css_avg = ('+state.f+' x '+state.dose+') / ('+cl.toFixed(2)+' x '+state.interval+')</code><br>';
+  html+='<code style="color:#4ade80">Css_avg = '+((state.f*state.dose)/(cl*state.interval)).toFixed(2)+' '+drug.unit+'</code><br><br>';
+
+  // AUC
+  html+='<strong>9. AUC (Area Under Curve)</strong><br>';
+  html+='<code>AUC = Dose / CL (single dose, IV bolus)</code><br>';
+  html+='<code>AUC = '+state.dose+' / '+cl.toFixed(2)+'</code><br>';
+  html+='<code style="color:#4ade80">AUC = '+(state.dose/cl).toFixed(1)+' mg*h/L</code><br>';
+
+  document.getElementById('mathContent').innerHTML=html;
+}
+
+// === CONCEPT EXPLORER ===
+let explorerEnabled=false;
+function updateExplorer(){
+  explorerEnabled=true;
+  const vd=parseFloat(document.getElementById('explorerVd').value);
+  const cl=parseFloat(document.getElementById('explorerCL').value);
+  const f=parseFloat(document.getElementById('explorerF').value);
+  document.getElementById('explorerVdVal').textContent=vd.toFixed(2);
+  document.getElementById('explorerCLVal').textContent=cl.toFixed(1);
+  document.getElementById('explorerFVal').textContent=f.toFixed(2);
+  const ke=cl/(vd*state.weight);
+  const hl=0.693/ke;
+  document.getElementById('explorerInfo').innerHTML=
+    '<strong>Explorer Values:</strong> Vd='+(vd*state.weight).toFixed(1)+'L | CL='+cl.toFixed(1)+'L/h | ke='+ke.toFixed(4)+'h⁻¹ | t½='+hl.toFixed(1)+'h<br>'+
+    '<span style="color:#60a5fa">Orange dashed line on chart = explorer curve. Blue = current regimen.</span>';
+  drawChart();
+}
+
+function getExplorerCp(t){
+  if(!explorerEnabled)return 0;
+  const vd=parseFloat(document.getElementById('explorerVd').value);
+  const cl=parseFloat(document.getElementById('explorerCL').value);
+  const f=parseFloat(document.getElementById('explorerF').value);
+  const ke=cl/(vd*state.weight);
+  const w=getEffW();
+  let tot=0;
+  for(let i=0;i<state.numDoses;i++){
+    tot+=getCpSingle(t,i*state.interval,state.route,state.dose,ke,vd,f,w,state.infusionTime);
+  }
+  return tot;
+}
+
+// === PROTEIN BINDING / FREE DRUG ===
+function calcFreeDrug(){
+  const albumin=parseFloat(document.getElementById('albuminInput').value);
+  const totalLevel=parseFloat(document.getElementById('totalLevelInput').value);
+  const normalPB=parseFloat(document.getElementById('normalPBInput').value);
+  const res=document.getElementById('freeDrugResult');
+  if(!albumin||!totalLevel||!normalPB){res.innerHTML='Enter albumin, total level, and protein binding %.';res.classList.remove('hidden');return;}
+
+  // Sheiner-Tozer equation for adjusted PB
+  // fu_normal = 1 - (normalPB/100)
+  // fu_adjusted = fu_normal / [(fu_normal x (albumin/4.4)) + (1 - albumin/4.4)]... simplified
+  const fu_normal=1-(normalPB/100);
+  const fu_adjusted=fu_normal/((fu_normal*(albumin/4.0))+(1-albumin/4.0));
+  const freeLevel=totalLevel*fu_adjusted;
+  const freePercent=(fu_adjusted*100);
+
+  let color=freePercent>20?'color:#f87171':freePercent>10?'color:#fbbf24':'color:#4ade80';
+
+  res.classList.remove('hidden');
+  res.innerHTML='<strong>Protein Binding Analysis:</strong><br>'+
+    'Normal PB: '+normalPB+'% → Free fraction (fu): '+(fu_normal*100).toFixed(1)+'%<br>'+
+    'Albumin: '+albumin+' g/dL<br>'+
+    '<strong>Adjusted fu: '+freePercent.toFixed(1)+'%</strong> <span style="'+color+'">'+(albumin<3.5?'(increased free fraction - hypoalbuminemia)':'(normal)')+'</span><br><br>'+
+    '<strong>Total Level: '+totalLevel+' '+DRUGS[state.drug].unit+'</strong><br>'+
+    '<strong style="color:#60a5fa">Free Drug Level: '+freeLevel.toFixed(2)+' '+DRUGS[state.drug].unit+'</strong><br><br>'+
+    '<span style="color:#94a3b8">Free drug is the pharmacologically active fraction. Adjust your target levels upward when free fraction is increased (uremia, burns, pregnancy, cirrhosis, hypoalbuminemia).</span>';
+}
+
+// === QUIZ MODE ===
+const QUIZ_CASES=[
+  {drug:'vancomycin',scenario:'A 65-year-old male (80kg, SCr 1.4) has MRSA bacteremia. Calculate the loading dose (target 20 mg/L) and maintenance dose (target trough 15-20).',answer:'Loading: 20 x 56 = 1120mg (~1000-1250mg). Maintenance: 1000-1500mg q12h. Adjust based on AUC/MIC.',weight:80,scr:1.4,age:65,sex:'male'},
+  {drug:'gentamicin',scenario:'A 50-year-old female (60kg, SCr 0.9) needs once-daily gentamicin for pyelonephritis. What dose? What peak do you expect?',answer:'Dose: 5-7 mg/kg = 300-420mg (round to 400mg q24h). Expected peak: 400/(0.25x60) = ~27 mg/L.',weight:60,scr:0.9,age:50,sex:'female'},
+  {drug:'vancomycin',scenario:'A 70kg patient on vancomycin 1g q12h has a trough of 8 mg/L at steady state (too low). What adjustment?',answer:'Trough 8 is below 15-20 target. Options: increase dose to 1.5g q12h, or shorten interval to 1g q8h. Recheck at new steady state.',weight:70,scr:1.0,age:50,sex:'male'},
+  {drug:'phenytoin',scenario:'A 70kg patient on phenytoin 300mg/day has a level of 25 mg/L (toxic). Phenytoin follows non-linear kinetics. How much should you reduce?',answer:'Non-linear: reduce by 50-100mg increments. Try 200mg/day. Small changes cause large level shifts. Recheck in 5-7 days.',weight:70,scr:1.0,age:40,sex:'male'},
+  {drug:'lithium',scenario:'A 60kg patient on lithium 300mg TID has a 12h trough of 1.4 mmol/L. What should you do?',answer:'1.4 is above therapeutic ceiling (1.2). Reduce to 300mg BID. Recheck trough. Ensure hydration and no NSAIDs.',weight:60,scr:0.8,age:45,sex:'female'},
+  {drug:'vancomycin',scenario:'An 80kg patient with CrCl 25 mL/min needs vancomycin. What interval adjustment?',answer:'CrCl 25 = significant renal impairment. Extend interval: 1g q24-48h. Use AUC-guided dosing. Check level at 24-48h.',weight:80,scr:2.5,age:70,sex:'male'},
+  {drug:'gentamicin',scenario:'A patient on gentamicin 120mg q8h develops rising SCr from 1.0 to 2.5. What is your concern and action?',answer:'Nephrotoxicity from aminoglycoside. Hold gentamicin. Check level. Consider alternative antibiotic. Renal recovery may take 1-2 weeks.',weight:70,scr:2.5,age:60,sex:'male'},
+  {drug:'digoxin',scenario:'A 75-year-old (60kg, SCr 1.8) needs digoxin for AF rate control. What dose?',answer:'Elderly + renal impairment: start low. 0.125mg daily (not 0.25mg). Check level after 1 week. Target 0.8-2.0. Watch for hypokalemia.',weight:60,scr:1.8,age:75,sex:'female'},
+  {drug:'levetiracetam',scenario:'A 70kg patient with CrCl 30 needs levetiracetam 500mg BID. Is dose adjustment needed?',answer:'Yes. CrCl 30-50: reduce to 250-500mg BID. CrCl <30: 250-500mg BID. Renally cleared drug.',weight:70,scr:1.8,age:55,sex:'male'},
+  {drug:'vancomycin',scenario:'A patient on vancomycin has AUC24 of 800 (too high). Current dose 1.5g q12h. What adjustment?',answer:'AUC target 400-600. 800 is above. Reduce dose to 1g q12h, or extend interval to 1.5g q24h. Recheck AUC at new steady state.',weight:80,scr:1.0,age:50,sex:'male'}
+];
+
+function generateQuiz(){
+  const q=QUIZ_CASES[Math.floor(Math.random()*QUIZ_CASES.length)];
+  document.getElementById('quizCase').classList.remove('hidden');
+  document.getElementById('quizCase').innerHTML=
+    '<strong style="color:#60a5fa">Case Study:</strong><br><br>'+
+    q.scenario+'<br><br>'+
+    '<em style="color:#94a3b8">Patient: '+q.age+'yo '+q.sex+', '+q.weight+'kg, SCr '+q.scr+'</em><br><br>'+
+    '<button class="btn btn-sm btn-outline" onclick="loadQuizCase('+QUIZ_CASES.indexOf(q)+')">Load into Simulator</button> '+
+    '<button class="btn btn-sm btn-primary" onclick="showQuizAnswer('+QUIZ_CASES.indexOf(q)+')">Show Answer</button>';
+  document.getElementById('quizAnswer').classList.add('hidden');
+}
+
+function loadQuizCase(idx){
+  const q=QUIZ_CASES[idx];
+  document.getElementById('weightInput').value=q.weight;
+  document.getElementById('scrInput').value=q.scr;
+  document.getElementById('ageInput').value=q.age;
+  document.getElementById('sexSelect').value=q.sex;
+  document.getElementById('drugSelect').value=q.drug;
+  onDrugChange();
+}
+
+function showQuizAnswer(idx){
+  const q=QUIZ_CASES[idx];
+  document.getElementById('quizAnswer').classList.remove('hidden');
+  document.getElementById('quizAnswer').innerHTML='<strong style="color:#4ade80">Answer:</strong><br><br>'+q.answer;
+}
+
+// === GLOSSARY ===
+function updateGlossary(){
+  const glossary=[
+    {term:'Volume of Distribution (Vd)',def:'Apparent volume into which a drug distributes. High Vd = tissue binding (e.g., digoxin Vd=7.3 L/kg). Low Vd = stays in blood (e.g., heparin). Units: L or L/kg.'},
+    {term:'Clearance (CL)',def:'Volume of blood cleared of drug per hour. CL = ke x Vd. Determines maintenance dose. Higher CL = more drug needed. Units: L/h or mL/min.'},
+    {term:'Half-life (t½)',def:'Time for concentration to decrease by 50%. t½ = 0.693/ke. Determines dosing interval and time to steady state (4-5 half-lives). Units: hours.'},
+    {term:'Elimination Rate Constant (ke)',def:'Fraction of drug eliminated per hour. ke = 0.693/t½ = CL/Vd. Higher ke = faster elimination. Units: h⁻¹.'},
+    {term:'Bioavailability (F)',def:'Fraction of drug reaching systemic circulation. IV = 1.0 (100%). Oral varies (digoxin 0.7, phenytoin 0.9). Affects loading dose calculation.'},
+    {term:'Steady State (Css)',def:'When drug input = elimination. Reached in ~4-5 half-lives. Trough levels should only be interpreted at steady state.'},
+    {term:'AUC (Area Under Curve)',def:'Total drug exposure over time. Calculated by trapezoidal rule. AUC = Dose/CL (IV bolus). Units: mg*h/L. Key metric for vancomycin (target 400-600).'},
+    {term:'MIC (Minimum Inhibitory Concentration)',def:'Lowest drug concentration that inhibits bacterial growth. From culture & sensitivity. Used to calculate PK/PD indices (AUC/MIC, T>MIC).'},
+    {term:'T>MIC',def:'Percentage of dosing interval that concentration stays above MIC. Target ≥40% for beta-lactams, ≥100% for vancomycin. Time-dependent killing.'},
+    {term:'AUC/MIC',def:'PK/PD index for vancomycin. Target ≥400 for MRSA. Combines drug exposure with bacterial susceptibility.'},
+    {term:'Cmax/MIC',def:'PK/PD index for aminoglycosides. Concentration-dependent killing. Target peak 8-10x MIC.'},
+    {term:'Loading Dose',def:'Higher initial dose to rapidly achieve therapeutic levels. LD = (Cp_target x Vd) / F. Essential for drugs with long half-lives.'},
+    {term:'Maintenance Dose',def:'Dose to maintain steady-state levels. MD = (CL x Css x tau) / F. Adjusted based on measured levels.'},
+    {term:'Cockcroft-Gault Equation',def:'Estimates CrCl: [(140-age) x weight] / (72 x SCr). Multiply by 0.85 for females. Used for renal dose adjustments.'},
+    {term:'Schwartz Equation',def:'Pediatric CrCl: (k x height) / SCr. k varies by age (0.45 infant, 0.55 child, 0.7 adolescent). Used in pediatric dosing.'},
+    {term:'Protein Binding',def:'Drug bound to plasma proteins (albumin, alpha-1-acid-glycoprotein). Only free (unbound) drug is active. High PB drugs: phenytoin (90%), valproic acid (90%), warfarin (99%).'},
+    {term:'Sheiner-Tozer Equation',def:'Adjusts free drug fraction for changes in albumin. fu_adj = fu_normal / [(fu_normal x (Alb/4.0)) + (1 - Alb/4.0)]. Used for phenytoin, valproic acid.'},
+    {term:'Therapeutic Index',def:'Ratio of toxic to therapeutic dose. Narrow = dangerous (lithium, digoxin, phenytoin, theophylline). Wide = safer (levetiracetam, most antibiotics).'},
+    {term:'First-Order Kinetics',def:'Constant fraction eliminated per unit time. Rate proportional to concentration. Most drugs follow this. Linear PK.'},
+    {term:'Zero-Order Kinetics',def:'Constant amount eliminated per unit time (saturated enzymes). Rate independent of concentration. Phenytoin at high doses. Non-linear PK.'},
+    {term:'Michaelis-Menten Kinetics',def:'dCp/dt = -(Vmax x Cp)/(Km + Cp). At low Cp: first-order. At high Cp: zero-order (saturated). Phenytoin follows this.'},
+    {term:'Bioequivalence',def:'Two drug products with same bioavailability (within 80-125% for AUC and Cmax). Generic vs brand.'},
+    {term:'CYP450 Enzymes',def:'Hepatic enzymes that metabolize drugs. Major: CYP3A4 (50% of drugs), CYP2D6, CYP2C19, CYP1A2, CYP2C9. Inducers increase, inhibitors decrease clearance.'},
+    {term:'First-Pass Effect',def:'Presystemic metabolism by gut wall and liver before drug reaches systemic circulation. Reduces oral bioavailability (lidocaine F=0.35).'},
+    {term:'Distribution Phase (Alpha)',def:'Initial rapid decline after IV bolus as drug distributes from blood to tissues. Two-compartment model. Not seen in one-compartment.'},
+    {term:'Elimination Phase (Beta)',def:'Terminal decline as drug is metabolized/excreted. Slope = beta = 0.693/t½. One-compartment: only this phase.'},
+    {term:'Population PK',def:'Mathematical models describing PK variability across patients. Uses covariates (weight, CrCl, age). More accurate than simple equations.'},
+    {term:'Bayesian Dosing',def:'Uses population PK model + patient-specific measured level to estimate individual PK parameters. Gold standard for TDM.'}
+  ];
+  let html='';
+  glossary.forEach(g=>{
+    html+='<strong style="color:#60a5fa">'+g.term+'</strong><br>'+g.def+'<br><br>';
+  });
+  document.getElementById('glossaryContent').innerHTML=html;
+}
+
+// === REFERENCES ===
+function updateReferences(){
+  const refs={
+    vancomycin:'<strong>Vancomycin References:</strong><br>Rybak MJ, et al. Therapeutic monitoring of vancomycin for serious MRSA infections: A revised consensus guideline. <em>Am J Health Syst Pharm.</em> 2020;77(11):835-864.<br>ASHP/IDSA/SIDP consensus: AUC/MIC-guided dosing (target 400-600). Trough-only monitoring no longer recommended.',
+    gentamicin:'<strong>Aminoglycoside References:</strong><br>Barclay ML, et al. Once-daily aminoglycoside therapy. <em>Am J Health Syst Pharm.</em> 1995;52:1096-1104.<br>Hartford Nomogram: Extended-interval dosing (5-7 mg/kg q24h). Check level at 6-14h post-dose.',
+    phenytoin:'<strong>Phenytoin References:</strong><br>Sheiner LB, Tozer TN. Clinical pharmacokinetics: the use of plasma concentrations. In: <em>Clinical Pharmacology.</em> 1978.<br>Non-linear (Michaelis-Menten) kinetics. Sheiner-Tozer equation for free drug adjustment.',
+    lithium:'<strong>Lithium References:</strong><br>Malhi GS, et al. The lithiumeter: a measured approach. <em>Bipolar Disord.</em> 2017;19(4):223-231.<br>Target: 0.6-1.2 mmol/L (12h trough). Narrow index. Monitor renal, thyroid, Ca2+.',
+    digoxin:'<strong>Digoxin References:</strong><br>Digitalis Investigation Group. The effect of digoxin on mortality and morbidity. <em>N Engl J Med.</em> 1997;336:525-533.<br>Target: 0.8-2.0 ng/mL. Lower levels may be sufficient for HF.',
+    general:'<strong>General PK References:</strong><br>Rowland M, Tozer TN. <em>Clinical Pharmacokinetics and Pharmacodynamics: Concepts and Applications.</em> 4th ed. Lippincott Williams & Wilkins; 2011.<br>Winter ME. <em>Basic Clinical Pharmacokinetics.</em> 5th ed. Lippincott Williams & Wilkins; 2010.<br>Shargel L, Yu ABC. <em>Applied Biopharmaceutics and Pharmacokinetics.</em> 7th ed. McGraw-Hill; 2016.'
+  };
+  const drug=DRUGS[state.drug];
+  let html=refs[state.drug]||'<strong>No specific references for custom drugs.</strong>';
+  html+='<br><br>'+refs.general;
+  document.getElementById('refContent').innerHTML=html;
+}
+
 function updateVialInfo(){
   const drug=DRUGS[state.drug];
   const vials=VIAL_SIZES[state.drug]||[];
@@ -888,7 +1219,7 @@ function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
 function toggleIndicators(){state.showIndicators=!state.showIndicators;drawChart();}
 function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElementById('drugSelect').value='vancomycin';document.getElementById('keInput').value='';document.getElementById('hepaticClass').value='none';document.getElementById('dialysisMode').value='none';document.getElementById('interactionEnzyme').checked=false;document.getElementById('interactionInhibitor').checked=false;document.getElementById('pediatricMode').checked=false;document.getElementById('aucMode').checked=false;document.getElementById('measuredLevel').value='';document.getElementById('hoursAfterDose').value='';document.getElementById('doseNumAtDraw').value='';document.getElementById('tdmResult').classList.add('hidden');document.getElementById('tdmSuggestions').classList.add('hidden');document.getElementById('ldResult').classList.add('hidden');onDrugChange();}
 window.addEventListener('resize',()=>{resizeCanvas();drawChart();});
-resizeCanvas();onDrugChange();recalculate();
+resizeCanvas();onDrugChange();updateGlossary();recalculate();
 </script>
 </body>
 </html>
