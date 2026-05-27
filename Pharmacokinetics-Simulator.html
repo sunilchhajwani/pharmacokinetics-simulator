@@ -118,6 +118,18 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 .sim-score.bad{color:#f87171}
 .numeric-input-row{display:flex;gap:8px;margin:8px 0}
 .numeric-input-row input{flex:1;padding:6px 8px;background:#0f1729;border:1px solid #334155;border-radius:5px;color:#e0e6f0;font-size:12px}
+/* Quick Start mode — hide non-essential elements */
+body.quick-start .collapsible-header{display:none}
+body.quick-start .collapsible-body{display:none!important}
+body.quick-start #tab-tdm{display:none!important}
+body.quick-start #tab-advanced{display:none!important}
+body.quick-start #tab-study{display:none!important}
+body.quick-start .tab-bar{display:none!important}
+body.quick-start .param-card.hide-qs{display:none!important}
+body.quick-start .legend{display:none!important}
+body.quick-start h3:not(.qs-show){display:none!important}
+body.quick-start .info-box:not(.qs-show){display:none!important}
+body.quick-start .warning-box{display:none!important}
 .sim-calc{background:#0d1321;border:1px solid #1e3055;border-radius:8px;padding:12px;margin-top:8px;font-family:monospace;font-size:11px;line-height:2;color:#94a3b8;overflow-x:auto}
 .sim-calc .formula{color:#60a5fa;font-weight:600}
 .sim-calc .value{color:#fbbf24}
@@ -134,12 +146,13 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
     <h1>Pharmacokinetics Simulator</h1>
     <div class="subtitle">One-Compartment Model &middot; TDM &middot; Bayesian Adjustment &middot; Clinical Dosing</div>
   </div>
-  <div style="display:flex;gap:6px">
-    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic Window <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Therapeutic Window:</strong> Toggles the green shaded band showing the drug's therapeutic range and the red toxic threshold line on the chart.">?</span></button>
-    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Grid:</strong> Toggles background grid lines on the chart for easier reading of values.">?</span></button>
-    <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Indicators:</strong> Toggles Steady State marker (purple vertical line at ~4-5 half-lives) and MIC line (cyan dashed line) on the chart.">?</span></button>
-    <button class="btn btn-sm btn-success" onclick="showReport()">Report <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Report:</strong> Generates a printable dosing summary with patient data, PK parameters, predicted levels, TDM results, safety alerts, and dosing recommendations. Click Print Report to print.">?</span></button>
-    <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Comparison Mode:</strong> Overlay two dosing regimens side by side on the same chart.<br><br><strong>How to use:</strong><ul><li>Click Compare to save the current curve (shown as dashed purple line)</li><li>Change any parameter (dose, interval, drug)</li><li>The chart shows both curves overlaid</li><li>Click Compare again to exit comparison mode</li></ul><strong>Clinical use:</strong> Compare 1g q12h vs 1.5g q24h, or IV bolus vs infusion, or standard vs renal-adjusted dosing.">?</span></button>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button class="btn btn-sm btn-primary" onclick="toggleQuickStart()" id="btnQuickStart">Quick Start</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators</button>
+    <button class="btn btn-sm btn-success" onclick="showReport()">Report</button>
+    <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare</button>
     <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
   </div>
 </div>
@@ -229,7 +242,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 
     <!-- DOSING TAB -->
     <div class="tab-content active" id="tab-dosing">
-      <h3>Route & Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>How to use:</strong><ul><li>Select drug from dropdown — defaults auto-populate</li><li>Choose route: IV Bolus (instant), IV Infusion (over time), Oral (with absorption)</li><li>Adjust dose, interval, and number of doses using sliders or manual input</li><li>The chart updates in real-time as you change parameters</li><li>Dose per kg is shown next to the dose field</li></ul>">?</span></h3>
+      <h3 class="qs-show">Route & Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>How to use:</strong><ul><li>Select drug from dropdown — defaults auto-populate</li><li>Choose route: IV Bolus (instant), IV Infusion (over time), Oral (with absorption)</li><li>Adjust dose, interval, and number of doses using sliders or manual input</li><li>The chart updates in real-time as you change parameters</li><li>Dose per kg is shown next to the dose field</li></ul>">?</span></h3>
       <div class="btn-group">
         <button class="btn btn-sm btn-outline active" id="btnIVBolus" onclick="setRoute('iv_bolus')">IV Bolus</button>
         <button class="btn btn-sm btn-outline" id="btnIVInf" onclick="setRoute('iv_infusion')">IV Infusion</button>
@@ -289,7 +302,7 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
         <div id="tMicResult" class="info-box"></div>
       </div>
 
-      <h3>Patient Parameters <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Patient data affects PK calculations:</strong><ul><li><strong>Weight:</strong> Used to calculate Vd (L/kg) and CrCl. Obese patients: select IBW or ABW</li><li><strong>Height:</strong> Used for IBW calculation (Devine formula)</li><li><strong>Age:</strong> Affects CrCl (Cockcroft-Gault). Elderly = lower clearance</li><li><strong>Sex:</strong> Females get 0.85x multiplier on CrCl</li><li><strong>Serum Creatinine:</strong> Key input for CrCl. Higher = worse renal function</li><li><strong>Weight Basis:</strong> TBW=actual, IBW=ideal, ABW=adjusted (for obese patients on renally-cleared drugs)</li></ul>">?</span></h3>
+      <h3 class="qs-show">Patient Parameters <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Patient data affects PK calculations:</strong><ul><li><strong>Weight:</strong> Used to calculate Vd (L/kg) and CrCl. Obese patients: select IBW or ABW</li><li><strong>Height:</strong> Used for IBW calculation (Devine formula)</li><li><strong>Age:</strong> Affects CrCl (Cockcroft-Gault). Elderly = lower clearance</li><li><strong>Sex:</strong> Females get 0.85x multiplier on CrCl</li><li><strong>Serum Creatinine:</strong> Key input for CrCl. Higher = worse renal function</li><li><strong>Weight Basis:</strong> TBW=actual, IBW=ideal, ABW=adjusted (for obese patients on renally-cleared drugs)</li></ul>">?</span></h3>
       <div class="row">
         <div class="field"><label>Total Body Weight (kg)</label><input type="number" id="weightInput" value="70" oninput="onWeightChange()"></div>
         <div class="field"><label>Height (cm)</label><input type="number" id="heightInput" value="170" oninput="onWeightChange()"></div>
@@ -383,8 +396,8 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
           </select>
         </div>
       </div>
-      <div id="weightInfo" class="info-box"></div>
-      <div id="renalWarning" class="warning-box hidden"><strong>Renal Impairment</strong><br><span id="renalMsg"></span></div>
+      <div id="weightInfo" class="info-box qs-show"></div>
+      <div id="renalWarning" class="warning-box hidden qs-show"><strong>Renal Impairment</strong><br><span id="renalMsg"></span></div>
 
       <!-- PEDIATRIC MODE -->
       <div class="collapsible-header" onclick="toggleCollapse('pedSection')">
@@ -617,12 +630,12 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
       <div class="param-card amber"><div class="label">Clearance</div><div class="value" id="pCL">--</div></div>
       <div class="param-card purple"><div class="label">Vd</div><div class="value" id="pVd">--</div></div>
       <div class="param-card red"><div class="label">AUC/dose</div><div class="value" id="pAUC">--</div></div>
-      <div class="param-card green"><div class="label">Css avg</div><div class="value" id="pCss">--</div></div>
-      <div class="param-card cyan"><div class="label">AUC24</div><div class="value" id="pAUC24">--</div></div>
+      <div class="param-card green hide-qs"><div class="label">Css avg</div><div class="value" id="pCss">--</div></div>
+      <div class="param-card cyan hide-qs"><div class="label">AUC24</div><div class="value" id="pAUC24">--</div></div>
       <div class="param-card cyan"><div class="label">T>MIC</div><div class="value" id="pTMIC">--</div></div>
-      <div class="param-card purple"><div class="label">SS Trough</div><div class="value" id="pSSTrough">--</div></div>
-      <div class="param-card green"><div class="label">Time to SS</div><div class="value" id="pTimeToSS">--</div></div>
-      <div class="param-card amber"><div class="label">Inf Rate</div><div class="value" id="pInfRate">--</div></div>
+      <div class="param-card purple hide-qs"><div class="label">SS Trough</div><div class="value" id="pSSTrough">--</div></div>
+      <div class="param-card green hide-qs"><div class="label">Time to SS</div><div class="value" id="pTimeToSS">--</div></div>
+      <div class="param-card amber hide-qs"><div class="label">Inf Rate</div><div class="value" id="pInfRate">--</div></div>
     </div>
     <div class="legend">
       <div class="legend-item" title="Blue solid line: predicted drug concentration over time (sum of all doses)" style="cursor:help"><div class="legend-dot" style="background:#60a5fa"></div>Concentration</div>
@@ -1740,6 +1753,18 @@ function onInfusionChange(){document.getElementById('infusionTimeVal').textConte
 function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;drawChart();}
 function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
 function toggleIndicators(){state.showIndicators=!state.showIndicators;drawChart();}
+function toggleQuickStart(){
+  document.body.classList.toggle('quick-start');
+  const btn=document.getElementById('btnQuickStart');
+  const isQS=document.body.classList.contains('quick-start');
+  btn.textContent=isQS?'Full Mode':'Quick Start';
+  btn.className=isQS?'btn btn-sm btn-outline':'btn btn-sm btn-primary';
+  // In quick start, collapse all sections
+  if(isQS){
+    document.querySelectorAll('.collapsible-body').forEach(el=>el.classList.add('collapsed'));
+    document.querySelectorAll('.collapsible-header span[id$="Arrow"]').forEach(el=>el.innerHTML='&#9654;');
+  }
+}
 function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElementById('drugSelect').value='vancomycin';document.getElementById('keInput').value='';document.getElementById('hepaticClass').value='none';document.getElementById('dialysisMode').value='none';document.getElementById('interactionEnzyme').checked=false;document.getElementById('interactionInhibitor').checked=false;document.getElementById('pediatricMode').checked=false;document.getElementById('aucMode').checked=false;document.getElementById('measuredLevel').value='';document.getElementById('hoursAfterDose').value='';document.getElementById('doseNumAtDraw').value='';document.getElementById('tdmResult').classList.add('hidden');document.getElementById('tdmSuggestions').classList.add('hidden');document.getElementById('ldResult').classList.add('hidden');onDrugChange();}
 // === CLINICAL SIMULATIONS ===
 const SIMULATIONS = [
