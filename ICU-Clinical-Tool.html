@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICU Clinical Decision Support</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1e293b;
+  --border: #1e3055;
+  --text-primary: #e0e6f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-blue: #60a5fa;
+  --accent-green: #4ade80;
+  --accent-amber: #fbbf24;
+  --accent-red: #f87171;
+  --accent-purple: #c084fc;
+  --accent-cyan: #22d3ee;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #0f1729, #1a2744);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-blue);
+}
+
+.btn-success {
+  background: #059669;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #047857;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 70px);
+}
+
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  margin: 16px 0 10px;
+  padding: 8px 12px;
+  background: rgba(96, 165, 250, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-blue);
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.field input[type="number"] {
+  text-align: right;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.actions-bar {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+}
+
+/* Risk Badge */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.risk-low {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.risk-medium {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.risk-high {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--accent-red);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.risk-critical {
+  background: rgba(248, 113, 113, 0.3);
+  color: white;
+  border: 2px solid var(--accent-red);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Score Card */
+.score-card {
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.score-card:hover {
+  border-color: var(--accent-blue);
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.score-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.score-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.score-low { color: var(--accent-green); }
+.score-medium { color: var(--accent-amber); }
+.score-high { color: var(--accent-red); }
+
+.score-bar {
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* Alert Panel */
+.alert-panel {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.alert-panel.warning {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.alert-panel.info {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+.alert-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-panel .alert-title { color: var(--accent-red); }
+.alert-panel.warning .alert-title { color: var(--accent-amber); }
+.alert-panel.info .alert-title { color: var(--accent-cyan); }
+
+.alert-content {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.alert-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alert-actions .btn {
+  font-size: 11px;
+  padding: 6px 12px;
+}
+
+/* Chart Container */
+.chart-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+canvas {
+  width: 100% !important;
+}
+
+/* History Entry */
+.history-entry {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.history-entry:hover {
+  border-color: var(--accent-blue);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.history-time {
+  font-size: 12px;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.history-risk {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.history-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  font-size: 11px;
+}
+
+.history-value {
+  background: var(--bg-primary);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.history-value span {
+  color: var(--text-muted);
+}
+
+.history-change {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.change-up {
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--accent-red);
+}
+
+.change-down {
+  background: rgba(74, 222, 128, 0.2);
+  color: var(--accent-green);
+}
+
+.change-stable {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-muted);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-green);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  z-index: 2000;
+  animation: slideIn 0.3s;
+}
+
+.toast.show {
+  display: flex;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-icon {
+  font-size: 20px;
+}
+
+.toast-message {
+  font-size: 13px;
+}
+
+/* Print Styles */
+@media print {
+  body { background: white; color: black; }
+  .header, .actions-bar, .btn, .panel-actions { display: none; }
+  .layout { display: block; height: auto; }
+  .panel { border: 1px solid #ccc; margin-bottom: 16px; }
+  .score-card { border: 1px solid #ddd; }
+  .alert-panel { border: 1px solid #ddd; }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .layout { grid-template-columns: 1fr; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <h1>🏥 ICU Clinical Decision Support</h1>
+    <div class="subtitle">NEWS • qSOFA • Shock Index • Lactate Trend</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="exportCSV()">📥 Export CSV</button>
+    <button class="btn btn-secondary" onclick="printReport()">🖨️ Print</button>
+    <button class="btn btn-secondary" onclick="clearAll()">🗑️ Clear</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- LEFT PANEL: Input Form -->
+  <div class="panel" id="inputPanel">
+    <div class="panel-header">
+      <h2>📋 Patient Entry</h2>
+      <span id="currentTime" style="font-size:12px;color:var(--text-muted)"></span>
+    </div>
+
+    <h3>👤 Patient Info</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Patient ID</label>
+        <input type="text" id="patientId" placeholder="e.g., ICU-001">
+      </div>
+      <div class="field">
+        <label>Bed Number</label>
+        <input type="text" id="bedNumber" placeholder="e.g., Bed 5">
+      </div>
+    </div>
+    <div class="field">
+      <label>Patient Name (optional)</label>
+      <input type="text" id="patientName" placeholder="Anonymous">
+    </div>
+
+    <h3>💓 Vital Signs</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Heart Rate (bpm)</label>
+        <input type="number" id="hr" placeholder="72">
+      </div>
+      <div class="field">
+        <label>SpO₂ (%)</label>
+        <input type="number" id="spo2" placeholder="98">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Systolic BP (mmHg)</label>
+        <input type="number" id="sbp" placeholder="120">
+      </div>
+      <div class="field">
+        <label>Diastolic BP (mmHg)</label>
+        <input type="number" id="dbp" placeholder="80">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Temperature (°C)</label>
+        <input type="number" id="temp" step="0.1" placeholder="36.5">
+      </div>
+      <div class="field">
+        <label>Respiratory Rate (/min)</label>
+        <input type="number" id="rr" placeholder="16">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>FiO₂ (%)</label>
+        <input type="number" id="fio2" placeholder="21" min="21" max="100">
+      </div>
+      <div class="field">
+        <label>GCS (3-15)</label>
+        <input type="number" id="gcs" placeholder="15" min="3" max="15">
+      </div>
+    </div>
+
+    <h3>🧪 Laboratory Values</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Lactate (mmol/L)</label>
+        <input type="number" id="lactate" step="0.1" placeholder="2.0">
+      </div>
+      <div class="field">
+        <label>WBC (×10⁹/L)</label>
+        <input type="number" id="wbc" step="0.1" placeholder="8.0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Creatinine (μmol/L)</label>
+        <input type="number" id="creatinine" placeholder="90">
+      </div>
+      <div class="field">
+        <label>BUN (mmol/L)</label>
+        <input type="number" id="bun" step="0.1" placeholder="6.0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Platelets (×10⁹/L)</label>
+        <input type="number" id="platelets" placeholder="250">
+      </div>
+      <div class="field">
+        <label>Bilirubin (μmol/L)</label>
+        <input type="number" id="bilirubin" step="0.1" placeholder="10">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Na⁺ (mmol/L)</label>
+        <input type="number" id="sodium" placeholder="140">
+      </div>
+      <div class="field">
+        <label>K⁺ (mmol/L)</label>
+        <input type="number" id="potassium" step="0.1" placeholder="4.0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Troponin (ng/L)</label>
+        <input type="number" id="troponin" placeholder="10">
+      </div>
+      <div class="field">
+        <label>Procalcitonin (μg/L)</label>
+        <input type="number" id="procalcitonin" step="0.1" placeholder="0.1">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>CRP (mg/L)</label>
+        <input type="number" id="crp" step="1" placeholder="10">
+      </div>
+      <div class="field">
+        <label>PaO₂ (mmHg)</label>
+        <input type="number" id="pao2" placeholder="80">
+      </div>
+    </div>
+
+    <h3>📝 Clinical Notes</h3>
+    <div class="field">
+      <textarea id="notes" rows="3" placeholder="Enter clinical observations..."></textarea>
+    </div>
+
+    <div class="actions-bar">
+      <button class="btn btn-success" onclick="calculateAndSave()" style="flex:1">
+        ✅ Calculate & Save
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: Results & Charts -->
+  <div class="panel" id="resultsPanel">
+    <div class="panel-header">
+      <h2>📊 Clinical Assessment</h2>
+      <span id="assessmentTime"></span>
+    </div>
+
+    <!-- Risk Level Banner -->
+    <div id="riskBanner" class="risk-badge risk-low" style="width:100%;justify-content:center;padding:14px;font-size:16px;margin-bottom:16px;">
+      <span id="riskIcon">✓</span>
+      <span id="riskText">LOW RISK</span>
+    </div>
+
+    <!-- Alert Panel -->
+    <div id="alertPanel" class="alert-panel info" style="display:none;">
+      <div class="alert-title">
+        <span id="alertIcon">ℹ️</span>
+        <span id="alertTitle">Assessment</span>
+      </div>
+      <div class="alert-content" id="alertContent"></div>
+      <div class="alert-actions" id="alertActions"></div>
+    </div>
+
+    <!-- Score Cards -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
+      <div class="score-card" id="newsCard">
+        <div class="score-header">
+          <span class="score-name">NEWS Score</span>
+          <span class="score-value score-low" id="newsValue">-</span>
+        </div>
+        <div class="score-detail" id="newsDetail">National Early Warning Score</div>
+        <div class="score-bar">
+          <div class="score-bar-fill" id="newsBar" style="width:0%;background:var(--accent-green);"></div>
+        </div>
+      </div>
+
+      <div class="score-card" id="qsofaCard">
+        <div class="score-header">
+          <span class="score-name">qSOFA</span>
+          <span class="score-value score-low" id="qsofaValue">-</span>
+        </div>
+        <div class="score-detail" id="qsofaDetail">Quick SOFA (sepsis screen)</div>
+        <div class="score-bar">
+          <div class="score-bar-fill" id="qsofaBar" style="width:0%;background:var(--accent-amber);"></div>
+        </div>
+      </div>
+
+      <div class="score-card" id="shockCard">
+        <div class="score-header">
+          <span class="score-name">Shock Index</span>
+          <span class="score-value score-low" id="shockValue">-</span>
+        </div>
+        <div class="score-detail" id="shockDetail">HR ÷ SBP</div>
+        <div class="score-bar">
+          <div class="score-bar-fill" id="shockBar" style="width:0%;background:var(--accent-blue);"></div>
+        </div>
+      </div>
+
+      <div class="score-card" id="lactateCard">
+        <div class="score-header">
+          <span class="score-name">Lactate</span>
+          <span class="score-value score-low" id="lactateValue">-</span>
+        </div>
+        <div class="score-detail" id="lactateDetail">mmol/L</div>
+        <div class="score-bar">
+          <div class="score-bar-fill" id="lactateBar" style="width:0%;background:var(--accent-purple);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vitals Trend Chart -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <span class="chart-title">📈 Vitals Trend (Last 10 entries)</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>HR</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>SBP</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>RR</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>SpO₂</div>
+        </div>
+      </div>
+      <canvas id="vitalsChart" height="180"></canvas>
+    </div>
+
+    <!-- Scores Trend Chart -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <span class="chart-title">📊 NEWS & Lactate Trend</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>NEWS</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Lactate</div>
+        </div>
+      </div>
+      <canvas id="scoresChart" height="180"></canvas>
+    </div>
+
+    <!-- History -->
+    <h3 style="margin-top:20px;">📜 Entry History</h3>
+    <div id="historyList" style="max-height:300px;overflow-y:auto;">
+      <div style="text-align:center;color:var(--text-muted);padding:40px;">
+        No entries yet. Add your first assessment above.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span class="toast-message" id="toastMessage">Entry saved successfully!</span>
+</div>
+
+<script>
+// === DATA STORAGE ===
+let patientData = JSON.parse(localStorage.getItem('icuPatientData') || '[]');
+let chartData = { vitals: null, scores: null };
+
+// === INITIALIZATION ===
+document.addEventListener('DOMContentLoaded', () => {
+  updateTime();
+  setInterval(updateTime, 1000);
+  renderHistory();
+  initializeCharts();
+});
+
+function updateTime() {
+  const now = new Date();
+  const timeStr = now.toLocaleString('en-US', { 
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' 
+  });
+  document.getElementById('currentTime').textContent = timeStr;
+}
+
+// === CALCULATIONS ===
+
+function calculateNEWS() {
+  let score = 0;
+  const hr = parseFloat(document.getElementById('hr').value) || 0;
+  const sbp = parseFloat(document.getElementById('sbp').value) || 0;
+  const resp = parseFloat(document.getElementById('rr').value) || 0;
+  const spo2 = parseFloat(document.getElementById('spo2').value) || 0;
+  const temp = parseFloat(document.getElementById('temp').value) || 0;
+  const oxy = parseFloat(document.getElementById('fio2').value) || 21;
+
+  // HR
+  if (hr >= 131) score += 3;
+  else if (hr >= 111) score += 2;
+  else if (hr >= 91) score += 1;
+  else if (hr <= 50) score += 3;
+  else if (hr <= 60) score += 1;
+
+  // SBP
+  if (sbp >= 219) score += 3;
+  else if (sbp >= 180) score += 2;
+  else if (sbp >= 100) score += 0;
+  else if (sbp >= 91) score += 1;
+  else if (sbp <= 90) score += 3;
+
+  // RR
+  if (resp >= 25) score += 3;
+  else if (resp >= 21) score += 2;
+  else if (resp >= 15) score += 0;
+  else if (resp <= 12) score += 3;
+
+  // SpO2
+  if (spo2 <= 91) score += 3;
+  else if (spo2 <= 94) score += 2;
+  else if (spo2 <= 96) score += 1;
+
+  // Temperature
+  if (temp >= 38.5) score += 1;
+  else if (temp <= 35.9) score += 1;
+
+  // Oxygen (FiO2)
+  if (oxy > 21) score += 2;
+
+  return score;
+}
+
+function calculateQSOFA() {
+  let score = 0;
+  const sbp = parseFloat(document.getElementById('sbp').value) || 0;
+  const resp = parseFloat(document.getElementById('rr').value) || 0;
+  const gcs = parseFloat(document.getElementById('gcs').value) || 15;
+
+  if (sbp <= 100) score += 1;
+  if (resp >= 22) score += 1;
+  if (gcs < 15) score += 1;
+
+  return score;
+}
+
+function calculateShockIndex() {
+  const hr = parseFloat(document.getElementById('hr').value) || 0;
+  const sbp = parseFloat(document.getElementById('sbp').value) || 0;
+  
+  if (hr && sbp) {
+    return (hr / sbp).toFixed(2);
+  }
+  return null;
+}
+
+function getOverallRisk(news, qsofa, shockIndex, lactate) {
+  let risk = 0;
+  
+  // NEWS-based
+  if (news >= 7) risk += 3;
+  else if (news >= 5) risk += 2;
+  else if (news >= 3) risk += 1;
+
+  // qSOFA
+  if (qsofa >= 2) risk += 2;
+  else if (qsofa >= 1) risk += 1;
+
+  // Shock Index
+  if (shockIndex && shockIndex > 1.0) risk += 2;
+  else if (shockIndex && shockIndex > 0.9) risk += 1;
+
+  // Lactate
+  const lac = parseFloat(lactate) || 0;
+  if (lac >= 4) risk += 3;
+  else if (lac >= 2) risk += 1;
+
+  if (risk >= 8) return { level: 'CRITICAL', color: 'critical', icon: '🚨' };
+  if (risk >= 5) return { level: 'HIGH', color: 'high', icon: '⚠️' };
+  if (risk >= 2) return { level: 'MEDIUM', color: 'medium', icon: '⚡' };
+  return { level: 'LOW', color: 'low', icon: '✓' };
+}
+
+// === SAVE ENTRY ===
+function calculateAndSave() {
+  const timestamp = new Date().toISOString();
+  
+  const entry = {
+    id: Date.now(),
+    timestamp: timestamp,
+    patientId: document.getElementById('patientId').value || 'Unknown',
+    patientName: document.getElementById('patientName').value || 'Anonymous',
+    bedNumber: document.getElementById('bedNumber').value || '',
+    vitals: {
+      hr: parseFloat(document.getElementById('hr').value) || null,
+      sbp: parseFloat(document.getElementById('sbp').value) || null,
+      dbp: parseFloat(document.getElementById('dbp').value) || null,
+      spo2: parseFloat(document.getElementById('spo2').value) || null,
+      temp: parseFloat(document.getElementById('temp').value) || null,
+      rr: parseFloat(document.getElementById('rr').value) || null,
+      fio2: parseFloat(document.getElementById('fio2').value) || 21,
+      gcs: parseFloat(document.getElementById('gcs').value) || null
+    },
+    labs: {
+      lactate: parseFloat(document.getElementById('lactate').value) || null,
+      wbc: parseFloat(document.getElementById('wbc').value) || null,
+      creatinine: parseFloat(document.getElementById('creatinine').value) || null,
+      bun: parseFloat(document.getElementById('bun').value) || null,
+      platelets: parseFloat(document.getElementById('platelets').value) || null,
+      bilirubin: parseFloat(document.getElementById('bilirubin').value) || null,
+      sodium: parseFloat(document.getElementById('sodium').value) || null,
+      potassium: parseFloat(document.getElementById('potassium').value) || null,
+      troponin: parseFloat(document.getElementById('troponin').value) || null,
+      procalcitonin: parseFloat(document.getElementById('procalcitonin').value) || null,
+      crp: parseFloat(document.getElementById('crp').value) || null,
+      pao2: parseFloat(document.getElementById('pao2').value) || null
+    },
+    notes: document.getElementById('notes').value || '',
+    scores: {
+      news: calculateNEWS(),
+      qsofa: calculateQSOFA(),
+      shockIndex: calculateShockIndex(),
+      lactate: parseFloat(document.getElementById('lactate').value) || null
+    }
+  };
+
+  // Calculate overall risk
+  entry.risk = getOverallRisk(entry.scores.news, entry.scores.qsofa, entry.scores.shockIndex, entry.scores.lactate);
+
+  // Save to localStorage
+  patientData.push(entry);
+  localStorage.setItem('icuPatientData', JSON.stringify(patientData));
+
+  // Update UI
+  updateDisplay(entry);
+  renderHistory();
+  updateCharts();
+
+  // Show toast
+  showToast('Entry saved successfully!');
+
+  // Clear form option
+  // clearForm();
+}
+
+function updateDisplay(entry) {
+  // Update assessment time
+  document.getElementById('assessmentTime').textContent = new Date(entry.timestamp).toLocaleString();
+
+  // Update Risk Banner
+  const riskBanner = document.getElementById('riskBanner');
+  riskBanner.className = `risk-badge risk-${entry.risk.color}`;
+  document.getElementById('riskIcon').textContent = entry.risk.icon;
+  document.getElementById('riskText').textContent = `${entry.risk.level} RISK`;
+
+  // Update Alert Panel
+  const alertPanel = document.getElementById('alertPanel');
+  const alertContent = document.getElementById('alertContent');
+  const alertActions = document.getElementById('alertActions');
+  
+  let alerts = [];
+  let actions = [];
+
+  if (entry.scores.news >= 5) {
+    alerts.push(`NEWS score ${entry.scores.news} — escalation to higher level of care recommended`);
+    actions.push('Consider ICU consultation');
+  }
+  if (entry.scores.qsofa >= 2) {
+    alerts.push(`qSOFA ${entry.scores.qsofa}/3 — high suspicion for sepsis, initiate sepsis protocol`);
+    actions.push('Order lactate, blood cultures, start antibiotics');
+  }
+  if (entry.scores.shockIndex > 1.0) {
+    alerts.push(`Shock Index ${entry.scores.shockIndex} (>1.0) — hemodynamic instability`);
+    actions.push('Fluid resuscitation, consider vasopressors');
+  }
+  if (entry.scores.lactate >= 4) {
+    alerts.push(`Lactate ${entry.scores.lactate} mmol/L (≥4) — tissue hypoperfusion, high mortality`);
+    actions.push('Early goal-directed therapy, repeat lactate');
+  } else if (entry.scores.lactate >= 2) {
+    alerts.push(`Lactate ${entry.scores.lactate} mmol/L (≥2) — elevated, monitor closely`);
+  }
+
+  if (alerts.length > 0) {
+    alertPanel.style.display = 'block';
+    if (entry.risk.color === 'critical' || entry.risk.color === 'high') {
+      alertPanel.className = 'alert-panel';
+    } else {
+      alertPanel.className = 'alert-panel info';
+    }
+    alertContent.innerHTML = alerts.map(a => `• ${a}`).join('<br>');
+    alertActions.innerHTML = actions.map(a => `<button class="btn btn-secondary">${a}</button>`).join('');
+  } else {
+    alertPanel.style.display = 'none';
+  }
+
+  // Update Score Cards
+  updateScoreCard('news', entry.scores.news, 20, 'Low', 'Medium', 'High', getNewsColor(entry.scores.news));
+  updateScoreCard('qsofa', entry.scores.qsofa, 3, 'Good', 'Monitor', 'Sepsis?', getQSOFAColor(entry.scores.qsofa));
+  
+  const shock = entry.scores.shockIndex ? parseFloat(entry.scores.shockIndex) : 0;
+  updateScoreCard('shock', shock.toFixed(2), 1.5, 'Stable', 'Caution', 'Shock', getShockColor(shock));
+  
+  updateScoreCard('lactate', entry.scores.lactate || '-', 4, 'Normal', 'Elevated', 'High', getLactateColor(entry.scores.lactate));
+
+  // Update details
+  document.getElementById('newsDetail').textContent = getNewsDetail(entry.scores.news);
+  document.getElementById('qsofaDetail').textContent = getQSOFADetail(entry.scores.qsofa);
+  document.getElementById('shockDetail').textContent = `HR ${entry.vitals.hr || '-'} ÷ SBP ${entry.vitals.sbp || '-'}`;
+  document.getElementById('lactateDetail').textContent = entry.scores.lactate ? `Last: ${entry.scores.lactate} mmol/L` : 'Not entered';
+}
+
+function updateScoreCard(id, value, max, lowLabel, medLabel, highLabel, color) {
+  const valueEl = document.getElementById(`${id}Value`);
+  const barEl = document.getElementById(`${id}Bar`);
+  
+  valueEl.textContent = value;
+  valueEl.className = `score-value ${color}`;
+  
+  let percent = 0;
+  if (typeof value === 'number') {
+    percent = Math.min((value / max) * 100, 100);
+  }
+  barEl.style.width = `${percent}%`;
+  barEl.style.background = getBarColor(color);
+}
+
+function getNewsColor(score) {
+  if (score <= 4) return 'score-low';
+  if (score <= 6) return 'score-medium';
+  return 'score-high';
+}
+
+function getQSOFAColor(score) {
+  if (score === 0) return 'score-low';
+  if (score === 1) return 'score-medium';
+  return 'score-high';
+}
+
+function getShockColor(value) {
+  if (value <= 0.9) return 'score-low';
+  if (value <= 1.0) return 'score-medium';
+  return 'score-high';
+}
+
+function getLactateColor(value) {
+  if (!value) return 'score-low';
+  if (value < 2) return 'score-low';
+  if (value < 4) return 'score-medium';
+  return 'score-high';
+}
+
+function getBarColor(colorClass) {
+  if (colorClass === 'score-low') return 'var(--accent-green)';
+  if (colorClass === 'score-medium') return 'var(--accent-amber)';
+  return 'var(--accent-red)';
+}
+
+function getNewsDetail(score) {
+  if (score <= 4) return 'Low acuity — standard monitoring';
+  if (score <= 6) return 'Medium — increase monitoring frequency';
+  if (score <= 9) return 'High — urgent assessment required';
+  return 'Very high — emergency response';
+}
+
+function getQSOFADetail(score) {
+  if (score === 0) return 'Low sepsis risk';
+  if (score === 1) return 'Some concern — evaluate for infection';
+  return 'High sepsis risk — initiate protocol';
+}
+
+// === CHARTS ===
+function initializeCharts() {
+  const vitalsCtx = document.getElementById('vitalsChart').getContext('2d');
+  const scoresCtx = document.getElementById('scoresChart').getContext('2d');
+
+  chartData.vitals = new Chart(vitalsCtx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'HR', data: [], borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.1)', tension: 0.4, fill: true },
+        { label: 'SBP', data: [], borderColor: '#4ade80', backgroundColor: 'transparent', tension: 0.4 },
+        { label: 'RR', data: [], borderColor: '#fbbf24', backgroundColor: 'transparent', tension: 0.4 },
+        { label: 'SpO2', data: [], borderColor: '#f87171', backgroundColor: 'transparent', tension: 0.4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#64748b' } },
+        x: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#64748b', maxTicksLimit: 8 } }
+      }
+    }
+  });
+
+  chartData.scores = new Chart(scoresCtx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'NEWS', data: [], borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.2)', tension: 0.4, fill: true, yAxisID: 'y' },
+        { label: 'Lactate', data: [], borderColor: '#c084fc', backgroundColor: 'rgba(192,132,252,0.2)', tension: 0.4, fill: true, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { position: 'left', grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#60a5fa' }, title: { display: true, text: 'NEWS', color: '#60a5fa' } },
+        y1: { position: 'right', grid: { display: false }, ticks: { color: '#c084fc' }, title: { display: true, text: 'Lactate', color: '#c084fc' } },
+        x: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { color: '#64748b', maxTicksLimit: 8 } }
+      }
+    }
+  });
+}
+
+function updateCharts() {
+  const recentEntries = patientData.slice(-10);
+  
+  const labels = recentEntries.map(e => {
+    const d = new Date(e.timestamp);
+    return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+  });
+
+  // Vitals chart
+  chartData.vitals.data.labels = labels;
+  chartData.vitals.data.datasets[0].data = recentEntries.map(e => e.vitals.hr);
+  chartData.vitals.data.datasets[1].data = recentEntries.map(e => e.vitals.sbp);
+  chartData.vitals.data.datasets[2].data = recentEntries.map(e => e.vitals.rr);
+  chartData.vitals.data.datasets[3].data = recentEntries.map(e => e.vitals.spo2);
+  chartData.vitals.update();
+
+  // Scores chart
+  chartData.scores.data.labels = labels;
+  chartData.scores.data.datasets[0].data = recentEntries.map(e => e.scores.news);
+  chartData.scores.data.datasets[1].data = recentEntries.map(e => e.scores.lactate || 0);
+  chartData.scores.update();
+}
+
+// === HISTORY ===
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  
+  if (patientData.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">No entries yet. Add your first assessment above.</div>';
+    return;
+  }
+
+  const historyHTML = patientData.slice().reverse().map((entry, idx) => {
+    const d = new Date(entry.timestamp);
+    const timeStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const riskClass = entry.risk.color === 'critical' ? 'risk-critical' : entry.risk.color === 'high' ? 'risk-high' : entry.risk.color === 'medium' ? 'risk-medium' : 'risk-low';
+    
+    return `
+      <div class="history-entry" onclick="loadEntry(${patientData.length - 1 - idx})">
+        <div class="history-header">
+          <span class="history-time">${timeStr}</span>
+          <span class="history-risk ${riskClass}">${entry.risk.level}</span>
+        </div>
+        <div class="history-values">
+          <div class="history-value">NEWS: <b>${entry.scores.news}</b></div>
+          <div class="history-value">qSOFA: <b>${entry.scores.qsofa}</b></div>
+          <div class="history-value">Lactate: <b>${entry.scores.lactate || '-'}</b></div>
+          <div class="history-value">HR: <b>${entry.vitals.hr || '-'}</b></div>
+          <div class="history-value">BP: <b>${entry.vitals.sbp || '-'}/${entry.vitals.dbp || '-'}</b></div>
+          <div class="history-value">GCS: <b>${entry.vitals.gcs || '-'}</b></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = historyHTML;
+}
+
+function loadEntry(index) {
+  const entry = patientData[index];
+  if (!entry) return;
+
+  // Load vitals
+  document.getElementById('hr').value = entry.vitals.hr || '';
+  document.getElementById('sbp').value = entry.vitals.sbp || '';
+  document.getElementById('dbp').value = entry.vitals.dbp || '';
+  document.getElementById('spo2').value = entry.vitals.spo2 || '';
+  document.getElementById('temp').value = entry.vitals.temp || '';
+  document.getElementById('rr').value = entry.vitals.rr || '';
+  document.getElementById('fio2').value = entry.vitals.fio2 || 21;
+  document.getElementById('gcs').value = entry.vitals.gcs || '';
+
+  // Load labs
+  document.getElementById('lactate').value = entry.labs.lactate || '';
+  document.getElementById('wbc').value = entry.labs.wbc || '';
+  document.getElementById('creatinine').value = entry.labs.creatinine || '';
+  document.getElementById('bun').value = entry.labs.bun || '';
+  document.getElementById('platelets').value = entry.labs.platelets || '';
+  document.getElementById('bilirubin').value = entry.labs.bilirubin || '';
+  document.getElementById('sodium').value = entry.labs.sodium || '';
+  document.getElementById('potassium').value = entry.labs.potassium || '';
+  document.getElementById('troponin').value = entry.labs.troponin || '';
+  document.getElementById('procalcitonin').value = entry.labs.procalcitonin || '';
+  document.getElementById('crp').value = entry.labs.crp || '';
+  document.getElementById('pao2').value = entry.labs.pao2 || '';
+
+  // Load patient info
+  document.getElementById('patientId').value = entry.patientId;
+  document.getElementById('patientName').value = entry.patientName;
+  document.getElementById('bedNumber').value = entry.bedNumber;
+  document.getElementById('notes').value = entry.notes;
+
+  // Update display
+  updateDisplay(entry);
+  showToast('Entry loaded — edit and save to update');
+}
+
+// === CSV EXPORT ===
+function exportCSV() {
+  if (patientData.length === 0) {
+    showToast('No data to export');
+    return;
+  }
+
+  const headers = [
+    'Timestamp', 'PatientID', 'PatientName', 'BedNumber', 
+    'HR', 'SBP', 'DBP', 'SpO2', 'Temp', 'RR', 'FiO2', 'GCS',
+    'Lactate', 'WBC', 'Creatinine', 'BUN', 'Platelets', 'Bilirubin',
+    'Na', 'K', 'Troponin', 'Procalcitonin', 'CRP', 'PaO2',
+    'NEWS', 'qSOFA', 'ShockIndex', 'RiskLevel', 'Notes'
+  ];
+
+  const rows = patientData.map(e => [
+    e.timestamp, e.patientId, e.patientName, e.bedNumber,
+    e.vitals.hr, e.vitals.sbp, e.vitals.dbp, e.vitals.spo2, 
+    e.vitals.temp, e.vitals.rr, e.vitals.fio2, e.vitals.gcs,
+    e.labs.lactate, e.labs.wbc, e.labs.creatinine, e.labs.bun,
+    e.labs.platelets, e.labs.bilirubin, e.labs.sodium, e.labs.potassium,
+    e.labs.troponin, e.labs.procalcitonin, e.labs.crp, e.labs.pao2,
+    e.scores.news, e.scores.qsofa, e.scores.shockIndex, e.risk.level, 
+    `"${(e.notes || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ICU_Clinical_Data_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  
+  showToast('CSV exported successfully!');
+}
+
+// === PRINT ===
+function printReport() {
+  window.print();
+}
+
+// === CLEAR ===
+function clearAll() {
+  if (confirm('Clear all entries? This cannot be undone.')) {
+    patientData = [];
+    localStorage.removeItem('icuPatientData');
+    location.reload();
+  }
+}
+
+// === TOAST ===
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMessage').textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

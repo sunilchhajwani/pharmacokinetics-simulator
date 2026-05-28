@@ -138,6 +138,52 @@ body.quick-start .warning-box{display:none!important}
 .sim-calc canvas{display:block;margin:10px auto;border-radius:6px}
 .sim-calc-toggle{display:inline-block;padding:6px 14px;background:#1e293b;border:1px solid #334155;border-radius:6px;color:#60a5fa;font-size:11px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .15s}
 .sim-calc-toggle:hover{border-color:#3b82f6;background:rgba(59,130,246,.1)}
+/* Learning Path */
+.lp-tier{font-size:10px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px}
+.lp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.lp-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px;cursor:pointer;text-align:center;transition:all .15s}
+.lp-card:hover{border-color:#8b5cf6}
+.lp-card.active{border-color:#8b5cf6;background:rgba(139,92,246,.08)}
+.lp-card.completed{border-color:#22c55e;background:rgba(34,197,94,.05)}
+.lp-card .lp-num{font-size:20px;font-weight:700;color:#8b5cf6}
+.lp-card .lp-title{font-size:10px;color:#e0e6f0;margin-top:2px;line-height:1.3}
+.lp-card .lp-status{font-size:9px;margin-top:4px;color:#64748b}
+.lp-card.completed .lp-status{color:#4ade80}
+.lp-card .lp-bar{height:3px;background:#1e3055;border-radius:2px;margin-top:4px;overflow:hidden}
+.lp-card .lp-bar-fill{height:100%;background:#8b5cf6;border-radius:2px;transition:width .3s}
+.lp-card.completed .lp-bar-fill{background:#22c55e}
+.lp-active{margin-top:8px}
+.lp-header{font-size:13px;font-weight:700;color:#8b5cf6;margin-bottom:4px}
+.lp-objectives{font-size:10px;color:#94a3b8;line-height:1.6;margin-bottom:8px;padding:8px 10px;background:rgba(139,92,246,.06);border-radius:6px;border-left:3px solid #8b5cf6}
+.lp-step{background:#1e293b;border-radius:8px;padding:12px;margin-bottom:8px;font-size:11px;line-height:1.7}
+.lp-step .lp-step-type{font-size:10px;color:#8b5cf6;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+.lp-step .lp-step-title{font-size:12px;font-weight:600;color:#e0e6f0;margin-bottom:6px}
+.lp-step .lp-content{color:#94a3b8}
+.lp-step .lp-content p{margin-bottom:8px}
+.lp-step .lp-content strong{color:#e0e6f0}
+.lp-step .lp-content code{background:#0d1321;padding:1px 4px;border-radius:3px;color:#60a5fa;font-size:11px}
+.lp-step .lp-content .formula{color:#60a5fa;font-weight:600}
+.lp-step .lp-content .result{color:#4ade80;font-weight:700}
+.lp-step .lp-content .value{color:#fbbf24}
+.lp-guided{margin:8px 0;padding:8px 10px;background:rgba(139,92,246,.06);border-radius:6px;border-left:3px solid #8b5cf6;font-size:11px;color:#e0e6f0}
+.lp-guided .lp-guide-step{margin:4px 0;padding:4px 0;border-bottom:1px solid rgba(139,92,246,.1)}
+.lp-guided .lp-guide-step:last-child{border-bottom:none}
+.lp-checkpoint{background:#0d1321;border:1px solid #334155;border-radius:8px;padding:10px;margin-top:8px}
+.lp-checkpoint .lp-cp-question{font-size:12px;font-weight:600;color:#e0e6f0;margin-bottom:8px}
+.lp-cp-option{display:block;width:100%;padding:6px 10px;background:transparent;border:1px solid #334155;border-radius:5px;color:#e0e6f0;font-size:11px;text-align:left;cursor:pointer;margin-bottom:4px;transition:all .15s}
+.lp-cp-option:hover{border-color:#8b5cf6;background:rgba(139,92,246,.05)}
+.lp-cp-option.correct{border-color:#22c55e;background:rgba(34,197,94,.1);color:#4ade80}
+.lp-cp-option.wrong{border-color:#ef4444;background:rgba(239,68,68,.1);color:#f87171}
+.lp-feedback{border-radius:6px;padding:8px 10px;margin-top:6px;font-size:11px;line-height:1.5}
+.lp-feedback.correct{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80}
+.lp-feedback.wrong{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171}
+.lp-progress{margin:8px 0}
+.lp-progress-bar{height:6px;background:#1e3055;border-radius:3px;overflow:hidden}
+.lp-progress-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);border-radius:3px;transition:width .3s}
+.lp-progress-text{font-size:10px;color:#64748b;margin-top:4px;text-align:center}
+.lp-overall{background:#1e293b;border-radius:8px;padding:10px;margin-top:12px;text-align:center}
+.lp-overall .lp-overall-score{font-size:24px;font-weight:700;color:#8b5cf6}
+.lp-overall .lp-overall-label{font-size:10px;color:#64748b}
 </style>
 </head>
 <body>
@@ -286,6 +332,7 @@ body.quick-start .warning-box{display:none!important}
       <button class="tab-btn" onclick="switchTab('tdm',this)">TDM</button>
       <button class="tab-btn" onclick="switchTab('advanced',this)">Advanced</button>
       <button class="tab-btn" onclick="switchTab('study',this)">Study</button>
+      <button class="tab-btn" onclick="switchTab('learn',this)" style="color:#8b5cf6">Learn</button>
     </div>
 
     <!-- DOSING TAB -->
@@ -668,6 +715,42 @@ body.quick-start .warning-box{display:none!important}
       <div class="collapsible-body collapsed" id="glossarySection">
         <div id="glossaryContent" class="info-box" style="max-height:400px;overflow-y:auto;line-height:2"></div>
       </div>
+    </div>
+
+    <!-- LEARN TAB -->
+    <div class="tab-content" id="tab-learn">
+      <h2 style="color:#8b5cf6;margin-bottom:8px">Master Vancomycin, Master PK</h2>
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:12px">Learn pharmacokinetics from scratch using vancomycin as the teaching drug. Each concept transfers to all 46 drugs in this simulator.</div>
+      <div id="lpChapterGrid"></div>
+      <div id="lpActive" class="lp-active hidden">
+        <div id="lpHeader" class="lp-header"></div>
+        <div id="lpObjectives" class="lp-objectives hidden"></div>
+        <div class="lp-progress">
+          <div class="lp-progress-bar"><div class="lp-progress-fill" id="lpProgressFill" style="width:0%"></div></div>
+          <div class="lp-progress-text" id="lpProgressText">Step 1 of 1</div>
+        </div>
+        <div id="lpStepArea"></div>
+        <div id="lpFeedbackArea"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn btn-sm btn-outline" id="lpPrevBtn" onclick="lpPrevStep()" style="display:none">Previous</button>
+          <button class="btn btn-sm btn-primary" id="lpNextBtn" onclick="lpNextStep()">Next</button>
+          <button class="btn btn-sm btn-outline" onclick="lpBackToChapters()">Back</button>
+        </div>
+      </div>
+      <div id="lpOverall" class="lp-overall hidden">
+        <div class="lp-overall-score" id="lpOverallScore">0%</div>
+        <div class="lp-overall-label">Overall Score</div>
+        <div style="font-size:10px;color:#64748b;margin-top:4px" id="lpOverallDetail">0 of 8 chapters completed</div>
+        <button class="btn btn-sm btn-outline" onclick="lpResetProgress()" style="margin-top:8px">Reset Progress</button>
+      </div>
+    </div>
+
+    <!-- LEARN TAB -->
+    <div class="tab-content" id="tab-learn">
+      <h2>Learning Path <span style="font-size:10px;color:#8b5cf6;font-weight:400">Master Vancomycin, Master PK</span></h2>
+      <div id="lpChapterGrid"></div>
+      <div id="lpActive" class="lp-active hidden"></div>
+      <div id="lpOverall" class="lp-overall hidden"></div>
     </div>
   </div>
 
@@ -1923,440 +2006,248 @@ function toggleQuickStart(){
   }
 }
 function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElementById('drugSelect').value='vancomycin';document.getElementById('keInput').value='';document.getElementById('hepaticClass').value='none';document.getElementById('dialysisMode').value='none';document.getElementById('interactionEnzyme').checked=false;document.getElementById('interactionInhibitor').checked=false;document.getElementById('pediatricMode').checked=false;document.getElementById('aucMode').checked=false;document.getElementById('measuredLevel').value='';document.getElementById('hoursAfterDose').value='';document.getElementById('doseNumAtDraw').value='';document.getElementById('tdmResult').classList.add('hidden');document.getElementById('tdmSuggestions').classList.add('hidden');document.getElementById('ldResult').classList.add('hidden');onDrugChange();}
-// === CLINICAL SIMULATIONS ===
-const SIMULATIONS = [
-  {
-    id:'vanc_icu', title:'Vancomycin in ICU — MRSA Pneumonia', difficulty:'Intermediate', drug:'vancomycin',
-    steps:[
-      {type:'vignette', text:'A 65-year-old male (85kg, 178cm) is admitted to ICU with MRSA pneumonia. SCr 1.2, Albumin 2.8. He is febrile 39.2C, BP 90/60 on vasopressors. Blood cultures pending. Start vancomycin.',
-       patient:{weight:85,height:178,age:65,sex:'male',scr:1.2}},
-      {type:'question_mc', text:'What loading dose do you want to give?',
-       options:['1000mg IV over 1h','1500mg IV over 1h','2000mg IV over 2h','2500mg IV over 2h'], correct:2,
-       explanation:'Loading dose = 25-30 mg/kg TBW = 2125-2550mg. 2000mg is appropriate. In sepsis, use TBW. Extended infusion (2h) improves PK/PD.'},
-      {type:'question_mc', text:'What maintenance dose and interval?',
-       options:['1000mg q12h','1500mg q12h','1000mg q8h','1500mg q24h'], correct:0,
-       explanation:'Start 1000mg q12h. Adjust based on AUC/MIC after steady state. Extended infusion preferred in ICU.'},
-      {type:'lab_result', text:'Day 3: Trough (30min before 6th dose) = 8 mg/L. SCr now 1.5.',
-       labValue:8, labUnit:'mg/L',
-       options:['Increase dose to 1500mg q12h','Shorten interval to 1000mg q8h','No change — within range','Hold vancomycin — nephrotoxicity'], correct:0,
-       explanation:'Trough 8 is below target 15-20. Increase dose. Rising SCr is concerning but trough is low, not vancomycin toxicity.'},
-      {type:'lab_result', text:'Day 5: Trough = 18 mg/L. SCr 1.8. AUC24 = 520. Patient afebrile, improving.',
-       labValue:18, labUnit:'mg/L',
-       options:['Continue current regimen','Reduce dose to 1000mg q12h','Hold vancomycin','Switch to linezolid'], correct:0,
-       explanation:'Trough 18 in range. AUC24 520 in range (400-600). SCr rising likely from sepsis/vasopressors. Continue and monitor.'},
-      {type:'outcome', text:'Day 7: Clinically improved. SCr stable 1.8. Trough 16. AUC24 480. Blood cultures negative. Complete 14-day course. Monitor SCr q48h.', score:100}
-    ]
-  },
-  {
-    id:'gent_od', title:'Gentamicin Once-Daily — Pyelonephritis', difficulty:'Beginner', drug:'gentamicin',
-    steps:[
-      {type:'vignette', text:'A 45-year-old female (62kg, 162cm) with complicated pyelonephritis. SCr 0.8. Blood culture: E. coli, fluoroquinolone-resistant, gentamicin-sensitive (MIC 1). On pip-tazo. Adding once-daily gentamicin.',
-       patient:{weight:62,height:162,age:45,sex:'female',scr:0.8}},
-      {type:'question_mc', text:'What dose of once-daily gentamicin?',
-       options:['120mg q24h','250mg q24h','350mg q24h','500mg q24h'], correct:2,
-       explanation:'Extended-interval = 5-7 mg/kg = 310-434mg. 350mg q24h is appropriate (5.6 mg/kg).'},
-      {type:'question_mc', text:'When do you check the level? (Hartford nomogram)',
-       options:['6-14h after start of infusion','30min after end of infusion','Before next dose (trough)','At 18-24h'], correct:0,
-       explanation:'Hartford nomogram: check level at 6-14h after start of extended-interval infusion. Single level determines interval.'},
-      {type:'lab_result', text:'Level at 10h post-infusion start = 6 mg/L.',
-       labValue:6, labUnit:'mg/L',
-       options:['Continue q24h','Extend to q36h','Extend to q48h','Reduce dose'], correct:0,
-       explanation:'Hartford: 10h level 6 mg/L falls in q24h zone. Continue current regimen.'},
-      {type:'outcome', text:'Day 3: 10h level 5 mg/L (q24h zone). SCr stable. Continue x 3 more days. Total 5-day course.', score:100}
-    ]
-  },
-  {
-    id:'phenytoin_status', title:'Phenytoin Loading — Status Epilepticus', difficulty:'Advanced', drug:'phenytoin',
-    steps:[
-      {type:'vignette', text:'A 55-year-old male (75kg) with status epilepticus. Seizures controlled with lorazepam. Starting phenytoin load. SCr 0.9, Albumin 3.2. No prior phenytoin.',
-       patient:{weight:75,height:175,age:55,sex:'male',scr:0.9}},
-      {type:'question_mc', text:'What IV loading dose of phenytoin?',
-       options:['500mg IV','750mg IV','1000mg IV','1500mg IV'], correct:2,
-       explanation:'Loading dose = 15-20 mg/kg = 1125-1500mg. 1000mg is standard. Max rate 50 mg/min with cardiac monitoring.'},
-      {type:'question_mc', text:'What maintenance dose do you start?',
-       options:['100mg TID','200mg BID','300mg QHS','400mg daily'], correct:2,
-       explanation:'Standard maintenance = 300mg/day. Non-linear kinetics: levels take 5-7 days to stabilize.'},
-      {type:'lab_result', text:'Level 1h post-load = 18 mg/L. Albumin 3.2. What is the FREE phenytoin level?',
-       labValue:18, labUnit:'mg/L',
-       options:['1.8 mg/L','2.4 mg/L','3.6 mg/L','5.4 mg/L'], correct:1,
-       explanation:'Free = Total x (1-PB). With low albumin: fu = 0.1/[(0.1 x 3.2/4.0)+(1-3.2/4.0)] = 0.357. Free = 18 x 0.357 = 6.4. But simplified: Free = 18 x 0.1 x (4.0/3.2) = 2.25. Answer ~2.4 mg/L. Free therapeutic = 1-2 mg/L.'},
-      {type:'lab_result', text:'Day 5: Total level = 28 mg/L (TOXIC). Patient confused, ataxic. Albumin 3.0.',
-       labValue:28, labUnit:'mg/L',
-       options:['Reduce to 200mg/day','Reduce to 250mg/day','Hold 1 dose then restart 300mg','No change'], correct:0,
-       explanation:'Level 28 toxic (>20). Non-linear kinetics: reduce by 50-100mg. 200mg/day appropriate. Recheck in 5-7 days.'},
-      {type:'outcome', text:'Day 10: Total level 16. Free 2.1. Patient lucid. Continue 200mg/day. Recheck in 2 weeks.', score:100}
-    ]
-  },
-  {
-    id:'lithium_tox', title:'Lithium Toxicity — Drug Interaction', difficulty:'Advanced', drug:'lithium',
-    steps:[
-      {type:'vignette', text:'A 52-year-old female (58kg) with bipolar on lithium 300mg BID. Presents with tremor, nausea, polyuria. Started ibuprofen 3 days ago. SCr 1.4 (baseline 0.9).',
-       patient:{weight:58,height:160,age:52,sex:'female',scr:1.4}},
-      {type:'question_mc', text:'Most likely cause of symptoms?',
-       options:['Lithium toxicity from NSAID interaction','Bipolar manic episode','Serotonin syndrome','Dehydration only'], correct:0,
-       explanation:'NSAIDs reduce renal lithium clearance 15-25%. Rising SCr compounds this. Tremor + nausea + polyuria = lithium toxicity.'},
-      {type:'lab_result', text:'Lithium 12h trough = 1.8 mmol/L (TOXIC). SCr 1.4.',
-       labValue:1.8, labUnit:'mmol/L',
-       options:['Hold lithium, stop NSAID, IV fluids','Reduce lithium to 150mg BID','Switch to valproic acid','Give sodium bicarbonate'], correct:0,
-       explanation:'Level 1.8 toxic (>1.5). Hold lithium. Stop ibuprofen. IV hydration to restore renal clearance. Monitor q6-12h.'},
-      {type:'lab_result', text:'24h later: Lithium = 1.2 mmol/L. SCr 1.1. Improving.',
-       labValue:1.2, labUnit:'mmol/L',
-       options:['Restart lithium 150mg BID','Restart lithium 300mg BID','Wait until level <0.6','Switch to carbamazepine'], correct:0,
-       explanation:'Level 1.2 therapeutic but no longer toxic. Restart at reduced dose (150mg BID). Avoid NSAIDs permanently.'},
-      {type:'outcome', text:'Day 7: Lithium 0.8 on 150mg BID. SCr 0.9. Stable. Educate: avoid NSAIDs, maintain hydration, check level if meds change.', score:100}
-    ]
-  },
-  {
-    id:'ped_vanc', title:'Pediatric Vancomycin — Neonatal Sepsis', difficulty:'Intermediate', drug:'vancomycin',
-    steps:[
-      {type:'vignette', text:'A 2-week-old neonate (3.2kg, 48cm) with late-onset sepsis. Blood culture: MRSA. SCr 0.4.',
-       patient:{weight:3.2,height:48,age:0,sex:'male',scr:0.4}},
-      {type:'question_mc', text:'What vancomycin dose for this neonate? (term, 2 weeks old)',
-       options:['10mg/kg q12h','15mg/kg q8h','15mg/kg q12h','20mg/kg q12h'], correct:1,
-       explanation:'Term neonate 2 weeks: 15 mg/kg q8h. Younger (<7 days) gets q12h. Neonatal targets lower (10-15 mg/L).'},
-      {type:'lab_result', text:'Trough before 4th dose = 12 mg/L. Target 10-15 for neonates.',
-       labValue:12, labUnit:'mg/L',
-       options:['Increase to 20mg/kg q8h','Decrease to 10mg/kg q8h','Continue current dose','Extend to q12h'], correct:2,
-       explanation:'Trough 12 is within neonatal target (10-15). Continue current regimen. Monitor renal function closely.'},
-      {type:'outcome', text:'Day 5: Trough 14. SCr 0.5. Cultures negative. Continue 10 more days. Monitor SCr q72h.', score:100}
-    ]
-  },
-  {
-    id:'renal_decline', title:'Vancomycin with Renal Decline — AKI', difficulty:'Intermediate', drug:'vancomycin',
-    steps:[
-      {type:'vignette', text:'A 70-year-old male (80kg) on vancomycin 1g q12h for MRSA bacteremia. Day 1: SCr 1.0. Day 3: SCr 1.8. Day 4: SCr 2.5. Trough pending.',
-       patient:{weight:80,height:175,age:70,sex:'male',scr:2.5}},
-      {type:'question_mc', text:'SCr rising rapidly. What is your concern?',
-       options:['Vancomycin nephrotoxicity — hold immediately','AKI from sepsis — adjust vancomycin','Contrast nephropathy — continue monitoring','Both A and B are possible'], correct:3,
-       explanation:'Rising SCr on vancomycin could be vancomycin nephrotoxicity (if trough >20) OR sepsis AKI. Check trough to determine.'},
-      {type:'lab_result', text:'Trough = 22 mg/L (ELEVATED). SCr 2.5. CrCl ~25 mL/min.',
-       labValue:22, labUnit:'mg/L',
-       options:['Hold vancomycin, check level in 24h','Reduce to 500mg q24h','Extend to 1g q48h','Switch to linezolid'], correct:0,
-       explanation:'Trough 22 above toxic threshold. CrCl 25 = significant impairment. HOLD vancomycin. Recheck 24h. Consider linezolid.'},
-      {type:'lab_result', text:'24h later: Trough = 16. SCr 2.3 (improving).',
-       labValue:16, labUnit:'mg/L',
-       options:['Restart 500mg q48h','Restart 750mg q24h','Switch to linezolid','Continue holding'], correct:0,
-       explanation:'Level 16 now therapeutic. CrCl ~25 = extend interval. 500mg q48h appropriate. Recheck before 3rd dose.'},
-      {type:'outcome', text:'Day 8: SCr 1.5 (recovering). Trough on 500mg q48h = 14. Continue. SCr trending toward baseline.', score:100}
-    ]
-  },
-  {
-    id:'drug_interaction', title:'Drug Interaction — Phenytoin + Warfarin', difficulty:'Advanced', drug:'phenytoin',
-    steps:[
-      {type:'vignette', text:'A 60-year-old male (70kg) on warfarin (INR 2.5) for AF. Develops seizures. Started phenytoin 300mg/day. Day 7: phenytoin 12 mg/L. INR now = 1.3.',
-       patient:{weight:70,height:175,age:60,sex:'male',scr:1.0}},
-      {type:'question_mc', text:'Why did INR drop from 2.5 to 1.3?',
-       options:['Phenytoin inhibits warfarin metabolism','Phenytoin induces warfarin metabolism (CYP2C9)','Phenytoin displaces warfarin from albumin','Lab error'], correct:1,
-       explanation:'Phenytoin is a CYP inducer. Induces CYP2C9/CYP3A4 which metabolize warfarin. Reduces warfarin levels, lowers INR.'},
-      {type:'question_mc', text:'What is your next step?',
-       options:['Increase warfarin dose by 25-50%','Double the warfarin dose','Add more phenytoin','Stop phenytoin'], correct:0,
-       explanation:'Increase warfarin 25-50% to compensate. Do NOT double. Recheck INR in 3-5 days. Phenytoin level therapeutic (12).'},
-      {type:'lab_result', text:'After 50% warfarin increase: INR = 2.2. Phenytoin = 14 mg/L.',
-       labValue:14, labUnit:'mg/L',
-       options:['Continue current regimen','Reduce phenytoin — approaching toxic','Reduce warfarin — INR too high','Add vitamin K'], correct:0,
-       explanation:'INR 2.2 in range (2-3). Phenytoin 14 therapeutic (10-20). Both appropriate. Continue. Monitor INR weekly.'},
-      {type:'outcome', text:'INR stable 2.4. Phenytoin 14. No seizures. Key lesson: phenytoin induces CYP2C9, increases warfarin clearance.', score:100}
-    ]
-  },
-  {
-    id:'ag_tdm', title:'Aminoglycoside TDM — Peak/Trough', difficulty:'Beginner', drug:'gentamicin',
-    steps:[
-      {type:'vignette', text:'A 55-year-old male (75kg) with Pseudomonas bacteremia on gentamicin 120mg q8h (conventional). SCr 1.1. Peak and trough pending.',
-       patient:{weight:75,height:172,age:55,sex:'male',scr:1.1}},
-      {type:'lab_result', text:'Peak (30min post) = 4.2 mg/L. Trough (30min pre) = 2.8 mg/L.',
-       labValue:4.2, labUnit:'mg/L',
-       options:['Both therapeutic','Peak too low, trough too high','Peak OK, trough too high','Peak too low, trough OK'], correct:1,
-       explanation:'Conventional targets: Peak 5-12, Trough <2. Peak 4.2 BELOW (subtherapeutic). Trough 2.8 ABOVE (nephrotoxicity risk).'},
-      {type:'question_mc', text:'What adjustment?',
-       options:['Increase dose to 160mg q8h','Extend to 120mg q12h','Increase dose AND extend interval','Switch to once-daily'], correct:2,
-       explanation:'Peak low = increase dose. Trough high = extend interval. Try 160mg q12h. Or switch to extended-interval (400mg q24h).'},
-      {type:'lab_result', text:'After 160mg q12h: Peak = 7.8, Trough = 1.2.',
-       labValue:7.8, labUnit:'mg/L',
-       options:['Both therapeutic — continue','Peak too high','Trough too low','Switch to OD'], correct:0,
-       explanation:'Peak 7.8 in range (5-12). Trough 1.2 in range (<2). Continue. Monitor SCr and levels weekly.'},
-      {type:'outcome', text:'Day 5: Peak 8.1, Trough 1.0. SCr 1.1. Cultures negative. Continue x 5 more days (total 10 for Pseudomonas).', score:100}
-    ]
-  }
+
+const LEARNING_PATH=[
+  {id:'ch1',title:'What is Pharmacokinetics?',tier:'Foundation',chapter:1,estMin:15,objectives:['Define ADME','Read a concentration-time chart','Identify Vd, CL, ke, F'],steps:[
+    {type:'explain',title:'The Story of a Drug in the Body',content:'<p>When you give a patient vancomycin IV, what happens to the drug? It <strong>distributes</strong> into tissues, gets <strong>metabolized</strong>, and is <strong>excreted</strong> by the kidneys.</p><p>This journey is called <strong>Pharmacokinetics (PK)</strong> — what the body does to the drug. It has four phases:</p><p><strong>A</strong>bsorption — drug enters the body<br><strong>D</strong>istribution — drug spreads into tissues<br><strong>M</strong>etabolism — drug is changed (usually liver)<br><strong>E</strong>xcretion — drug leaves the body (usually kidneys)</p><p>For IV vancomycin: no absorption (goes directly into blood), but distribution, metabolism, and excretion all happen.</p>'},
+    {type:'explain',title:'The Four PK Parameters',content:'<p>Every drug is described by four numbers:</p><p><strong>Vd (Volume of Distribution)</strong> — How widely the drug spreads. High Vd = tissue binding. Units: L/kg.</p><p><strong>CL (Clearance)</strong> — How fast the body removes drug. Units: L/h.</p><p><strong>t½ (Half-life)</strong> — Time for concentration to drop by half. Determines dosing frequency. Units: hours.</p><p><strong>F (Bioavailability)</strong> — Fraction reaching blood. IV = 1.0. Oral varies. Units: fraction.</p>'},
+    {type:'demo',title:'Reading the Vancomycin Chart',instructions:'Look at the chart on the right. This shows vancomycin 1000mg IV every 12 hours for 6 doses.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6},{action:'setRoute',value:'iv_infusion'}],guided:['<strong>The blue line</strong> is drug concentration over time. It rises when a dose is given, falls as drug is eliminated.','<strong>The green band</strong> is the therapeutic range (15-20 mg/L). You want troughs in this band.','<strong>The red dashed line</strong> is the toxic threshold (30 mg/L). Above this = dangerous.','<strong>Orange triangles</strong> mark when each dose is given.','<strong>Notice:</strong> Each peak is slightly higher — this is accumulation. Drug builds up until steady state.'],checkpoint:{question:'The green shaded band on the chart represents:',options:['The toxic range','The therapeutic range','The dosing interval','The half-life'],correct:1,explanation:'The green band is the therapeutic range (15-20 mg/L for vancomycin).'}},
+    {type:'quiz',title:'Chapter 1 Quiz',questions:[
+      {q:'ADME stands for:',o:['Absorption, Distribution, Metabolism, Excretion','Administration, Dosing, Monitoring, Evaluation','Analysis, Distribution, Metabolism, Elimination','Absorption, Dosing, Metabolism, Excretion'],c:0,e:'ADME = Absorption, Distribution, Metabolism, Excretion.'},
+      {q:'For IV vancomycin, which ADME step is skipped?',o:['Distribution','Metabolism','Absorption','Excretion'],c:2,e:'IV drugs bypass absorption — they go directly into the bloodstream.'},
+      {q:'What does a high Vd mean?',o:['Drug stays in blood','Drug distributes extensively into tissues','Drug is cleared rapidly','Drug has low bioavailability'],c:1,e:'High Vd = extensive tissue binding. Digoxin (Vd=7.3) concentrates in heart tissue.'},
+      {q:'The orange triangles on the chart represent:',o:['Peak concentrations','Toxic levels','When doses are given','Steady state'],c:2,e:'Orange triangles mark when each dose is administered.'},
+      {q:'A vancomycin trough is 8 mg/L. Is this therapeutic?',o:['Yes — within 15-20','No — below therapeutic range (15-20)','No — above toxic threshold','Yes — ideal trough'],c:1,e:'Vancomycin therapeutic trough is 15-20. Level 8 is subtherapeutic.'}
+    ]}
+  ]},
+  {id:'ch2',title:'Volume of Distribution',tier:'Foundation',chapter:2,estMin:20,objectives:['Define Vd and explain its meaning','Calculate Vd from dose and Cp0','Predict how Vd affects peak concentration'],steps:[
+    {type:'explain',title:'What Does Vd Really Mean?',content:'<p>Vd is <strong>not a real volume</strong> — it\'s a mathematical concept.</p><p><strong>Formula:</strong> <code>Vd = Dose / Cp0</code></p><p><strong>Vancomycin:</strong> 1000mg / 20.4 mg/L = 49L. Vd = 0.7 L/kg x 70kg.</p><p><strong>Low Vd (0.1-0.3):</strong> Stays in blood (heparin, warfarin).<br><strong>Medium Vd (0.3-1.0):</strong> Moderate tissue distribution (vancomycin, gentamicin).<br><strong>High Vd (>1):</strong> Extensive tissue binding (digoxin 7.3, amiodarone 60).</p><p>High Vd drugs need higher loading doses to fill tissue compartments.</p>'},
+    {type:'demo',title:'Explore Vd with the Slider',instructions:'Drag the Vd slider in the Concept Explorer (Study tab). Watch how the peak changes.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6}],guided:['<strong>Step 1:</strong> Note the peak with normal Vd (0.7 L/kg).','<strong>Step 2:</strong> Open Study tab > Concept Explorer. Drag Vd to 1.4 — peak drops significantly.','<strong>Step 3:</strong> Drag Vd to 0.35 — peak rises sharply.','<strong>Key:</strong> <code>Cp0 = Dose / Vd</code>. Doubling Vd halves the peak.'],checkpoint:{question:'Doubling Vd while keeping dose the same causes Cmax to:',o:['Double','Stay the same','Halve','Quadruple'],c:2,e:'Cp0 = Dose/Vd. Vd doubles → Cp0 halves.'}},
+    {type:'quiz',title:'Chapter 2 Quiz',questions:[
+      {q:'Vd = Dose/Cp0. 1000mg gives Cp0=20 mg/L. Vd = ?',o:['20 L','50 L','200 L','0.02 L'],c:1,e:'Vd = 1000/20 = 50 L.'},
+      {q:'Digoxin Vd=7.3 L/kg. For 70kg patient, total Vd is:',o:['7.3 L','51 L','511 L','10.3 L'],c:2,e:'7.3 x 70 = 511 L. Digoxin concentrates heavily in tissues.'},
+      {q:'A drug with Vd=0.1 L/kg mostly stays in:',o:['Tissues','Blood','Liver','Kidneys'],c:1,e:'Low Vd = stays in bloodstream.'},
+      {q:'Why do high-Vd drugs need larger loading doses?',o:['Metabolized faster','Distribute into more tissue','Lower bioavailability','Excreted faster'],c:1,e:'High Vd = drug leaves blood into tissues. Need more drug to fill compartments.'},
+      {q:'Vancomycin Vd=0.7 L/kg. For 70kg, total Vd is:',o:['0.7 L','7 L','49 L','70 L'],c:2,e:'0.7 x 70 = 49 L.'}
+    ]}
+  ]},
+  {id:'ch3',title:'Clearance & Half-Life',tier:'Foundation',chapter:3,estMin:20,objectives:['Define clearance (CL)','Derive ke from CL and Vd','Calculate half-life','Explain why t½ determines time to SS'],steps:[
+    {type:'explain',title:'Clearance and Half-Life',content:'<p><strong>CL = ke x Vd</strong> — volume cleared per hour.</p><p><strong>ke = CL / Vd</strong> — fraction eliminated per hour.</p><p><strong>t½ = 0.693 / ke</strong> — time for concentration to drop by half.</p><p><strong>Vancomycin:</strong> CL = 4.9 L/h, ke = 0.10 h⁻¹, t½ = 6.9h.</p><p>Half-life determines: (1) how often to dose, (2) time to steady state (4-5 half-lives).</p>'},
+    {type:'demo',title:'Watch Clearance Change the Curve',instructions:'Use the Concept Explorer CL slider.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6}],guided:['<strong>Step 1:</strong> CL=4.1 L/h. Note the half-life.','<strong>Step 2:</strong> Double CL to 8.2 — trough drops, half-life shortens.','<strong>Step 3:</strong> Halve CL to 2.0 — trough rises, half-life elongates.','<strong>Key:</strong> t½ = 0.693 x Vd / CL. Doubling CL halves t½.'],checkpoint:{question:'CL=4.9 L/h, Vd=49 L. What is ke?',o:['0.10 h⁻¹','10 h⁻¹','0.01 h⁻¹','4.9 h⁻¹'],c:0,e:'ke = CL/Vd = 4.9/49 = 0.10 h⁻¹.'}},
+    {type:'quiz',title:'Chapter 3 Quiz',questions:[
+      {q:'t½ = 6h. Time to steady state?',o:['6h','12h','24-30h','60h'],c:2,e:'4-5 half-lives = 24-30h.'},
+      {q:'If CL doubles, t½:',o:['Doubles','Halves','Stays same','Quadruples'],c:1,e:'t½ = 0.693 x Vd/CL. CL doubles → t½ halves.'},
+      {q:'ke = 0.10. t½ = ?',o:['10h','6.93h','0.693h','1h'],c:1,e:'t½ = 0.693/0.10 = 6.93h.'},
+      {q:'CrCl drops from 100 to 25. Vancomycin t½:',o:['Stays same','Doubles','Quadruples','Halves'],c:2,e:'CrCl dropped 4x → ke dropped 4x → t½ increased 4x.'},
+      {q:'What determines maintenance dose?',o:['Vd','CL','t½','F'],c:1,e:'CL determines how fast drug is removed. Higher CL = higher maintenance dose.'}
+    ]}
+  ]},
+  {id:'ch4',title:'Routes & Dosing',tier:'Core Concepts',chapter:4,estMin:20,objectives:['Compare IV bolus, infusion, oral','Understand F and ka','Calculate loading dose'],steps:[
+    {type:'explain',title:'Three Routes, Three Curves',content:'<p><strong>IV Bolus:</strong> Instant peak, sharp decay.<br><strong>IV Infusion:</strong> Peak at end of infusion, lower and safer.<br><strong>Oral:</strong> Slow rise (absorption), lower peak (bioavailability loss).</p><p><strong>Loading Dose = (Target Cp x Vd) / F</strong></p><p>Vancomycin LD: (20 x 49) / 1 = 980mg. Standard: 25-30 mg/kg.</p>'},
+    {type:'demo',title:'Switch Between Routes',instructions:'Watch how the chart changes when you switch routes.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6}],guided:['<strong>IV Bolus:</strong> Click it — sharp peak, highest Cmax.','<strong>IV Infusion:</strong> Click it — lower, smoother peak. This is how vancomycin is given.','<strong>Oral:</strong> Click it — slow rise, lower peak. Vancomycin oral F=0 (stays in gut).'],checkpoint:{question:'Which route gives the highest instantaneous peak?',o:['IV Bolus','IV Infusion','Oral','All equal'],c:0,e:'IV bolus = entire dose enters bloodstream instantly.'}},
+    {type:'quiz',title:'Chapter 4 Quiz',questions:[
+      {q:'Oral F of IV drugs is:',o:['0%','50%','100%','Varies'],c:2,e:'IV = F 1.0 (100%).'},
+      {q:'LD = (Target x Vd)/F. Target=20, Vd=49, F=1. LD=?',o:['980mg','20mg','490mg','24.5mg'],c:0,e:'LD = (20 x 49)/1 = 980mg.'},
+      {q:'Why is vancomycin given as infusion over 1h?',o:['More effective','Avoid Red Man Syndrome','Better bioavailability','Cheaper'],c:1,e:'Rapid IV vancomycin causes Red Man Syndrome (histamine release).'},
+      {q:'Drug has F=0.5 orally. 1000mg oral = how much in blood?',o:['1000mg','500mg','250mg','50mg'],c:1,e:'F=50%. Only 500mg reaches circulation.'},
+      {q:'Why need loading dose for long t½ drugs?',o:['Reduce side effects','Achieve therapeutic levels quickly','Improve bioavailability','Reduce maintenance dose'],c:1,e:'Without LD, wait 4-5 half-lives for steady state.'},
+      {q:'Standard vancomycin loading dose?',o:['5-10 mg/kg','15-20 mg/kg','25-30 mg/kg','50-75 mg/kg'],c:2,e:'25-30 mg/kg TBW.'}
+    ]}
+  ]},
+  {id:'ch5',title:'Multiple Dosing & Steady State',tier:'Core Concepts',chapter:5,estMin:20,objectives:['Explain drug accumulation','Define steady state','Predict Css_avg','4-5 half-lives to SS'],steps:[
+    {type:'explain',title:'Why Drug Levels Accumulate',content:'<p>Repeated doses accumulate because the previous dose isn\'t fully eliminated. Steady state = drug input = elimination. Takes <strong>4-5 half-lives</strong>.</p><p><strong>Css_avg = (F x Dose) / (CL x τ)</strong></p>'},
+    {type:'demo',title:'Watch Accumulation Build Up',instructions:'Increase numDoses and watch the pattern.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:1}],guided:['<strong>1 dose:</strong> Single peak and decay, no accumulation.','<strong>3 doses:</strong> Each peak slightly higher. Troughs rising.','<strong>6 doses:</strong> Curve starting to plateau.','<strong>12 doses:</strong> Flat at steady state. Check SS Trough and Css avg in params bar.'],checkpoint:{question:'t½ = 6h. Hours to steady state?',o:['6h','12h','24-30h','60h'],c:2,e:'4-5 x 6 = 24-30h.'}},
+    {type:'quiz',title:'Chapter 5 Quiz',questions:[
+      {q:'Steady state after how many half-lives?',o:['1','2-3','4-5','10'],c:2,e:'4-5 half-lives.'},
+      {q:'Double the dose → Css_avg:',o:['Doubles','Halves','Stays same','Quadruples'],c:0,e:'Css_avg proportional to dose.'},
+      {q:'Shorten interval (same daily dose) → Cmax:',o:['Increases','Decreases','Stays same','Depends'],c:0,e:'More frequent dosing = higher peaks.'},
+      {q:'Trough at 12h is 5 mg/L. Should you adjust?',o:['Yes — below target','Wait for steady state first','Yes — increase by 50mg','No — correct'],c:1,e:'At 12h, SS not reached. Wait 4-5 half-lives.'},
+      {q:'Change q12h to q8h (same dose) → trough:',o:['Decreases','Increases','Stays same','Cannot predict'],c:1,e:'Shorter interval = less elimination time = higher trough.'}
+    ]}
+  ]},
+  {id:'ch6',title:'Renal Dosing',tier:'Core Concepts',chapter:6,estMin:25,objectives:['Calculate CrCl (Cockcroft-Gault)','How CrCl affects ke','Adjust doses for renal impairment','Reduce dose vs extend interval'],steps:[
+    {type:'explain',title:'Why Kidneys Matter',content:'<p><strong>CrCl = [(140-Age) x Weight] / (72 x SCr)</strong> x 0.85 if female.</p><p><strong>Vancomycin:</strong> ke = 0.00293 x CrCl + 0.014</p><p>When SCr rises → CrCl drops → ke drops → t½ increases → drug accumulates more.</p>'},
+    {type:'demo',title:'Watch SCr Change the Curve',instructions:'Increase SCr and watch the half-life elongate.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6},{action:'setScr',value:1.0}],guided:['<strong>SCr=1.0:</strong> CrCl ~68. Normal half-life and trough.','<strong>SCr=2.0:</strong> CrCl drops to ~34. Trough rises dramatically!','<strong>SCr=3.0:</strong> CrCl ~23. Trough likely toxic. Renal warning appears.','<strong>Fix:</strong> Reduce dose to 500mg, extend interval to q24h. Trough returns to range.'],checkpoint:{question:'SCr doubles from 1.0 to 2.0. CrCl:',o:['Doubles','Halves','Stays same','Quadruples'],c:1,e:'CrCl inversely proportional to SCr.'}},
+    {type:'quiz',title:'Chapter 6 Quiz',questions:[
+      {q:'Cockcroft-Gault: 70M, 70kg, SCr 1.0. CrCl=?',o:['70','50','68','100'],c:2,e:'[(140-70)x70]/(72x1.0) = 68.'},
+      {q:'CrCl drops from 70 to 25. What adjustment?',o:['Reduce dose only','Extend interval only','Both','No change'],c:2,e:'CrCl <30: both dose reduction and interval extension.'},
+      {q:'Why does trough rise when SCr increases?',o:['Faster absorption','Slower clearance','More distribution','More protein binding'],c:1,e:'Higher SCr = lower CrCl = lower ke = longer t½ = more accumulation.'},
+      {q:'Trough 28 mg/L (toxic). What do?',o:['Increase dose','Hold, recheck 24h','Give another dose','No action'],c:1,e:'Trough >20 = toxic. Hold, recheck, restart at lower dose.'},
+      {q:'When to check levels for dose adjustment?',o:['After 1st dose','After 2-3 doses','At steady state (4-5 t½)','Only if toxic'],c:2,e:'Wait for SS before adjusting.'},
+      {q:'SCr rises from 1.0 to 3.0 on vancomycin. Drug level:',o:['Stays same','Decreases','Increases significantly','Cannot predict'],c:2,e:'SCr tripled → CrCl dropped ~3x → ke dropped → drug accumulates.'}
+    ]}
+  ]},
+  {id:'ch7',title:'Therapeutic Drug Monitoring',tier:'Clinical Application',chapter:7,estMin:25,objectives:['When and why to check levels','Interpret trough/peak','Use TDM analyzer','Understand Bayesian dosing'],steps:[
+    {type:'explain',title:'TDM — When and Why',content:'<p><strong>Check levels:</strong> At steady state (4-5 t½), when renal/hepatic function changes, when adding interacting drugs, for narrow therapeutic index drugs.</p><p><strong>Trough:</strong> 30 min before dose. Shows lowest level.<br><strong>Peak:</strong> 30 min after infusion. Shows highest level.</p><p><strong>Bayesian dosing:</strong> Population PK + measured levels = individualized dosing.</p>'},
+    {type:'demo',title:'Enter a Measured Level',instructions:'Use the TDM tab to enter a measured trough and see the Bayesian-adjusted curve.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6},{action:'setScr',value:1.5}],guided:['<strong>Step 1:</strong> Switch to TDM tab. Enter trough = 18 mg/L, drawn 0.5h before dose 6.','<strong>Step 2:</strong> Click Analyze Level. Calculator back-calculates individual ke and Vd.','<strong>Step 3:</strong> Pink dot appears on chart. Dashed line = Bayesian-adjusted curve.','<strong>Step 4:</strong> Compare predicted vs measured. Ratio >1.2 = slower clearance than expected.'],checkpoint:{question:'Measured trough 22 but predicted 15. Patient clears drug:',o:['Faster','Slower','Same','Wrong time'],c:1,e:'Measured > predicted = slower clearance.'}},
+    {type:'quiz',title:'Chapter 7 Quiz',questions:[
+      {q:'When to check vancomycin trough for adjustment?',o:['After 1st dose','After 24h','At steady state','Only if toxic'],c:2,e:'Wait for SS (4-5 half-lives) before adjusting.'},
+      {q:'Trough drawn 30 min before dose represents:',o:['Highest level','Lowest level','Average level','SS level'],c:1,e:'Trough = lowest concentration.'},
+      {q:'Measured/Predicted = 1.5. Meaning?',o:['Faster clearance','50% slower clearance','Wrong time','Dose too high'],c:1,e:'Measured 50% higher than predicted = slower clearance.'},
+      {q:'What is Bayesian dosing?',o:['Population PK only','Measured levels only','Population PK + measured levels','Weight-based only'],c:2,e:'Combines population estimates with individual measurements.'},
+      {q:'Trough 8 on vanc 1g q12h (target 15-20). What do?',o:['No change','Increase to 1.5g q12h or 1g q8h','Decrease to 750mg','Hold vanc'],c:1,e:'Trough below target. Increase dose or shorten interval.'},
+      {q:'Why wait for SS before adjusting?',o:['Drug needs time to work','Levels still changing','Lab needs time','SS is when side effects appear'],c:1,e:'Pre-SS levels are not representative. Adjusting too early leads to overdosing.'}
+    ]}
+  ]},
+  {id:'ch8',title:'Capstone: Vancomycin in Renal Failure',tier:'Clinical Application',chapter:8,estMin:30,objectives:['Integrate all PK concepts','Complete vancomycin dosing workup','Adjust for renal impairment','AUC-guided dosing','Interpret TDM and re-dose'],steps:[
+    {type:'explain',title:'The Complete Framework',content:'<p>You now have the complete framework for dosing ANY drug:</p><p><strong>1.</strong> Choose drug → know Vd, CL, F, therapeutic range<br><strong>2.</strong> Assess patient → weight, CrCl, hepatic, interactions<br><strong>3.</strong> Calculate loading dose → LD = (Target x Vd) / F<br><strong>4.</strong> Set maintenance → based on CL and target Css<br><strong>5.</strong> Monitor → check levels at steady state<br><strong>6.</strong> Adjust → use measured levels to refine</p>'},
+    {type:'demo',title:'Step 1: Assess the Patient',instructions:'70M, 80kg, 175cm, SCr 2.5 — MRSA bacteremia.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setWeight',value:80},{action:'setHeight',value:175},{action:'setAge',value:70},{action:'setSex',value:'male'},{action:'setScr',value:2.5}],guided:['<strong>CrCl:</strong> [(140-70) x 80] / (72 x 2.5) = 31 mL/min. Significant renal impairment.','<strong>Renal warning</strong> appears because CrCl < 30.','<strong>ke will be much lower</strong> — half-life longer, drug accumulates more.'],checkpoint:{question:'This patient\'s CrCl is approximately:',o:['68','31','15','90'],c:1,e:'CrCl = [(140-70)x80]/(72x2.5) = 31.'}},
+    {type:'demo',title:'Step 2: Loading Dose',instructions:'Calculate and give loading dose.',setupActions:[{action:'setDose',value:2000},{action:'setInterval',value:12},{action:'setNumDoses',value:1}],guided:['<strong>LD = 25-30 mg/kg = 2000-2400mg.</strong> Give 2000mg IV over 2h.','<strong>Why LD?</strong> With longer t½ (low CrCl), waiting for SS without LD takes days.','<strong>Chart shows</strong> first peak ~20 mg/L — within therapeutic range.'],checkpoint:{question:'Loading dose for this patient:',o:['500mg','1000mg','2000mg','4000mg'],c:2,e:'25 mg/kg x 80 = 2000mg.'}},
+    {type:'demo',title:'Step 3: Renal-Adjusted Maintenance',instructions:'Set maintenance dose for CrCl 31.',setupActions:[{action:'setDose',value:750},{action:'setInterval',value:24},{action:'setNumDoses',value:6}],guided:['<strong>CrCl 31:</strong> reduce dose AND extend interval. 750mg q24h.','<strong>Watch the trough</strong> — should stay in 15-20 range at SS.','<strong>If we used 1g q12h</strong> (standard), trough would be dangerously high.'],checkpoint:{question:'Appropriate adjustment for CrCl 31:',o:['1g q12h','750mg q24h','500mg q8h','2g q24h'],c:1,e:'CrCl 31 needs dose reduction + interval extension.'}},
+    {type:'demo',title:'Step 4: Check Level and Adjust',instructions:'Day 5 trough = 22 mg/L (above toxic threshold). What do you do?',setupActions:[{action:'setDose',value:750},{action:'setInterval',value:24},{action:'setNumDoses',value:6}],guided:['<strong>Trough 22 is above toxic threshold (20).</strong> Patient is accumulating.','<strong>Reduce to 500mg q24h.</strong> Trough will drop to ~15 at new SS.','<strong>Monitor SCr closely</strong> — vancomycin + renal impairment = nephrotoxicity risk.','<strong>Key lesson:</strong> Always interpret levels in context of renal function.'],checkpoint:{question:'Trough 22 in patient with CrCl 31. What do?',o:['Increase dose','Reduce to 500mg q24h','No change','Switch antibiotic'],c:1,e:'Trough >20 = toxic. Reduce dose.'}},
+    {type:'quiz',title:'Final Assessment',questions:[
+      {q:'Loading dose formula?',o:['LD = Dose x Vd','LD = (Target x Vd)/F','LD = CL x ke','LD = Dose/CrCl'],c:1,e:'LD = (Target Cp x Vd) / F.'},
+      {q:'SCr doubles. Drug clearance:',o:['Doubles','Halves','Stays same','+50%'],c:1,e:'CrCl inversely proportional to SCr.'},
+      {q:'t½ = 6h. Time to SS?',o:['6h','12h','24-30h','48h'],c:2,e:'4-5 half-lives = 24-30h.'},
+      {q:'Measured 22, predicted 15. Patient:',o:['Clears faster','Clears slower','Wrong dose','Early level'],c:1,e:'Measured > predicted = slower clearance.'},
+      {q:'What determines maintenance dose?',o:['Vd','CL','t½','F'],c:1,e:'CL determines how fast drug is removed.'},
+      {q:'Why extended infusion for vancomycin?',o:['Tastes better','Avoid Red Man Syndrome + improve PK/PD','Cheaper','Better F'],c:1,e:'Extended infusion prevents histamine release and improves AUC/MIC.'},
+      {q:'Patient on vancomycin develops AKI. What do?',o:['Same dose','Increase dose','Hold, check level, adjust when stable','Switch to gentamicin'],c:2,e:'AKI reduces clearance → accumulates → toxicity. Hold, check, restart lower.'},
+      {q:'The PK framework for ANY drug:',o:['Guess and check','Vd → CL → ke → dose → monitor → adjust','Standard dose for everyone','Only check if toxic'],c:1,e:'This framework works for all 46 drugs in this simulator.'}
+    ]}
+  ]}
 ];
 
-let simState={active:false,simId:null,currentStep:0,score:0,answers:[],feedbackShown:false};
+let lpState={active:null,currentStep:0,score:0,totalQ:0,answers:[]};
+let lpProgress=lpLoadProgress();
 
-function renderSimSelector(){
+function lpLoadProgress(){
+  try{const s=localStorage.getItem('pkLearningProgress');if(s)return JSON.parse(s);}catch(e){}
+  const p={version:1,chapters:{}};
+  LEARNING_PATH.forEach(ch=>{p.chapters[ch.id]={status:'not_started',currentStep:0,score:0,totalQ:0};});
+  return p;
+}
+function lpSaveProgress(){try{localStorage.setItem('pkLearningProgress',JSON.stringify(lpProgress));}catch(e){}}
+
+function renderLPChapters(){
+  const tiers={'Foundation':[],'Core Concepts':[],'Clinical Application':[]};
+  LEARNING_PATH.forEach(ch=>{if(tiers[ch.tier])tiers[ch.tier].push(ch);});
   let html='';
-  SIMULATIONS.forEach(s=>{
-    const dc=s.difficulty.toLowerCase();
-    html+='<div class="sim-card" onclick="startSimulation(\''+s.id+'\')">'+
-      '<div class="sim-title">'+s.title+'</div>'+
-      '<div class="sim-meta">'+s.steps.length+' steps &middot; '+DRUGS[s.drug].name+
-      ' <span class="sim-diff '+dc+'">'+s.difficulty+'</span></div></div>';
-  });
-  document.getElementById('simSelector').innerHTML=html;
-}
-
-function startSimulation(id){
-  const sim=SIMULATIONS.find(s=>s.id===id);if(!sim)return;
-  simState={active:true,simId:id,currentStep:0,score:0,answers:[],feedbackShown:false};
-  document.getElementById('simSelector').classList.add('hidden');
-  document.getElementById('simActive').classList.remove('hidden');
-  document.getElementById('simScoreArea').classList.add('hidden');
-  renderSimStep();
-}
-
-function renderSimStep(){
-  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
-  const step=sim.steps[simState.currentStep];
-  const total=sim.steps.length;
-  const pct=((simState.currentStep)/total*100).toFixed(0);
-  document.getElementById('simProgress').style.width=pct+'%';
-  document.getElementById('simHeader').innerHTML='<strong style="color:#60a5fa;font-size:14px">'+sim.title+'</strong>'+
-    '<div style="font-size:11px;color:#64748b;margin-top:2px">Step '+(simState.currentStep+1)+' of '+total+' &middot; '+sim.difficulty+'</div>';
-  let html='<div class="sim-step"><div class="step-num">Step '+(simState.currentStep+1)+'</div>';
-  if(step.type==='vignette'){
-    html+='<div class="step-text">'+step.text+'</div>';
-    document.getElementById('simCheckBtn').style.display='none';
-    document.getElementById('simNextBtn').style.display='inline-block';
-    document.getElementById('simNextBtn').textContent='Start Case';
-  }else if(step.type==='question_mc'||step.type==='lab_result'){
-    html+='<div class="step-text">'+step.text+'</div>';
-    if(step.labValue!==undefined)html+='<div class="lab-value">'+step.labValue+' '+step.labUnit+'</div>';
-    html+='<div style="margin-top:8px">';
-    step.options.forEach((opt,i)=>{html+='<button class="sim-option" onclick="simSelectOption('+i+',this)">'+opt+'</button>';});
+  Object.entries(tiers).forEach(([tier,chapters])=>{
+    html+='<div class="lp-tier">'+tier+'</div><div class="lp-grid">';
+    chapters.forEach(ch=>{
+      const prog=lpProgress.chapters[ch.id]||{status:'not_started',score:0,totalQ:0};
+      const statusText=prog.status==='completed'?'Completed ('+Math.round(prog.totalQ>0?prog.score/prog.totalQ*100:0)+'%)':prog.status==='in_progress'?'In Progress':'Not Started';
+      const cls=prog.status==='completed'?'completed':lpState.active===ch.id?'active':'';
+      const barPct=prog.status==='completed'?100:prog.status==='in_progress'?((prog.currentStep||0)/ch.steps.length*100).toFixed(0):0;
+      html+='<div class="lp-card '+cls+'" onclick="lpStartChapter(\''+ch.id+'\')">';
+      html+='<div class="lp-num">'+ch.chapter+'</div><div class="lp-title">'+ch.title+'</div>';
+      html+='<div class="lp-status">'+statusText+'</div>';
+      html+='<div class="lp-bar"><div class="lp-bar-fill" style="width:'+barPct+'%"></div></div>';
+      html+='</div>';
+    });
     html+='</div>';
-    document.getElementById('simCheckBtn').style.display='inline-block';
-    document.getElementById('simNextBtn').style.display='none';
-  }else if(step.type==='outcome'){
-    html+='<div class="step-text">'+step.text+'</div>';
-    document.getElementById('simCheckBtn').style.display='none';
-    document.getElementById('simNextBtn').style.display='none';
+  });
+  document.getElementById('lpChapterGrid').innerHTML=html;
+  const completed=Object.values(lpProgress.chapters).filter(c=>c.status==='completed').length;
+  const totalQ=Object.values(lpProgress.chapters).reduce((s,c)=>s+(c.totalQ||0),0);
+  const totalScore=Object.values(lpProgress.chapters).reduce((s,c)=>s+(c.score||0),0);
+  if(completed>0){
+    const ov=document.getElementById('lpOverall');ov.classList.remove('hidden');
+    ov.innerHTML='<div class="lp-overall-score">'+completed+'/'+LEARNING_PATH.length+'</div><div class="lp-overall-label">Chapters Completed</div>'+(totalQ>0?'<div style="margin-top:4px;font-size:11px;color:#94a3b8">Score: '+Math.round(totalScore/totalQ*100)+'%</div>':'')+'<button class="btn btn-sm btn-outline" style="margin-top:8px" onclick="lpResetProgress()">Reset</button>';
   }
-  html+='</div>';
-  document.getElementById('simStepArea').innerHTML=html;
-  document.getElementById('simFeedbackArea').innerHTML='';
-  document.getElementById('simLoadBtn').style.display=step.patient?'inline-block':'none';
-  simState.feedbackShown=false;
-  if(step.type==='outcome')showSimScore();
 }
 
-let simSelectedOption=-1;
-function simSelectOption(idx,el){
-  simSelectedOption=idx;
-  document.querySelectorAll('#simStepArea .sim-option').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
+function lpInit(){renderLPChapters();}
+
+function lpStartChapter(id){
+  const ch=LEARNING_PATH.find(c=>c.id===id);if(!ch)return;
+  lpState={active:id,currentStep:lpProgress.chapters[id]?.currentStep||0,score:0,totalQ:0,answers:[]};
+  lpProgress.chapters[id].status='in_progress';lpSaveProgress();
+  document.getElementById('lpChapterGrid').classList.add('hidden');
+  document.getElementById('lpOverall').classList.add('hidden');
+  document.getElementById('lpActive').classList.remove('hidden');
+  lpRenderStep();
 }
 
-function simCheckAnswer(){
-  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
-  const step=sim.steps[simState.currentStep];
-  if(simState.feedbackShown)return;
-  let isCorrect=false;
-  if(step.type==='question_mc'||step.type==='lab_result'){
-    if(simSelectedOption<0){alert('Select an option first.');return;}
-    isCorrect=simSelectedOption===step.correct;
-    document.querySelectorAll('#simStepArea .sim-option').forEach((o,i)=>{
-      if(i===step.correct)o.classList.add('correct');
-      else if(i===simSelectedOption&&!isCorrect)o.classList.add('wrong');
+function lpRenderStep(){
+  const ch=LEARNING_PATH.find(c=>c.id===lpState.active);if(!ch)return;
+  const step=ch.steps[lpState.currentStep];
+  const pct=((lpState.currentStep)/ch.steps.length*100).toFixed(0);
+  let html='<div class="lp-header">Ch'+ch.chapter+': '+ch.title+'</div>';
+  if(lpState.currentStep===0){html+='<div class="lp-objectives"><strong>Objectives:</strong><br>';ch.objectives.forEach(o=>{html+='• '+o+'<br>';});html+='</div>';}
+  html+='<div class="lp-progress-bar"><div class="lp-progress-fill" style="width:'+pct+'%"></div></div>';
+  html+='<div class="lp-progress-text">Step '+(lpState.currentStep+1)+' of '+ch.steps.length+'</div>';
+  html+='<div class="lp-step"><div class="lp-step-type">'+({explain:'Concept',demo:'Interactive Demo',quiz:'Quiz'}[step.type])+'</div>';
+  html+='<div class="lp-step-title">'+step.title+'</div>';
+  if(step.type==='explain'){html+='<div class="lp-content">'+step.content+'</div>';}
+  else if(step.type==='demo'){
+    html+='<div class="lp-content">'+step.instructions+'</div>';
+    if(step.guided){html+='<div class="lp-guided">';step.guided.forEach((g,i)=>{html+='<div class="lp-guide-step"><strong>'+(i+1)+'.</strong> '+g+'</div>';});html+='</div>';}
+    lpRunSetup(step.setupActions);
+    if(step.checkpoint){
+      html+='<div class="lp-checkpoint"><div class="lp-cp-question">'+step.checkpoint.question+'</div>';
+      step.checkpoint.o.forEach((opt,i)=>{html+='<button class="lp-cp-option" onclick="lpCheckCP('+i+','+step.checkpoint.c+',this)">'+opt+'</button>';});
+      html+='<div id="lpCpFB"></div></div>';
+    }
+  }else if(step.type==='quiz'){
+    html+='<div class="lp-content">Test your understanding:</div>';
+    step.questions.forEach((q,qi)=>{
+      html+='<div class="lp-checkpoint" style="margin-top:10px"><div class="lp-cp-question">Q'+(qi+1)+': '+q.q+'</div>';
+      q.o.forEach((opt,oi)=>{html+='<button class="lp-cp-option" onclick="lpCheckQ('+qi+','+oi+',this)">'+opt+'</button>';});
+      html+='<div id="lpQF'+qi+'"></div></div>';
     });
   }
-  simState.answers.push({step:simState.currentStep,correct:isCorrect});
-  if(isCorrect)simState.score++;
-
-  // Load patient into simulator and draw chart
-  simAutoLoadAndDraw(sim,step);
-
-  const fb=document.getElementById('simFeedbackArea');
-  const calcHtml=simBuildCalculation(sim,step,isCorrect);
-  fb.innerHTML='<div class="sim-feedback '+(isCorrect?'correct':'wrong')+'"><strong>'+(isCorrect?'Correct!':'Incorrect')+'</strong><br>'+step.explanation+'</div>'+
-    '<div class="sim-calc-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\';this.textContent=this.textContent.includes(\'Show\')?\'Hide PK Calculations\':\'Show PK Calculations\'">Show PK Calculations</div>'+
-    '<div class="sim-calc" style="display:none">'+calcHtml+'</div>';
-  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
-  simState.feedbackShown=true;
-  document.getElementById('simCheckBtn').style.display='none';
-  document.getElementById('simNextBtn').style.display='inline-block';
-  document.getElementById('simNextBtn').textContent=simState.currentStep<sim.steps.length-1?'Next Step':'Finish';
-}
-
-function simAutoLoadAndDraw(sim,step){
-  // Find patient params from current or previous vignette step
-  let patient=null;
-  for(let i=simState.currentStep;i>=0;i--){
-    if(sim.steps[i].patient){patient=sim.steps[i].patient;break;}
-  }
-  if(!patient)return;
-  document.getElementById('weightInput').value=patient.weight;
-  document.getElementById('heightInput').value=patient.height;
-  document.getElementById('ageInput').value=patient.age;
-  document.getElementById('sexSelect').value=patient.sex;
-  document.getElementById('scrInput').value=patient.scr;
-  document.getElementById('drugSelect').value=sim.drug;
-  onDrugChange();
-}
-
-function simBuildCalculation(sim,step,isCorrect){
-  const drug=DRUGS[sim.drug];
-  let patient=null;
-  for(let i=simState.currentStep;i>=0;i--){
-    if(sim.steps[i].patient){patient=sim.steps[i].patient;break;}
-  }
-  if(!patient)return'<em>No patient data for this step.</em>';
-
-  const w=patient.weight;
-  const scr=patient.scr;
-  const age=patient.age;
-  const sex=patient.sex;
-  const ht=patient.height||170;
-  const vd=drug.vd;
-  const halfLife=drug.halfLife;
-
-  // CrCl
-  let crcl=((140-age)*w)/(72*scr);
-  if(sex==='female')crcl*=0.85;
-  crcl=Math.max(crcl,5);
-
-  // IBW
-  const ibw=sex==='male'?50+0.91*(ht-152.4):45.5+0.91*(ht-152.4);
-
-  // ke
-  let ke;
-  if(drug.keAuto){ke=0.00293*crcl+0.014;}else{ke=0.693/halfLife;}
-  const hl=0.693/ke;
-  const vdL=vd*w;
-  const cl=ke*vdL;
-
-  let html='<strong style="color:#60a5fa">Step-by-Step PK Calculations</strong><br><br>';
-
-  // Step 1: Patient parameters
-  html+='<span class="formula">1. Patient Parameters</span><br>';
-  html+='Weight: <span class="value">'+w+' kg</span> | Age: <span class="value">'+age+' yr</span> | Sex: <span class="value">'+sex+'</span> | SCr: <span class="value">'+scr+' mg/dL</span><br>';
-  html+='IBW: <span class="value">'+ibw.toFixed(1)+' kg</span><br><br>';
-
-  // Step 2: CrCl
-  html+='<span class="formula">2. Creatinine Clearance (Cockcroft-Gault)</span><br>';
-  html+='<code>CrCl = [(140 - '+age+') x '+w+'] / (72 x '+scr+')'+(sex==='female'?' x 0.85':'')+'</code><br>';
-  html+='<code>CrCl = ['+(140-age)+' x '+w+'] / '+(72*scr).toFixed(1)+(sex==='female'?' x 0.85':'')+'</code><br>';
-  html+='<code class="result">CrCl = '+crcl.toFixed(1)+' mL/min</code><br><br>';
-
-  // Step 3: ke
-  html+='<span class="formula">3. Elimination Rate Constant (ke)</span><br>';
-  if(drug.keAuto){
-    html+='<code>ke = 0.00293 x CrCl + 0.014</code><br>';
-    html+='<code>ke = 0.00293 x '+crcl.toFixed(1)+' + 0.014</code><br>';
-  }else{
-    html+='<code>ke = 0.693 / t1/2</code><br>';
-    html+='<code>ke = 0.693 / '+halfLife+'</code><br>';
-  }
-  html+='<code class="result">ke = '+ke.toFixed(4)+' h-1</code><br><br>';
-
-  // Step 4: Half-life
-  html+='<span class="formula">4. Half-life</span><br>';
-  html+='<code>t1/2 = 0.693 / ke = 0.693 / '+ke.toFixed(4)+'</code><br>';
-  html+='<code class="result">t1/2 = '+hl.toFixed(1)+' hours</code><br><br>';
-
-  // Step 5: Vd
-  html+='<span class="formula">5. Volume of Distribution</span><br>';
-  html+='<code>Vd = '+vd+' L/kg x '+w+' kg</code><br>';
-  html+='<code class="result">Vd = '+vdL.toFixed(1)+' L</code><br><br>';
-
-  // Step 6: CL
-  html+='<span class="formula">6. Clearance</span><br>';
-  html+='<code>CL = ke x Vd = '+ke.toFixed(4)+' x '+vdL.toFixed(1)+'</code><br>';
-  html+='<code class="result">CL = '+cl.toFixed(2)+' L/h</code><br><br>';
-
-  // Step 7: Context-specific calculations
-  if(step.type==='question_mc'&&step.text&&step.text.toLowerCase().includes('loading dose')){
-    html+='<span class="formula">7. Loading Dose Calculation</span><br>';
-    const target=drug.therapeutic[1];
-    const ld=(target*vdL)/drug.f;
-    html+='<code>LD = (Cp_target x Vd) / F</code><br>';
-    html+='<code>LD = ('+target+' x '+vdL.toFixed(1)+') / '+drug.f+'</code><br>';
-    html+='<code class="result">LD = '+ld.toFixed(0)+' mg</code><br>';
-    html+='<code class="note">Standard: '+drug.loadingDose+' '+drug.loadingUnit+' = '+(drug.loadingDose*w).toFixed(0)+' mg</code><br><br>';
-  }
-
-  if(step.type==='question_mc'&&step.text&&step.text.toLowerCase().includes('maintenance')){
-    html+='<span class="formula">7. Maintenance Dose Estimation</span><br>';
-    const targetCss=(drug.therapeutic[0]+drug.therapeutic[1])/2;
-    const md=(targetCss*cl*state.interval)/drug.f;
-    html+='<code>MD = (Css x CL x tau) / F</code><br>';
-    html+='<code>MD = ('+targetCss.toFixed(1)+' x '+cl.toFixed(2)+' x '+state.interval+') / '+drug.f+'</code><br>';
-    html+='<code class="result">MD = '+md.toFixed(0)+' mg q'+state.interval+'h</code><br><br>';
-  }
-
-  if(step.labValue!==undefined){
-    html+='<span class="formula">7. Level Interpretation</span><br>';
-    html+='<code>Measured: '+step.labValue+' '+step.labUnit+'</code><br>';
-    html+='<code>Therapeutic range: '+drug.therapeutic[0]+' - '+drug.therapeutic[1]+' '+drug.unit+'</code><br>';
-    html+='<code>Toxic threshold: >'+drug.toxic+' '+drug.unit+'</code><br>';
-    if(step.labValue<drug.therapeutic[0])html+='<code class="note">Level BELOW therapeutic range</code><br>';
-    else if(step.labValue>drug.toxic)html+='<code class="note">Level ABOVE toxic threshold</code><br>';
-    else if(step.labValue>drug.therapeutic[1])html+='<code class="note">Level above upper therapeutic (borderline)</code><br>';
-    else html+='<code class="result">Level WITHIN therapeutic range</code><br>';
-
-    // Predicted level
-    const predicted=getTotalCp((state.numDoses-1)*state.interval+state.interval);
-    html+='<br><code>Predicted trough (model): '+predicted.toFixed(2)+' '+drug.unit+'</code><br>';
-    html+='<code>Measured vs predicted ratio: '+(step.labValue/predicted).toFixed(2)+'</code><br>';
-    html+='<code class="note">Ratio >1.2 = clearance lower than expected. Ratio <0.8 = clearance higher than expected.</code><br>';
-  }
-
-  // Chart reference
-  html+='<br><div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:6px;padding:8px 12px;margin-top:8px;font-size:11px;color:#60a5fa">';
-  html+='<strong>See the main chart on the right</strong> — it now shows this patient\'s concentration-time curve. ';
-  html+='Look for: <span style="color:#22c55e">green band</span> = therapeutic range, <span style="color:#ef4444">red line</span> = toxic threshold, <span style="color:#60a5fa">blue curve</span> = predicted levels, <span style="color:#f59e0b">orange markers</span> = dose times.';
-  if(step.labValue!==undefined)html+=' The measured level ('+step.labValue+' '+step.labUnit+') is plotted as a <span style="color:#f472b6">pink dot</span> on the chart.';
   html+='</div>';
-
-  return html;
+  html+='<div style="display:flex;gap:6px;margin-top:8px">';
+  if(lpState.currentStep>0)html+='<button class="btn btn-sm btn-outline" onclick="lpPrev()">Previous</button>';
+  if(lpState.currentStep<ch.steps.length-1)html+='<button class="btn btn-sm btn-primary" onclick="lpNext()">Next</button>';
+  if(lpState.currentStep===ch.steps.length-1)html+='<button class="btn btn-sm btn-success" onclick="lpComplete()">Complete Chapter</button>';
+  html+='<button class="btn btn-sm btn-outline" onclick="lpBack()">Back</button></div>';
+  document.getElementById('lpActive').innerHTML=html;
 }
 
-function simNextStep(){
-  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
-  simState.currentStep++;
-  simSelectedOption=-1;
-  if(simState.currentStep>=sim.steps.length){showSimScore();return;}
-  renderSimStep();
+function lpRunSetup(actions){
+  if(!actions)return;
+  actions.forEach(a=>{
+    switch(a.action){
+      case 'setDrug':document.getElementById('drugSelect').value=a.value;onDrugChange();break;
+      case 'setDose':document.getElementById('doseInput').value=a.value;document.getElementById('doseRange').value=Math.min(a.value,5000);document.getElementById('doseVal').textContent=a.value+' mg';break;
+      case 'setInterval':document.getElementById('intervalRange').value=a.value;document.getElementById('intervalVal').textContent=a.value+' h';break;
+      case 'setNumDoses':document.getElementById('numDosesRange').value=a.value;document.getElementById('numDosesVal').textContent=a.value;break;
+      case 'setRoute':setRoute(a.value);break;
+      case 'setWeight':document.getElementById('weightInput').value=a.value;break;
+      case 'setHeight':document.getElementById('heightInput').value=a.value;break;
+      case 'setAge':document.getElementById('ageInput').value=a.value;break;
+      case 'setSex':document.getElementById('sexSelect').value=a.value;break;
+      case 'setScr':document.getElementById('scrInput').value=a.value;break;
+    }
+  });
+  recalculate();
 }
 
-function simLoadPatient(){
-  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
-  const step=sim.steps[simState.currentStep];
-  if(!step.patient)return;
-  const p=step.patient;
-  document.getElementById('weightInput').value=p.weight;
-  document.getElementById('heightInput').value=p.height;
-  document.getElementById('ageInput').value=p.age;
-  document.getElementById('sexSelect').value=p.sex;
-  document.getElementById('scrInput').value=p.scr;
-  document.getElementById('drugSelect').value=sim.drug;
-  switchTab('dosing',document.querySelector('.tab-btn'));
-  onDrugChange();
+let lpCPOk=false;
+function lpCheckCP(sel,correct,el){
+  if(lpCPOk)return;lpCPOk=true;
+  const ok=sel===correct;
+  document.querySelectorAll('.lp-checkpoint .lp-cp-option').forEach((o,i)=>{if(i===correct)o.classList.add('correct');else if(i===sel&&!ok)o.classList.add('wrong');});
+  const ch=LEARNING_PATH.find(c=>c.id===lpState.active);const step=ch.steps[lpState.currentStep];
+  lpState.totalQ++;if(ok)lpState.score++;
+  document.getElementById('lpCpFB').innerHTML='<div class="lp-feedback '+(ok?'correct':'wrong')+'"><strong>'+(ok?'Correct!':'Not quite.')+'</strong> '+step.checkpoint.explanation+'</div>';
 }
 
-function showSimScore(){
-  const sim=SIMULATIONS.find(s=>s.id===simState.simId);
-  const total=sim.steps.filter(s=>s.type!=='vignette'&&s.type!=='outcome').length;
-  const pct=Math.round(simState.score/total*100);
-  const cls=pct>=80?'good':pct>=50?'ok':'bad';
-  document.getElementById('simProgress').style.width='100%';
-  const area=document.getElementById('simScoreArea');
-  area.classList.remove('hidden');
-  area.innerHTML='<div class="sim-score '+cls+'">'+pct+'%</div>'+
-    '<div style="text-align:center;font-size:12px;color:#94a3b8">'+simState.score+' of '+total+' decisions correct</div>'+
-    '<div style="text-align:center;margin-top:8px;font-size:12px;color:#94a3b8">'+
-    (pct>=80?'Excellent clinical reasoning!':pct>=50?'Good effort. Review missed questions.':'Keep practicing. Review drug monographs and Show the Math.')+'</div>'+
-    '<div style="text-align:center;margin-top:12px"><button class="btn btn-sm btn-primary" onclick="simReset()">Try Another Case</button></div>'+
-    '<div style="text-align:center;margin-top:10px;font-size:10px;color:#94a3b8"><em>For educational purposes only. Not for clinical decision-making.</em></div>';
+function lpCheckQ(qi,sel,el){
+  const ch=LEARNING_PATH.find(c=>c.id===lpState.active);const q=ch.steps[lpState.currentStep].questions[qi];
+  const fb=document.getElementById('lpQF'+qi);if(fb.dataset.ok)return;fb.dataset.ok='1';
+  const ok=sel===q.c;
+  el.parentElement.querySelectorAll('.lp-cp-option').forEach((o,i)=>{if(i===q.c)o.classList.add('correct');else if(i===sel&&!ok)o.classList.add('wrong');});
+  lpState.totalQ++;if(ok)lpState.score++;
+  fb.innerHTML='<div class="lp-feedback '+(ok?'correct':'wrong')+'"><strong>'+(ok?'Correct!':'Not quite.')+'</strong> '+q.e+'</div>';
 }
 
-function simReset(){
-  simState={active:false,simId:null,currentStep:0,score:0,answers:[],feedbackShown:false};
-  simSelectedOption=-1;
-  document.getElementById('simSelector').classList.remove('hidden');
-  document.getElementById('simActive').classList.add('hidden');
-  renderSimSelector();
+function lpNext(){lpCPOk=false;lpState.currentStep++;lpProgress.chapters[lpState.active].currentStep=lpState.currentStep;lpSaveProgress();lpRenderStep();}
+function lpPrev(){lpCPOk=false;if(lpState.currentStep>0){lpState.currentStep--;lpProgress.chapters[lpState.active].currentStep=lpState.currentStep;lpSaveProgress();lpRenderStep();}}
+function lpComplete(){
+  lpProgress.chapters[lpState.active].status='completed';
+  lpProgress.chapters[lpState.active].score=(lpProgress.chapters[lpState.active].score||0)+lpState.score;
+  lpProgress.chapters[lpState.active].totalQ=(lpProgress.chapters[lpState.active].totalQ||0)+lpState.totalQ;
+  lpSaveProgress();lpBack();
 }
+function lpBack(){lpState={active:null,currentStep:0,score:0,totalQ:0,answers:[]};lpCPOk=false;document.getElementById('lpChapterGrid').classList.remove('hidden');document.getElementById('lpOverall').classList.remove('hidden');document.getElementById('lpActive').classList.add('hidden');renderLPChapters();}
+function lpResetProgress(){if(!confirm('Reset all learning progress?'))return;LEARNING_PATH.forEach(ch=>{lpProgress.chapters[ch.id]={status:'not_started',currentStep:0,score:0,totalQ:0};});lpSaveProgress();renderLPChapters();}
 
 window.addEventListener('resize',()=>{resizeCanvas();drawChart();});
-resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();recalculate();
+resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();lpInit();recalculate();
 </script>
 </body>
 </html>
