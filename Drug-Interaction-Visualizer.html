@@ -369,7 +369,62 @@ const INTERACTIONS = [
 
   // GANCICLOVIR interactions
   {a:'ganciclovir',b:'mycophenolate',severity:'severe',enzyme:'additive',mechanism:'Both cause significant myelosuppression. Additive neutropenia and thrombocytopenia risk.',action:'Monitor CBC very closely (q2-3 days). Consider G-CSF support.',monitoring:'CBC (absolute neutrophil count, platelets)',alternative:'Valganciclovir with dose reduction',evidence:'well-established'},
-  {a:'ganciclovir',b:'foscarnet',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both nephrotoxic. Also additive myelosuppression.',action:'Avoid combination.',monitoring:'SCr, CBC',alternative:'Use one agent',evidence:'well-established'}
+  {a:'ganciclovir',b:'foscarnet',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both nephrotoxic. Also additive myelosuppression.',action:'Avoid combination.',monitoring:'SCr, CBC',alternative:'Use one agent',evidence:'well-established'},
+
+  // BENZODIAZEPINE + OPIOID (respiratory depression)
+  {a:'midazolam',b:'fentanyl',severity:'severe',enzyme:'pharmacodynamic',mechanism:'Additive CNS depression and respiratory depression. Classic ICU sedation combination but high risk.',action:'Use lowest effective doses of both. Daily sedation interruption. Monitor respiratory status closely.',monitoring:'respiratory rate, SpO2, sedation level (RASS)',alternative:'Dexmedetomidine (less respiratory depression)',evidence:'well-established'},
+  {a:'midazolam',b:'morphine',severity:'severe',enzyme:'pharmacodynamic',mechanism:'Additive respiratory depression.',action:'Reduce doses. Monitor respiratory status.',monitoring:'respiratory rate, SpO2',alternative:'Dexmedetomidine',evidence:'well-established'},
+  {a:'lorazepam',b:'fentanyl',severity:'severe',enzyme:'pharmacodynamic',mechanism:'Additive respiratory depression.',action:'Reduce doses. Monitor respiratory status.',monitoring:'respiratory rate, SpO2',alternative:'Dexmedetomidine',evidence:'well-established'},
+  {a:'propofol',b:'fentanyl',severity:'severe',enzyme:'pharmacodynamic',mechanism:'Additive hypotension and respiratory depression. Both cause vasodilation.',action:'Use lowest effective doses. Have vasopressor ready.',monitoring:'MAP, respiratory rate, SpO2',alternative:'Reduce propofol, use ketamine adjunct',evidence:'well-established'},
+  {a:'propofol',b:'midazolam',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive sedation and hypotension.',action:'Reduce doses of both.',monitoring:'MAP, RASS score',alternative:'Use single agent at higher dose',evidence:'established'},
+
+  // QTc PROLONGATION COMBOS
+  {a:'ciprofloxacin',b:'amiodarone',severity:'severe',enzyme:'QTc prolongation',mechanism:'Both prolong QTc. Additive risk of torsades de pointes.',action:'Avoid combination if possible. If must use: monitor ECG daily. Correct K+ and Mg2+.',monitoring:'ECG (QTc), K+, Mg2+',alternative:'Levofloxacin (less QTc than ciprofloxacin) or meropenem',evidence:'well-established'},
+  {a:'levofloxacin',b:'amiodarone',severity:'moderate',enzyme:'QTc prolongation',mechanism:'Both prolong QTc. Lower risk than ciprofloxacin + amiodarone.',action:'Monitor ECG. Correct electrolytes.',monitoring:'ECG (QTc), K+, Mg2+',alternative:'Meropenem or cefepime (no QTc)',evidence:'established'},
+  {a:'levofloxacin',b:'ondansetron',severity:'moderate',enzyme:'QTc prolongation',mechanism:'Both prolong QTc.',action:'Monitor ECG if other QTc risk factors present.',monitoring:'ECG (QTc)',alternative:'Granisetron (less QTc)',evidence:'established'},
+
+  // NEPHROTOXICITY COMBOS
+  {a:'vancomycin',b:'piperacillin',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Well-documented synergistic nephrotoxicity. Risk of AKI 3-5x higher than either drug alone.',action:'Monitor SCr daily. Consider alternatives if AKI develops. Ensure adequate hydration.',monitoring:'SCr (daily), urine output',alternative:'Meropenem or cefepime (less nephrotoxic with vancomycin)',evidence:'well-established'},
+  {a:'vancomycin',b:'colistin',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both nephrotoxic. Additive AKI risk.',action:'Monitor SCr daily. Aggressive hydration.',monitoring:'SCr, urine output',alternative:'Use one agent if possible',evidence:'well-established'},
+  {a:'amphotericin',b:'colistin',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both highly nephrotoxic. Additive AKI risk and electrolyte wasting.',action:'Avoid combination. If must use: aggressive hydration, monitor electrolytes q12h.',monitoring:'SCr, Ca2+, Mg2+, K+, PO4',alternative:'Liposomal amphotericin + echinocandin',evidence:'well-established'},
+  {a:'cyclosporine',b:'vancomycin',severity:'moderate',enzyme:'additive nephrotoxicity',mechanism:'Both nephrotoxic. Additive AKI risk.',action:'Monitor SCr closely. Consider reducing cyclosporine target trough.',monitoring:'SCr, cyclosporine trough',alternative:'None — use combination with close monitoring',evidence:'established'},
+
+  // CORTICOSTEROID + FLUOROQUINOLONE (tendon rupture)
+  {a:'methylpred',b:'ciprofloxacin',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive tendon rupture risk. Corticosteroids + fluoroquinolones significantly increase Achilles tendon rupture risk.',action:'Avoid combination in elderly and patients with tendon history. If must use: counsel on tendon pain symptoms.',monitoring:'tendon pain symptoms',alternative:'Cefepime or meropenem (no tendon risk)',evidence:'well-established'},
+  {a:'hydrocortisone',b:'ciprofloxacin',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive tendon rupture risk.',action:'Avoid in elderly. Counsel on tendon symptoms.',monitoring:'tendon pain',alternative:'Cefepime or meropenem',evidence:'well-established'},
+  {a:'dexamethasone',b:'ciprofloxacin',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive tendon rupture risk.',action:'Avoid in elderly. Counsel on tendon symptoms.',monitoring:'tendon pain',alternative:'Cefepime or meropenem',evidence:'well-established'},
+
+  // BRADYCARDIA COMBOS
+  {a:'dexmedetomidine',b:'metoprolol',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive negative chronotropic effects. Both cause bradycardia.',action:'Monitor HR closely. Reduce metoprolol if HR <60.',monitoring:'HR, ECG',alternative:'Reduce dexmedetomidine or hold metoprolol',evidence:'established'},
+  {a:'dexmedetomidine',b:'diltiazem',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Additive bradycardia and AV block.',action:'Monitor HR and ECG.',monitoring:'HR, ECG',alternative:'Reduce doses or use single agent',evidence:'established'},
+
+  // CARBAMAZEPINE (strong CYP3A4 inducer) + immunosuppressants
+  {a:'carbamazepine',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Carbamazepine strongly induces CYP3A4 → tacrolimus clearance increases dramatically → levels drop → rejection risk',action:'Increase tacrolimus dose 2-3x. Recheck trough in 5-7 days.',monitoring:'tacrolimus trough (weekly)',alternative:'Levetiracetam (no CYP interaction)',evidence:'well-established'},
+  {a:'carbamazepine',b:'cyclosporine',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Carbamazepine strongly induces CYP3A4 → cyclosporine clearance increases → levels drop',action:'Increase cyclosporine dose. Recheck level in 5-7 days.',monitoring:'cyclosporine trough',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'carbamazepine',b:'midazolam',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Carbamazepine induces CYP3A4 → midazolam clearance increases → may lose sedation effect',action:'May need higher midazolam doses.',monitoring:'sedation level',alternative:'Lorazepam',evidence:'established'},
+  {a:'carbamazepine',b:'warfarin',severity:'severe',enzyme:'CYP induction',mechanism:'Carbamazepine induces CYP2C9/3A4 → warfarin clearance increases → INR drops',action:'Increase warfarin dose. Recheck INR in 5-7 days.',monitoring:'INR',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'carbamazepine',b:'dexamethasone',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Carbamazepine induces CYP3A4 → dexamethasone clearance increases → reduced efficacy',action:'May need higher dexamethasone doses.',monitoring:'clinical response',alternative:'None needed with dose adjustment',evidence:'established'},
+  {a:'carbamazepine',b:'fentanyl',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Carbamazepine induces CYP3A4 → fentanyl clearance increases',action:'May need higher fentanyl doses.',monitoring:'pain scores',alternative:'None needed with monitoring',evidence:'established'},
+
+  // PHENOBARBITAL + immunosuppressants
+  {a:'phenobarbital',b:'cyclosporine',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Phenobarbital strongly induces CYP3A4 → cyclosporine levels drop → rejection risk',action:'Increase cyclosporine dose 2-3x. Recheck level frequently.',monitoring:'cyclosporine trough',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'phenobarbital',b:'dexamethasone',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Phenobarbital induces CYP3A4 → dexamethasone clearance increases',action:'May need higher dexamethasone doses.',monitoring:'clinical response',alternative:'None needed',evidence:'established'},
+  {a:'phenobarbital',b:'diltiazem',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Phenobarbital induces CYP3A4 → diltiazem clearance increases',action:'May need higher diltiazem doses. Monitor HR and BP.',monitoring:'HR, BP',alternative:'Amlodipine',evidence:'established'},
+
+  // CLOZAPINE + azoles
+  {a:'clozapine',b:'fluconazole',severity:'severe',enzyme:'CYP3A4/2C19 inhibition',mechanism:'Fluconazole inhibits CYP3A4 and 2C19 → clozapine levels increase significantly → seizure/agranulocytosis risk',action:'Reduce clozapine dose by 50%. Monitor level and CBC.',monitoring:'clozapine level, CBC, sedation',alternative:'Anidulafungin or micafungin',evidence:'well-established'},
+
+  // THEOPHYLLINE + macrolides
+  {a:'theophylline',b:'azithromycin',severity:'mild',enzyme:'CYP3A4 (weak)',mechanism:'Azithromycin weakly inhibits CYP3A4 — minimal theophylline level increase.',action:'No routine adjustment. Monitor if symptoms of theophylline toxicity.',monitoring:'theophylline level if symptoms',alternative:'None needed',evidence:'limited'},
+
+  // WARFARIN + antibiotics
+  {a:'warfarin',b:'levofloxacin',severity:'moderate',enzyme:'CYP/gut flora',mechanism:'Fluoroquinolones may increase INR through CYP inhibition and gut flora disruption affecting vitamin K.',action:'Monitor INR closely. Reduce warfarin if INR rises.',monitoring:'INR',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'warfarin',b:'ceftriaxone',severity:'mild',enzyme:'gut flora',mechanism:'Ceftriaxone may affect gut flora and vitamin K synthesis. Mild INR increase possible.',action:'Monitor INR if on high-dose or prolonged course.',monitoring:'INR',alternative:'None needed',evidence:'limited'},
+
+  // LITHIUM + renal interactions
+  {a:'lithium',b:'vancomycin',severity:'moderate',enzyme:'renal',mechanism:'Vancomycin nephrotoxicity may reduce lithium clearance → lithium levels increase → toxicity risk',action:'Monitor lithium level closely if SCr rises.',monitoring:'lithium level, SCr',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'lithium',b:'piperacillin',severity:'moderate',enzyme:'renal',mechanism:'Pip-tazo nephrotoxicity may reduce lithium clearance.',action:'Monitor lithium level if SCr rises.',monitoring:'lithium level, SCr',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'lithium',b:'amphotericin',severity:'severe',enzyme:'renal',mechanism:'Amphotericin nephrotoxicity significantly reduces lithium clearance → lithium toxicity risk',action:'Monitor lithium level daily if using amphotericin. Reduce lithium dose as needed.',monitoring:'lithium level (daily), SCr',alternative:'Liposomal amphotericin (less nephrotoxic)',evidence:'well-established'}
 ];
 
 let patientDrugs = [];
