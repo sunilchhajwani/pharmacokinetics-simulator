@@ -149,9 +149,9 @@ body.quick-start .warning-box{display:none!important}
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     <button class="btn btn-sm btn-primary" onclick="toggleQuickStart()" id="btnQuickStart">Quick Start</button>
-    <button class="btn btn-sm btn-outline" onclick="toggleTherapeutic()">Therapeutic</button>
-    <button class="btn btn-sm btn-outline" onclick="toggleGrid()">Grid</button>
-    <button class="btn btn-sm btn-outline" onclick="toggleIndicators()">Indicators</button>
+    <button class="btn btn-sm btn-outline active" onclick="toggleTherapeutic()" id="btnTherapeutic">Therapeutic</button>
+    <button class="btn btn-sm btn-outline active" onclick="toggleGrid()" id="btnGrid">Grid</button>
+    <button class="btn btn-sm btn-outline active" onclick="toggleIndicators()" id="btnIndicators">Indicators</button>
     <button class="btn btn-sm btn-success" onclick="showReport()">Report</button>
     <button class="btn btn-sm btn-outline" onclick="toggleComparison()" id="btnCompare">Compare</button>
     <button class="btn btn-sm btn-outline" onclick="resetAll()">Reset</button>
@@ -1907,9 +1907,9 @@ function onDoseInput(){const v=parseFloat(document.getElementById('doseInput').v
 function onIntervalChange(){document.getElementById('intervalVal').textContent=document.getElementById('intervalRange').value+' h';recalculate();}
 function onNumDosesChange(){document.getElementById('numDosesVal').textContent=document.getElementById('numDosesRange').value;recalculate();}
 function onInfusionChange(){document.getElementById('infusionTimeVal').textContent=parseFloat(document.getElementById('infusionTimeRange').value).toFixed(2)+' h';recalculate();}
-function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;drawChart();}
-function toggleGrid(){state.showGrid=!state.showGrid;drawChart();}
-function toggleIndicators(){state.showIndicators=!state.showIndicators;drawChart();}
+function toggleTherapeutic(){state.showTherapeutic=!state.showTherapeutic;document.getElementById('btnTherapeutic').classList.toggle('active');drawChart();}
+function toggleGrid(){state.showGrid=!state.showGrid;document.getElementById('btnGrid').classList.toggle('active');drawChart();}
+function toggleIndicators(){state.showIndicators=!state.showIndicators;document.getElementById('btnIndicators').classList.toggle('active');drawChart();}
 function toggleQuickStart(){
   document.body.classList.toggle('quick-start');
   const btn=document.getElementById('btnQuickStart');
