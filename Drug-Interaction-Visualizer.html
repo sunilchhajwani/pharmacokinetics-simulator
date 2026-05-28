@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICU Drug Interaction Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e6f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f1729,#1a2744);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e3055}
+.header h1{font-size:18px;font-weight:600;color:#60a5fa}
+.header .subtitle{font-size:11px;color:#64748b}
+.disclaimer{font-size:10px;color:#f87171;font-weight:600;margin-top:2px}
+.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 56px)}
+.panel{background:#111827;border-right:1px solid #1e3055;overflow-y:auto;padding:14px}
+.panel h2{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.panel h3{font-size:12px;font-weight:600;color:#60a5fa;margin:14px 0 6px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:#94a3b8;margin-bottom:3px}
+.field select,.field input{width:100%;padding:6px 8px;background:#1e293b;border:1px solid #334155;border-radius:5px;color:#e0e6f0;font-size:12px}
+.field select:focus,.field input:focus{outline:none;border-color:#3b82f6}
+.btn{padding:7px 12px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-primary:hover{background:#1d4ed8}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-outline{background:transparent;border:1px solid #334155;color:#94a3b8}
+.btn-outline:hover{border-color:#3b82f6;color:#60a5fa}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-success{background:#059669;color:#fff}
+.btn-group{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.main{display:flex;flex-direction:column;overflow:hidden}
+.content-area{flex:1;overflow-y:auto;padding:16px}
+.drug-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .15s}
+.drug-card:hover{border-color:#3b82f6}
+.drug-card.selected{border-color:#3b82f6;background:rgba(59,130,246,.08)}
+.drug-card .drug-name{font-size:12px;font-weight:600;color:#e0e6f0}
+.drug-card .drug-class{font-size:10px;color:#64748b}
+.drug-card .remove-btn{background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:2px 6px}
+.drug-card .remove-btn:hover{color:#f87171}
+.interaction-card{border-radius:8px;padding:12px 14px;margin-bottom:8px;border-left:4px solid}
+.interaction-card.severe{background:rgba(239,68,68,.08);border-color:#ef4444}
+.interaction-card.moderate{background:rgba(251,191,36,.08);border-color:#fbbf24}
+.interaction-card.mild{background:rgba(34,197,94,.08);border-color:#22c55e}
+.interaction-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.interaction-drugs{font-size:13px;font-weight:700;color:#e0e6f0}
+.severity-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.severity-badge.severe{background:rgba(239,68,68,.2);color:#f87171}
+.severity-badge.moderate{background:rgba(251,191,36,.2);color:#fbbf24}
+.severity-badge.mild{background:rgba(34,197,94,.2);color:#4ade80}
+.interaction-body{font-size:11px;line-height:1.7;color:#94a3b8}
+.interaction-body strong{color:#e0e6f0}
+.interaction-body .action{margin-top:8px;padding:8px 10px;background:rgba(59,130,246,.08);border-radius:6px;color:#60a5fa}
+.interaction-body .monitoring{margin-top:6px;color:#fbbf24}
+.interaction-body .alternative{margin-top:6px;color:#4ade80}
+.no-interactions{text-align:center;padding:40px;color:#64748b}
+.no-interactions .icon{font-size:48px;margin-bottom:12px}
+.search-box{position:relative;margin-bottom:12px}
+.search-box input{width:100%;padding:8px 12px 8px 32px;background:#1e293b;border:1px solid #334155;border-radius:6px;color:#e0e6f0;font-size:12px}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px}
+.search-box input:focus{outline:none;border-color:#3b82f6}
+.drug-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:300px;overflow-y:auto}
+.drug-grid .drug-card{padding:6px 8px;margin-bottom:0}
+.summary-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:#111827;border-top:1px solid #1e3055}
+.summary-card{background:#1e293b;border-radius:6px;padding:10px;text-align:center}
+.summary-card .count{font-size:24px;font-weight:700}
+.summary-card .label{font-size:10px;color:#64748b;text-transform:uppercase}
+.summary-card.severe .count{color:#f87171}
+.summary-card.moderate .count{color:#fbbf24}
+.summary-card.mild .count{color:#4ade80}
+.print-area{display:none}
+@media print{.header,.panel,.summary-bar{display:none}.layout{display:block;height:auto}.content-area{padding:0}.interaction-card{break-inside:avoid}.print-area{display:block;margin-bottom:20px;font-size:14px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>ICU Drug Interaction Visualizer</h1>
+    <div class="subtitle">Phase 1: ICU Module &middot; 50 Drugs &middot; ~200 Interaction Pairs</div>
+    <div class="disclaimer">FOR EDUCATIONAL PURPOSES ONLY. NOT FOR CLINICAL DECISION-MAKING.</div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-sm btn-outline" onclick="clearAll()">Clear All</button>
+    <button class="btn btn-sm btn-success" onclick="printReport()">Print Report</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <h2>Patient Drug List</h2>
+    <div id="patientDrugs"></div>
+    <div id="noDrugs" class="no-interactions" style="padding:16px;font-size:11px">
+      <div>No drugs added yet.</div>
+      <div style="margin-top:4px">Select drugs below to check interactions.</div>
+    </div>
+
+    <h2>Add Drugs</h2>
+    <div class="search-box">
+      <input type="text" id="drugSearch" placeholder="Search drugs..." oninput="filterDrugs()">
+    </div>
+
+    <h3>Analgics & Sedation</h3>
+    <div class="drug-grid" id="gridAnalgesics"></div>
+    <h3>Antibiotics</h3>
+    <div class="drug-grid" id="gridAntibiotics"></div>
+    <h3>Antifungals</h3>
+    <div class="drug-grid" id="gridAntifungals"></div>
+    <h3>Antivirals</h3>
+    <div class="drug-grid" id="gridAntivirals"></div>
+    <h3>Vasopressors & Inotropes</h3>
+    <div class="drug-grid" id="gridVasopressors"></div>
+    <h3>Anticoagulants</h3>
+    <div class="drug-grid" id="gridAnticoagulants"></div>
+    <h3>Antiepileptics</h3>
+    <div class="drug-grid" id="gridAntiepileptics"></div>
+    <h3>Cardiac</h3>
+    <div class="drug-grid" id="gridCardiac"></div>
+    <h3>GI & Other</h3>
+    <div class="drug-grid" id="gridOther"></div>
+  </div>
+
+  <div class="main">
+    <div class="content-area" id="contentArea">
+      <div class="no-interactions" id="emptyState">
+        <div class="icon">💊</div>
+        <div style="font-size:16px;font-weight:600;color:#e0e6f0;margin-bottom:8px">ICU Drug Interaction Visualizer</div>
+        <div>Add 2 or more drugs from the left panel to scan for interactions.</div>
+        <div style="margin-top:12px;font-size:11px;color:#64748b">
+          <strong>How to use:</strong><br>
+          1. Click drugs in the left panel to add them to the patient's list<br>
+          2. Interactions appear automatically, sorted by severity<br>
+          3. Click any interaction card for detailed management guidance<br>
+          4. Print a patient summary when done
+        </div>
+      </div>
+    </div>
+    <div class="summary-bar">
+      <div class="summary-card severe"><div class="count" id="countSevere">0</div><div class="label">Severe</div></div>
+      <div class="summary-card moderate"><div class="count" id="countModerate">0</div><div class="label">Moderate</div></div>
+      <div class="summary-card mild"><div class="count" id="countMild">0</div><div class="label">Mild</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICU_DRUGS = [
+  // Analgesics & Sedation
+  {id:'fentanyl',name:'Fentanyl',class:'Opioid',group:'Analgesics',cyp:['CYP3A4 substrate']},
+  {id:'morphine',name:'Morphine',class:'Opioid',group:'Analgesics',cyp:[]},
+  {id:'hydromorphone',name:'Hydromorphone',class:'Opioid',group:'Analgesics',cyp:[]},
+  {id:'propofol',name:'Propofol',class:'Sedative',group:'Analgesics',cyp:[]},
+  {id:'midazolam',name:'Midazolam',class:'Benzodiazepine',group:'Analgesics',cyp:['CYP3A4 substrate']},
+  {id:'lorazepam',name:'Lorazepam',class:'Benzodiazepine',group:'Analgesics',cyp:[]},
+  {id:'dexmedetomidine',name:'Dexmedetomidine',class:'Alpha-2 agonist',group:'Analgesics',cyp:[]},
+  {id:'ketamine',name:'Ketamine',class:'Dissociative',group:'Analgesics',cyp:['CYP3A4 substrate','CYP2B6 substrate']},
+  // Antibiotics
+  {id:'vancomycin',name:'Vancomycin',class:'Glycopeptide',group:'Antibiotics',cyp:[]},
+  {id:'meropenem',name:'Meropenem',class:'Carbapenem',group:'Antibiotics',cyp:[]},
+  {id:'piperacillin',name:'Pip-Tazo',class:'Beta-lactam',group:'Antibiotics',cyp:[]},
+  {id:'ceftriaxone',name:'Ceftriaxone',class:'Cephalosporin',group:'Antibiotics',cyp:[]},
+  {id:'cefepime',name:'Cefepime',class:'Cephalosporin',group:'Antibiotics',cyp:[]},
+  {id:'azithromycin',name:'Azithromycin',class:'Macrolide',group:'Antibiotics',cyp:['CYP3A4 inhibitor (weak)']},
+  {id:'ciprofloxacin',name:'Ciprofloxacin',class:'Fluoroquinolone',group:'Antibiotics',cyp:['CYP1A2 inhibitor','CYP3A4 inhibitor (weak)']},
+  {id:'levofloxacin',name:'Levofloxacin',class:'Fluoroquinolone',group:'Antibiotics',cyp:[]},
+  {id:'metronidazole',name:'Metronidazole',class:'Nitroimidazole',group:'Antibiotics',cyp:['CYP2C9 inhibitor']},
+  {id:'linezolid',name:'Linezolid',class:'Oxazolidinone',group:'Antibiotics',cyp:['MAO inhibitor']},
+  {id:'daptomycin',name:'Daptomycin',class:'Lipopeptide',group:'Antibiotics',cyp:[]},
+  {id:'colistin',name:'Colistin',class:'Polymyxin',group:'Antibiotics',cyp:[]},
+  {id:'tmpsmx',name:'TMP-SMX',class:'Sulfonamide',group:'Antibiotics',cyp:['CYP2C9 inhibitor']},
+  {id:'clindamycin',name:'Clindamycin',class:'Lincosamide',group:'Antibiotics',cyp:['CYP3A4 inhibitor']},
+  // Antifungals
+  {id:'fluconazole',name:'Fluconazole',class:'Triazole',group:'Antifungals',cyp:['CYP2C9 inhibitor','CYP2C19 inhibitor','CYP3A4 inhibitor']},
+  {id:'voriconazole',name:'Voriconazole',class:'Triazole',group:'Antifungals',cyp:['CYP2C19 substrate','CYP3A4 inhibitor']},
+  {id:'posaconazole',name:'Posaconazole',class:'Triazole',group:'Antifungals',cyp:['CYP3A4 inhibitor (strong)']},
+  {id:'caspofungin',name:'Caspofungin',class:'Echinocandin',group:'Antifungals',cyp:[]},
+  {id:'micafungin',name:'Micafungin',class:'Echinocandin',group:'Antifungals',cyp:['CYP3A4 inhibitor (weak)']},
+  {id:'amphotericin',name:'Amphotericin B',class:'Polyene',group:'Antifungals',cyp:[]},
+  // Antivirals
+  {id:'acyclovir',name:'Acyclovir',class:'Nucleoside',group:'Antivirals',cyp:[]},
+  {id:'ganciclovir',name:'Ganciclovir',class:'Nucleoside',group:'Antivirals',cyp:[]},
+  {id:'foscarnet',name:'Foscarnet',class:'Pyrophosphate',group:'Antivirals',cyp:[]},
+  // Vasopressors & Inotropes
+  {id:'norepinephrine',name:'Norepinephrine',class:'Alpha/Beta agonist',group:'Vasopressors',cyp:[]},
+  {id:'epinephrine',name:'Epinephrine',class:'Alpha/Beta agonist',group:'Vasopressors',cyp:[]},
+  {id:'vasopressin',name:'Vasopressin',class:'Vasopressin',group:'Vasopressors',cyp:[]},
+  {id:'dopamine',name:'Dopamine',class:'Dopaminergic',group:'Vasopressors',cyp:[]},
+  {id:'dobutamine',name:'Dobutamine',class:'Beta agonist',group:'Vasopressors',cyp:[]},
+  {id:'milrinone',name:'Milrinone',class:'PDE inhibitor',group:'Vasopressors',cyp:[]},
+  {id:'phenylephrine',name:'Phenylephrine',class:'Alpha agonist',group:'Vasopressors',cyp:[]},
+  // Anticoagulants
+  {id:'heparin',name:'Heparin (UFH)',class:'Anticoagulant',group:'Anticoagulants',cyp:[]},
+  {id:'enoxaparin',name:'Enoxaparin',class:'LMWH',group:'Anticoagulants',cyp:[]},
+  {id:'warfarin',name:'Warfarin',class:'Anticoagulant',group:'Anticoagulants',cyp:['CYP2C9 substrate','CYP3A4 substrate']},
+  {id:'argatroban',name:'Argatroban',class:'DTI',group:'Anticoagulants',cyp:['CYP3A4 substrate']},
+  // Antiepileptics
+  {id:'phenytoin',name:'Phenytoin',class:'Hydantoin',group:'Antiepileptics',cyp:['CYP2C9 substrate','CYP2C19 substrate','CYP3A4 substrate','CYP inducer']},
+  {id:'levetiracetam',name:'Levetiracetam',class:'Pyrrolidine',group:'Antiepileptics',cyp:[]},
+  {id:'valproic',name:'Valproic Acid',class:'Broad-spectrum',group:'Antiepileptics',cyp:['CYP2C9 inhibitor','CYP epoxide inhibitor']},
+  {id:'phenobarbital',name:'Phenobarbital',class:'Barbiturate',group:'Antiepileptics',cyp:['CYP inducer (strong)']},
+  // Cardiac
+  {id:'amiodarone',name:'Amiodarone',class:'Class III',group:'Cardiac',cyp:['CYP2D6 inhibitor','CYP3A4 inhibitor']},
+  {id:'lidocaine',name:'Lidocaine',class:'Class IB',group:'Cardiac',cyp:['CYP3A4 substrate','CYP1A2 substrate']},
+  {id:'digoxin',name:'Digoxin',class:'Glycoside',group:'Cardiac',cyp:['P-gp substrate']},
+  {id:'metoprolol',name:'Metoprolol',class:'Beta-blocker',group:'Cardiac',cyp:['CYP2D6 substrate']},
+  {id:'diltiazem',name:'Diltiazem',class:'CCB',group:'Cardiac',cyp:['CYP3A4 inhibitor','CYP3A4 substrate']},
+  // GI & Other
+  {id:'pantoprazole',name:'Pantoprazole',class:'PPI',group:'Other',cyp:['CYP2C19 substrate']},
+  {id:'ondansetron',name:'Ondansetron',class:'5-HT3 antagonist',group:'Other',cyp:['CYP3A4 substrate','CYP1A2 substrate']},
+  {id:'ranitidine',name:'Ranitidine',class:'H2 blocker',group:'Other',cyp:[]},
+  {id:'insulin',name:'Insulin',class:'Hormone',group:'Other',cyp:[]},
+  {id:'hydrocortisone',name:'Hydrocortisone',class:'Corticosteroid',group:'Other',cyp:['CYP3A4 substrate']},
+  {id:'methylpred',name:'Methylprednisolone',class:'Corticosteroid',group:'Other',cyp:['CYP3A4 substrate']},
+  {id:'tacrolimus',name:'Tacrolimus',class:'Calcineurin inhibitor',group:'Other',cyp:['CYP3A4 substrate','P-gp substrate']},
+  {id:'cyclosporine',name:'Cyclosporine',class:'Calcineurin inhibitor',group:'Other',cyp:['CYP3A4 substrate','P-gp substrate']},
+  {id:'mycophenolate',name:'Mycophenolate',class:'Antimetabolite',group:'Other',cyp:[]},
+  {id:'methotrexate',name:'Methotrexate',class:'Antifolate',group:'Other',cyp:[]}
+];
+
+const GROUP_MAP = {
+  'Analgesics':'gridAnalgesics','Antibiotics':'gridAntibiotics','Antifungals':'gridAntifungals',
+  'Antivirals':'gridAntivirals','Vasopressors':'gridVasopressors','Anticoagulants':'gridAnticoagulants',
+  'Antiepileptics':'gridAntiepileptics','Cardiac':'gridCardiac','Other':'gridOther'
+};
+
+const INTERACTIONS = [
+  // FLUCONAZOLE interactions (CYP3A4/2C9/2C19 inhibitor)
+  {a:'fluconazole',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4',mechanism:'Fluconazole inhibits CYP3A4 → reduces tacrolimus metabolism → levels increase 2-5x',action:'Reduce tacrolimus dose by 50%. Recheck trough in 3-5 days. Monitor SCr closely.',monitoring:'tacrolimus trough, SCr, K+, BP',alternative:'Anidulafungin or micafungin (no CYP3A4 interaction)',evidence:'well-established'},
+  {a:'fluconazole',b:'cyclosporine',severity:'severe',enzyme:'CYP3A4',mechanism:'Fluconazole inhibits CYP3A4 → cyclosporine levels increase 2-4x',action:'Reduce cyclosporine dose by 50%. Recheck level in 3-5 days.',monitoring:'cyclosporine trough, SCr, BP, Mg2+',alternative:'Anidulafungin or micafungin',evidence:'well-established'},
+  {a:'fluconazole',b:'phenytoin',severity:'severe',enzyme:'CYP2C9/2C19',mechanism:'Fluconazole inhibits CYP2C9 and 2C19 → phenytoin metabolism reduced → levels increase 50-100%',action:'Reduce phenytoin dose by 25-50%. Recheck level in 5-7 days.',monitoring:'phenytoin level (free + total), neuro status',alternative:'Anidulafungin or micafungin',evidence:'well-established'},
+  {a:'fluconazole',b:'warfarin',severity:'severe',enzyme:'CYP2C9',mechanism:'Fluconazole inhibits CYP2C9 → S-warfarin metabolism reduced → INR increases',action:'Reduce warfarin dose by 25-50%. Recheck INR in 3-5 days.',monitoring:'INR (q2-3 days until stable)',alternative:'Anidulafungin or micafungin',evidence:'well-established'},
+  {a:'fluconazole',b:'midazolam',severity:'moderate',enzyme:'CYP3A4',mechanism:'Fluconazole inhibits CYP3A4 → midazolam levels increase → prolonged sedation',action:'Reduce midazolam dose by 50%. Monitor sedation level closely.',monitoring:'RASS score, respiratory rate',alternative:'Lorazepam (not CYP3A4 metabolized)',evidence:'well-established'},
+  {a:'fluconazole',b:'fentanyl',severity:'moderate',enzyme:'CYP3A4',mechanism:'Fluconazole inhibits CYP3A4 → fentanyl levels increase',action:'Reduce fentanyl infusion by 25-50%. Monitor for respiratory depression.',monitoring:'pain scores, respiratory rate, sedation level',alternative:'Hydromorphone (not CYP3A4)',evidence:'established'},
+  {a:'fluconazole',b:'diltiazem',severity:'moderate',enzyme:'CYP3A4',mechanism:'Bidirectional: fluconazole inhibits CYP3A4, diltiazem also inhibits CYP3A4 → additive inhibition of shared substrates',action:'Monitor for excessive CYP3A4 substrate effects. Consider dose reduction of co-administered CYP3A4 substrates.',monitoring:'HR, BP, drug levels of co-substrates',alternative:'Amlodipine (less CYP3A4 inhibition)',evidence:'moderate'},
+  {a:'fluconazole',b:'ondansetron',severity:'mild',enzyme:'CYP3A4/1A2',mechanism:'Fluconazole may increase ondansetron levels slightly',action:'No routine adjustment needed. Monitor for QTc prolongation if high doses.',monitoring:'ECG if combined with other QTc drugs',alternative:'None needed',evidence:'limited'},
+
+  // VORICONAZOLE interactions
+  {a:'voriconazole',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4',mechanism:'Voriconazole strongly inhibits CYP3A4 → tacrolimus levels increase 3-10x',action:'Reduce tacrolimus dose by 66%. Recheck trough in 3-5 days.',monitoring:'tacrolimus trough, SCr',alternative:'Anidulafungin',evidence:'well-established'},
+  {a:'voriconazole',b:'phenytoin',severity:'severe',enzyme:'CYP2C19/2C9',mechanism:'Bidirectional: voriconazole inhibits phenytoin metabolism. Phenytoin induces voriconazole metabolism. Net effect: phenytoin levels ↑, voriconazole levels ↓',action:'Avoid combination if possible. If must use: increase voriconazole dose, monitor both levels.',monitoring:'voriconazole trough, phenytoin level',alternative:'Levetiracetam (no CYP interaction)',evidence:'well-established'},
+  {a:'voriconazole',b:'warfarin',severity:'moderate',enzyme:'CYP2C9',mechanism:'Voriconazole inhibits CYP2C9 → warfarin levels increase',action:'Monitor INR closely. Reduce warfarin dose if INR rises.',monitoring:'INR',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'voriconazole',b:'midazolam',severity:'moderate',enzyme:'CYP3A4',mechanism:'Voriconazole inhibits CYP3A4 → midazolam levels increase',action:'Reduce midazolam dose. Monitor sedation.',monitoring:'RASS score',alternative:'Lorazepam',evidence:'established'},
+
+  // POSACONAZOLE interactions
+  {a:'posaconazole',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4',mechanism:'Posaconazole strongly inhibits CYP3A4 → tacrolimus levels increase 3-5x',action:'Reduce tacrolimus dose by 66%. Recheck trough in 3-5 days.',monitoring:'tacrolimus trough, SCr',alternative:'Caspofungin or micafungin',evidence:'well-established'},
+  {a:'posaconazole',b:'cyclosporine',severity:'severe',enzyme:'CYP3A4',mechanism:'Posaconazole strongly inhibits CYP3A4 → cyclosporine levels increase',action:'Reduce cyclosporine dose by 50-75%. Recheck level in 3-5 days.',monitoring:'cyclosporine trough, SCr',alternative:'Caspofungin',evidence:'well-established'},
+  {a:'posaconazole',b:'warfarin',severity:'moderate',enzyme:'CYP3A4',mechanism:'Posaconazole may increase warfarin levels',action:'Monitor INR closely.',monitoring:'INR',alternative:'None needed with monitoring',evidence:'moderate'},
+
+  // AMIODARONE interactions
+  {a:'amiodarone',b:'digoxin',severity:'severe',enzyme:'P-gp inhibition',mechanism:'Amiodarone inhibits P-glycoprotein → digoxin renal clearance reduced → levels increase 70-100%',action:'Reduce digoxin dose by 50%. Recheck level in 7 days.',monitoring:'digoxin level, HR, ECG, K+',alternative:'None — use combination with dose reduction',evidence:'well-established'},
+  {a:'amiodarone',b:'warfarin',severity:'severe',enzyme:'CYP2C9/3A4',mechanism:'Amiodarone inhibits CYP2C9 → warfarin metabolism reduced → INR increases significantly',action:'Reduce warfarin dose by 30-50%. Recheck INR weekly until stable.',monitoring:'INR (weekly for 4 weeks)',alternative:'None — use combination with dose reduction',evidence:'well-established'},
+  {a:'amiodarone',b:'metoprolol',severity:'severe',enzyme:'CYP2D6',mechanism:'Amiodarone inhibits CYP2D6 → metoprolol levels increase 2-5x → bradycardia, hypotension risk',action:'Reduce metoprolol dose by 50%. Monitor HR and BP closely.',monitoring:'HR, BP, ECG',alternative:'Bisoprolol (less CYP2D6 dependent)',evidence:'well-established'},
+  {a:'amiodarone',b:'phenytoin',severity:'severe',enzyme:'CYP2C9',mechanism:'Amiodarone inhibits CYP2C9 → phenytoin levels increase. Also additive QTc prolongation.',action:'Reduce phenytoin dose by 25-50%. Monitor level and ECG.',monitoring:'phenytoin level, ECG (QTc)',alternative:'Levetiracetam (no QTc, no CYP)',evidence:'well-established'},
+  {a:'amiodarone',b:'fentanyl',severity:'moderate',enzyme:'CYP3A4',mechanism:'Amiodarone inhibits CYP3A4 → fentanyl levels may increase. Additive bradycardia risk.',action:'Use lower fentanyl doses. Monitor HR closely.',monitoring:'HR, BP, sedation level',alternative:'Hydromorphone',evidence:'moderate'},
+  {a:'amiodarone',b:'lidocaine',severity:'severe',enzyme:'CYP3A4/1A2',mechanism:'Amiodarone inhibits CYP3A4 and 1A2 → lidocaine levels increase → CNS toxicity risk',action:'Reduce lidocaine dose by 50%. Monitor for CNS symptoms.',monitoring:'lidocaine level, neuro status, ECG',alternative:'None — use combination with dose reduction',evidence:'well-established'},
+
+  // CIPROFLOXACIN interactions
+  {a:'ciprofloxacin',b:'theophylline',severity:'severe',enzyme:'CYP1A2',mechanism:'Ciprofloxacin strongly inhibits CYP1A2 → theophylline levels increase 2-3x → seizure/arrhythmia risk',action:'Avoid combination if possible. If must use: reduce theophylline dose by 50% and check level.',monitoring:'theophylline level, HR, seizures',alternative:'Levofloxacin (no CYP1A2 effect)',evidence:'well-established'},
+  {a:'ciprofloxacin',b:'clozapine',severity:'severe',enzyme:'CYP1A2',mechanism:'Ciprofloxacin inhibits CYP1A2 → clozapine levels increase 2-3x → seizure/agranulocytosis risk',action:'Reduce clozapine dose by 50%. Monitor CBC and level.',monitoring:'clozapine level, CBC, sedation',alternative:'Levofloxacin',evidence:'well-established'},
+  {a:'ciprofloxacin',b:'warfarin',severity:'moderate',enzyme:'CYP1A2',mechanism:'Ciprofloxacin inhibits CYP1A2 → warfarin metabolism may be affected. Also gut flora disruption affects vitamin K.',action:'Monitor INR closely. Reduce warfarin if INR rises.',monitoring:'INR',alternative:'Levofloxacin',evidence:'established'},
+  {a:'ciprofloxacin',b:'metronidazole',severity:'moderate',enzyme:'additive',mechanism:'Both can cause QTc prolongation. Additive CNS toxicity risk.',action:'Monitor ECG (QTc) and neuro status.',monitoring:'ECG, neuro exam',alternative:'Avoid combination if QTc >500ms',evidence:'moderate'},
+  {a:'ciprofloxacin',b:'ondansetron',severity:'moderate',enzyme:'QTc',mechanism:'Both prolong QTc. Additive risk of torsades de pointes.',action:'Monitor ECG. Avoid if QTc >480ms.',monitoring:'ECG (QTc)',alternative:'Granisetron (less QTc)',evidence:'established'},
+
+  // METRONIDAZOLE interactions
+  {a:'metronidazole',b:'warfarin',severity:'severe',enzyme:'CYP2C9',mechanism:'Metronidazole inhibits CYP2C9 → warfarin metabolism reduced → INR increases significantly',action:'Reduce warfarin dose by 25-50%. Recheck INR in 3-5 days.',monitoring:'INR',alternative:'None — use combination with monitoring',evidence:'well-established'},
+  {a:'metronidazole',b:'valproic',severity:'moderate',enzyme:'CYP epoxide',mechanism:'Metronidazole inhibits valproic acid metabolism → levels may increase',action:'Monitor valproic acid level.',monitoring:'valproic acid level',alternative:'None needed with monitoring',evidence:'moderate'},
+  {a:'metronidazole',b:'lithium',severity:'moderate',enzyme:'renal',mechanism:'Metronidazole may reduce lithium clearance → levels increase',action:'Monitor lithium level closely.',monitoring:'lithium level, SCr',alternative:'None needed with monitoring',evidence:'moderate'},
+
+  // LINEZOLID interactions (MAO inhibitor)
+  {a:'linezolid',b:'serotonergic',severity:'severe',enzyme:'MAO inhibition',mechanism:'Linezolid is a weak MAO inhibitor → serotonin syndrome risk with serotonergic drugs (SSRIs, SNRIs, tramadol, meperidine)',action:'Avoid combination if possible. If must use: monitor for serotonin syndrome (agitation, hyperthermia, clonus, diaphoresis).',monitoring:'serotonin syndrome symptoms, temperature, mental status',alternative:'Daptomycin or vancomycin (if MRSA)',evidence:'well-established'},
+  {a:'linezolid',b:'tyramine',severity:'moderate',enzyme:'MAO inhibition',mechanism:'Linezolid inhibits MAO → tyramine in food can cause hypertensive crisis',action:'Avoid tyramine-rich foods (aged cheese, cured meats, draft beer, soy sauce).',monitoring:'BP',alternative:'None needed with dietary avoidance',evidence:'established'},
+
+  // TMP-SMX interactions
+  {a:'tmpsmx',b:'warfarin',severity:'moderate',enzyme:'CYP2C9',mechanism:'TMP-SMX inhibits CYP2C9 → warfarin levels increase. Also displaces from protein binding.',action:'Monitor INR closely. Reduce warfarin if INR rises.',monitoring:'INR',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'tmpsmx',b:'phenytoin',severity:'moderate',enzyme:'CYP2C9',mechanism:'TMP-SMX inhibits CYP2C9 → phenytoin levels increase',action:'Monitor phenytoin level.',monitoring:'phenytoin level',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'tmpsmx',b:'methotrexate',severity:'severe',enzyme:'renal',mechanism:'Both are antifolates. TMP displaces methotrexate from protein binding and reduces renal clearance. Additive myelosuppression.',action:'Avoid combination if possible. If must use: monitor CBC closely and check methotrexate level.',monitoring:'CBC, methotrexate level, SCr',alternative:'Dapsone (for PCP prophylaxis)',evidence:'well-established'},
+
+  // PHENYTOIN interactions (CYP inducer)
+  {a:'phenytoin',b:'warfarin',severity:'severe',enzyme:'CYP2C9/3A4 induction',mechanism:'Phenytoin induces CYP2C9 and 3A4 → warfarin metabolism increases → INR drops → clotting risk',action:'Increase warfarin dose by 25-50%. Recheck INR in 5-7 days.',monitoring:'INR (weekly until stable)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
+  {a:'phenytoin',b:'fentanyl',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Phenytoin induces CYP3A4 → fentanyl clearance increases → may need higher doses',action:'May need higher fentanyl doses. Monitor pain scores.',monitoring:'pain scores, sedation level',alternative:'None needed with monitoring',evidence:'established'},
+  {a:'phenytoin',b:'midazolam',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Phenytoin induces CYP3A4 → midazolam clearance increases → may lose sedation effect',action:'May need higher midazolam doses.',monitoring:'sedation level (RASS)',alternative:'Lorazepam (not CYP3A4)',evidence:'established'},
+  {a:'phenytoin',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Phenytoin induces CYP3A4 → tacrolimus clearance increases dramatically → levels drop → rejection risk',action:'Increase tacrolimus dose 2-3x. Recheck trough in 5-7 days.',monitoring:'tacrolimus trough (weekly)',alternative:'Levetiracetam (no CYP interaction)',evidence:'well-established'},
+  {a:'phenytoin',b:'cyclosporine',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Phenytoin induces CYP3A4 → cyclosporine clearance increases → levels drop',action:'Increase cyclosporine dose. Recheck level in 5-7 days.',monitoring:'cyclosporine trough',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'phenytoin',b:'valproic',severity:'severe',enzyme:'CYP2C9/epoxide',mechanism:'Valproic acid inhibits phenytoin metabolism → free phenytoin levels increase. Also displaces from protein binding.',action:'Monitor free phenytoin level (not total). May need lower phenytoin dose.',monitoring:'free phenytoin level',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'phenytoin',b:'dexamethasone',severity:'moderate',enzyme:'CYP3A4',mechanism:'Both are CYP3A4 inducers. Phenytoin may reduce dexamethasone effectiveness.',action:'May need higher dexamethasone doses.',monitoring:'clinical response',alternative:'None needed',evidence:'moderate'},
+
+  // PHENOBARBITAL interactions (strong CYP inducer)
+  {a:'phenobarbital',b:'warfarin',severity:'severe',enzyme:'CYP induction',mechanism:'Phenobarbital strongly induces CYP2C9/3A4 → warfarin clearance increases dramatically',action:'Increase warfarin dose significantly. Recheck INR weekly.',monitoring:'INR',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'phenobarbital',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4 induction',mechanism:'Phenobarbital strongly induces CYP3A4 → tacrolimus levels drop',action:'Increase tacrolimus dose 2-3x. Recheck level frequently.',monitoring:'tacrolimus trough',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'phenobarbital',b:'midazolam',severity:'moderate',enzyme:'CYP3A4 induction',mechanism:'Phenobarbital induces CYP3A4 → midazolam clearance increases',action:'May need higher midazolam doses.',monitoring:'sedation level',alternative:'Lorazepam',evidence:'established'},
+
+  // VALPROIC ACID interactions
+  {a:'valproic',b:'meropenem',severity:'severe',enzyme:'renal/metabolic',mechanism:'Meropenem reduces valproic acid levels by 50-100% through unknown mechanism (possibly renal clearance enhancement)',action:'Avoid combination. If must use: increase valproic acid dose 2x and check level in 2-3 days.',monitoring:'valproic acid level, seizure control',alternative:'Cefepime or ceftriaxone (no valproate interaction)',evidence:'well-established'},
+  {a:'valproic',b:'phenytoin',severity:'severe',enzyme:'CYP2C9/epoxide',mechanism:'Valproic acid inhibits phenytoin metabolism and displaces from protein binding → free phenytoin increases',action:'Monitor free phenytoin level. May need lower phenytoin dose.',monitoring:'free phenytoin level',alternative:'Levetiracetam',evidence:'well-established'},
+  {a:'valproic',b:'carbamazepine',severity:'moderate',enzyme:'CYP3A4',mechanism:'Carbamazepine induces valproic acid clearance. Valproic acid inhibits carbamazepine-epoxide metabolism.',action:'Monitor both drug levels.',monitoring:'valproic acid level, carbamazepine level',alternative:'Levetiracetam',evidence:'established'},
+
+  // DILTIAZEM interactions
+  {a:'diltiazem',b:'tacrolimus',severity:'severe',enzyme:'CYP3A4',mechanism:'Diltiazem inhibits CYP3A4 → tacrolimus levels increase 2-3x',action:'Reduce tacrolimus dose by 30-50%. Recheck trough in 5-7 days.',monitoring:'tacrolimus trough, HR, BP',alternative:'Amlodipine (less CYP3A4 inhibition)',evidence:'well-established'},
+  {a:'diltiazem',b:'midazolam',severity:'moderate',enzyme:'CYP3A4',mechanism:'Diltiazem inhibits CYP3A4 → midazolam levels increase',action:'Reduce midazolam dose. Monitor sedation.',monitoring:'sedation level',alternative:'Lorazepam',evidence:'established'},
+  {a:'diltiazem',b:'metoprolol',severity:'moderate',enzyme:'additive',mechanism:'Additive negative chronotropic and inotropic effects. Both slow AV conduction.',action:'Monitor HR and BP closely. Reduce metoprolol if HR <60 or SBP <100.',monitoring:'HR, BP, ECG',alternative:'Amlodipine (less negative chronotropy)',evidence:'established'},
+
+  // AZITHROMYCIN interactions
+  {a:'azithromycin',b:'amiodarone',severity:'moderate',enzyme:'QTc',mechanism:'Both prolong QTc. Additive risk of torsades de pointes.',action:'Monitor ECG. Avoid if QTc >480ms.',monitoring:'ECG (QTc)',alternative:'Doxycycline (no QTc)',evidence:'established'},
+  {a:'azithromycin',b:'ondansetron',severity:'moderate',enzyme:'QTc',mechanism:'Both prolong QTc. Additive torsades risk.',action:'Monitor ECG.',monitoring:'ECG (QTc)',alternative:'Granisetron',evidence:'established'},
+
+  // CLINDAMYCIN interactions
+  {a:'clindamycin',b:'midazolam',severity:'mild',enzyme:'CYP3A4',mechanism:'Clindamycin weakly inhibits CYP3A4 → may slightly increase midazolam levels',action:'No routine adjustment needed.',monitoring:'sedation level',alternative:'None needed',evidence:'limited'},
+
+  // DIGOXIN interactions
+  {a:'digoxin',b:'amiodarone',severity:'severe',enzyme:'P-gp',mechanism:'Amiodarone inhibits P-glycoprotein → digoxin renal clearance reduced → levels increase 70-100%',action:'Reduce digoxin dose by 50%. Recheck level in 7 days.',monitoring:'digoxin level, HR, ECG, K+',alternative:'None — use combination with dose reduction',evidence:'well-established'},
+  {a:'digoxin',b:'diltiazem',severity:'moderate',enzyme:'P-gp',mechanism:'Diltiazem inhibits P-glycoprotein → digoxin levels may increase',action:'Monitor digoxin level and HR.',monitoring:'digoxin level, HR',alternative:'Amlodipine (less P-gp effect)',evidence:'established'},
+  {a:'digoxin',b:'cyclosporine',severity:'moderate',enzyme:'P-gp',mechanism:'Cyclosporine inhibits P-glycoprotein → digoxin levels increase',action:'Monitor digoxin level.',monitoring:'digoxin level',alternative:'None needed with monitoring',evidence:'established'},
+
+  // NOREPINEPHRINE / VASOPRESSOR interactions
+  {a:'norepinephrine',b:'dopamine',severity:'moderate',enzyme:'additive',mechanism:'Additive vasopressor effects. Risk of excessive vasoconstriction and organ ischemia.',action:'Use lowest effective doses. Monitor for digital/limb ischemia.',monitoring:'MAP, lactate, extremity perfusion',alternative:'Use single agent at higher dose',evidence:'established'},
+  {a:'epinephrine',b:'dopamine',severity:'moderate',enzyme:'additive',mechanism:'Additive vasopressor and arrhythmogenic effects.',action:'Monitor ECG closely. Use lowest effective doses.',monitoring:'HR, ECG, MAP',alternative:'Use single agent',evidence:'established'},
+  {a:'vasopressin',b:'norepinephrine',severity:'mild',enzyme:'additive',mechanism:'Complementary vasopressor mechanisms. Often used together in septic shock.',action:'Standard combination. Monitor for excessive vasoconstriction at high doses.',monitoring:'MAP, lactate, urine output',alternative:'Standard combination',evidence:'standard practice'},
+
+  // ANTICOAGULANT combinations
+  {a:'heparin',b:'enoxaparin',severity:'severe',enzyme:'additive',mechanism:'Both are anticoagulants. Additive bleeding risk. No benefit to combining.',action:'Use only one at a time.',monitoring:'signs of bleeding',alternative:'Use one agent',evidence:'well-established'},
+  {a:'heparin',b:'warfarin',severity:'moderate',enzyme:'additive',mechanism:'Both anticoagulants. Overlap during transition. INR not reliable during heparin co-administration.',action:'Continue heparin until INR therapeutic for 24h, then stop.',monitoring:'INR, aPTT, signs of bleeding',alternative:'Standard bridging protocol',evidence:'standard practice'},
+
+  // TACROLIMUS/CYCLOSPORINE with nephrotoxins
+  {a:'tacrolimus',b:'vancomycin',severity:'moderate',enzyme:'additive nephrotoxicity',mechanism:'Both are nephrotoxic. Additive risk of AKI.',action:'Monitor SCr closely. Consider reducing tacrolimus target trough.',monitoring:'SCr, tacrolimus trough',alternative:'None — use combination with close monitoring',evidence:'established'},
+  {a:'tacrolimus',b:'amphotericin',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both are highly nephrotoxic. Additive risk of severe AKI.',action:'Avoid combination if possible. If must use: monitor SCr q12-24h, reduce tacrolimus dose.',monitoring:'SCr, urine output, tacrolimus trough',alternative:'Liposomal amphotericin (less nephrotoxic) + echinocandin',evidence:'well-established'},
+  {a:'cyclosporine',b:'amphotericin',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both are highly nephrotoxic.',action:'Avoid combination. If must use: monitor SCr closely.',monitoring:'SCr, urine output',alternative:'Liposomal amphotericin + echinocandin',evidence:'well-established'},
+  {a:'tacrolimus',b:'ciprofloxacin',severity:'moderate',enzyme:'CYP3A4',mechanism:'Ciprofloxacin may inhibit CYP3A4 → tacrolimus levels increase',action:'Monitor tacrolimus trough.',monitoring:'tacrolimus trough, SCr',alternative:'Levofloxacin',evidence:'moderate'},
+  {a:'cyclosporine',b:'ciprofloxacin',severity:'moderate',enzyme:'CYP3A4',mechanism:'Ciprofloxacin may inhibit CYP3A4 → cyclosporine levels increase',action:'Monitor cyclosporine trough.',monitoring:'cyclosporine trough',alternative:'Levofloxacin',evidence:'moderate'},
+
+  // METHOTREXATE interactions
+  {a:'methotrexate',b:'pantoprazole',severity:'moderate',enzyme:'renal',mechanism:'PPIs may reduce renal clearance of methotrexate → delayed elimination → toxicity risk',action:'Hold PPI during high-dose methotrexate. Use famotidine instead.',monitoring:'methotrexate level, SCr, CBC',alternative:'Famotidine (no renal interaction)',evidence:'established'},
+  {a:'methotrexate',b:'tmpsmx',severity:'severe',enzyme:'antifolate synergy',mechanism:'Both are antifolates. Additive myelosuppression and mucositis. TMP reduces renal clearance of methotrexate.',action:'Avoid combination.',monitoring:'CBC, methotrexate level',alternative:'Dapsone (for PCP)',evidence:'well-established'},
+
+  // ONDANSETRON QTc interactions
+  {a:'ondansetron',b:'amiodarone',severity:'moderate',enzyme:'QTc',mechanism:'Both prolong QTc. Additive torsades risk.',action:'Use lowest effective ondansetron dose. Monitor ECG.',monitoring:'ECG (QTc)',alternative:'Granisetron (less QTc)',evidence:'established'},
+
+  // CORTICOSTEROID interactions
+  {a:'hydrocortisone',b:'phenytoin',severity:'moderate',enzyme:'CYP3A4',mechanism:'Phenytoin induces CYP3A4 → corticosteroid clearance increases → reduced efficacy',action:'May need higher corticosteroid doses.',monitoring:'clinical response',alternative:'None needed with dose adjustment',evidence:'established'},
+  {a:'methylpred',b:'phenytoin',severity:'moderate',enzyme:'CYP3A4',mechanism:'Phenytoin induces CYP3A4 → methylprednisolone clearance increases',action:'May need higher methylprednisolone doses.',monitoring:'clinical response',alternative:'None needed',evidence:'established'},
+  {a:'methylpred',b:'diltiazem',severity:'moderate',enzyme:'CYP3A4',mechanism:'Diltiazem inhibits CYP3A4 → methylprednisolone levels increase',action:'Monitor for steroid toxicity (hyperglycemia, infection risk).',monitoring:'glucose, signs of infection',alternative:'Hydrocortisone (less CYP3A4 dependent)',evidence:'moderate'},
+
+  // PANTOPRAZOLE interactions
+  {a:'pantoprazole',b:'methotrexate',severity:'moderate',enzyme:'renal',mechanism:'PPI may reduce methotrexate renal clearance',action:'Hold PPI during high-dose methotrexate.',monitoring:'methotrexate level',alternative:'Famotidine',evidence:'established'},
+
+  // LIDOCAINE interactions
+  {a:'lidocaine',b:'amiodarone',severity:'severe',enzyme:'CYP3A4/1A2',mechanism:'Amiodarone inhibits lidocaine metabolism → levels increase → CNS toxicity',action:'Reduce lidocaine dose by 50%. Monitor for CNS symptoms.',monitoring:'lidocaine level, neuro status',alternative:'None — use combination with dose reduction',evidence:'well-established'},
+  {a:'lidocaine',b:'cimetidine',severity:'moderate',enzyme:'CYP1A2',mechanism:'Cimetidine inhibits CYP1A2 → lidocaine clearance reduced',action:'Reduce lidocaine dose.',monitoring:'lidocaine level',alternative:'Famotidine (no CYP1A2 effect)',evidence:'established'},
+
+  // RANITIDINE interactions (minimal)
+  {a:'ranitidine',b:'warfarin',severity:'mild',enzyme:'CYP (weak)',mechanism:'Ranitidine weakly affects warfarin metabolism. Clinically insignificant in most cases.',action:'No routine adjustment needed.',monitoring:'INR if other risk factors present',alternative:'None needed',evidence:'limited'},
+
+  // INSULIN interactions
+  {a:'insulin',b:'corticosteroids',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Corticosteroids cause hyperglycemia → insulin requirements increase significantly',action:'Increase insulin dose by 25-50%. Monitor glucose closely.',monitoring:'blood glucose (q1-2h initially)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
+  {a:'insulin',b:'dopamine',severity:'mild',enzyme:'metabolic',mechanism:'Dopamine may affect insulin secretion at high doses.',action:'Monitor glucose.',monitoring:'blood glucose',alternative:'None needed',evidence:'limited'},
+
+  // AMPHOTERICIN interactions
+  {a:'amphotericin',b:'vancomycin',severity:'moderate',enzyme:'additive nephrotoxicity',mechanism:'Both are nephrotoxic. Additive risk of AKI.',action:'Monitor SCr closely. Ensure adequate hydration.',monitoring:'SCr, urine output, electrolytes',alternative:'Liposomal amphotericin (less nephrotoxic)',evidence:'established'},
+  {a:'amphotericin',b:'foscarnet',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both are highly nephrotoxic. Additive risk of severe AKI and electrolyte wasting.',action:'Avoid combination if possible. If must use: aggressive hydration, monitor electrolytes q12h.',monitoring:'SCr, Ca2+, Mg2+, K+, PO4',alternative:'Use sequentially, not together',evidence:'well-established'},
+
+  // FOSCARNET interactions
+  {a:'foscarnet',b:'pentamidine',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both are highly nephrotoxic. Additive risk of AKI.',action:'Avoid combination.',monitoring:'SCr',alternative:'Use sequentially',evidence:'well-established'},
+  {a:'foscarnet',b:'ganciclovir',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both are nephrotoxic. Additive myelosuppression.',action:'Avoid combination if possible.',monitoring:'SCr, CBC',alternative:'Use one agent or sequential therapy',evidence:'well-established'},
+
+  // GANCICLOVIR interactions
+  {a:'ganciclovir',b:'mycophenolate',severity:'severe',enzyme:'additive',mechanism:'Both cause significant myelosuppression. Additive neutropenia and thrombocytopenia risk.',action:'Monitor CBC very closely (q2-3 days). Consider G-CSF support.',monitoring:'CBC (absolute neutrophil count, platelets)',alternative:'Valganciclovir with dose reduction',evidence:'well-established'},
+  {a:'ganciclovir',b:'foscarnet',severity:'severe',enzyme:'additive nephrotoxicity',mechanism:'Both nephrotoxic. Also additive myelosuppression.',action:'Avoid combination.',monitoring:'SCr, CBC',alternative:'Use one agent',evidence:'well-established'}
+];
+
+let patientDrugs = [];
+
+function renderDrugGrid(){
+  const groups={};
+  ICU_DRUGS.forEach(d=>{
+    if(!groups[d.group])groups[d.group]=[];
+    groups[d.group].push(d);
+  });
+  Object.entries(groups).forEach(([group,drugs])=>{
+    const gridId=GROUP_MAP[group];
+    if(!gridId)return;
+    const el=document.getElementById(gridId);
+    el.innerHTML='';
+    drugs.forEach(d=>{
+      const card=document.createElement('div');
+      card.className='drug-card';
+      card.dataset.id=d.id;
+      card.innerHTML='<div><div class="drug-name">'+d.name+'</div><div class="drug-class">'+d.class+'</div></div>';
+      card.onclick=()=>toggleDrug(d.id);
+      el.appendChild(card);
+    });
+  });
+}
+
+function toggleDrug(id){
+  const idx=patientDrugs.indexOf(id);
+  if(idx>=0)patientDrugs.splice(idx,1);
+  else patientDrugs.push(id);
+  updateUI();
+}
+
+function removeDrug(id){
+  const idx=patientDrugs.indexOf(id);
+  if(idx>=0)patientDrugs.splice(idx,1);
+  updateUI();
+}
+
+function clearAll(){
+  patientDrugs=[];
+  updateUI();
+}
+
+function filterDrugs(){
+  const q=document.getElementById('drugSearch').value.toLowerCase();
+  document.querySelectorAll('.drug-card').forEach(card=>{
+    const name=card.querySelector('.drug-name').textContent.toLowerCase();
+    const cls=card.querySelector('.drug-class').textContent.toLowerCase();
+    card.style.display=(name.includes(q)||cls.includes(q))?'':'none';
+  });
+}
+
+function updateUI(){
+  // Update patient drug list
+  const listEl=document.getElementById('patientDrugs');
+  const noDrugsEl=document.getElementById('noDrugs');
+  listEl.innerHTML='';
+  if(patientDrugs.length===0){noDrugsEl.style.display='block';}
+  else{
+    noDrugsEl.style.display='none';
+    patientDrugs.forEach(id=>{
+      const drug=ICU_DRUGS.find(d=>d.id===id);
+      const card=document.createElement('div');
+      card.className='drug-card selected';
+      card.innerHTML='<div><div class="drug-name">'+drug.name+'</div><div class="drug-class">'+drug.class+'</div></div><button class="remove-btn" onclick="event.stopPropagation();removeDrug(\''+id+'\')">&times;</button>';
+      card.onclick=()=>toggleDrug(id);
+      listEl.appendChild(card);
+    });
+  }
+
+  // Highlight selected drugs in grid
+  document.querySelectorAll('.drug-grid .drug-card').forEach(card=>{
+    card.classList.toggle('selected',patientDrugs.includes(card.dataset.id));
+  });
+
+  // Scan for interactions
+  scanInteractions();
+}
+
+function scanInteractions(){
+  const contentEl=document.getElementById('contentArea');
+  const emptyEl=document.getElementById('emptyState');
+
+  if(patientDrugs.length<2){
+    emptyEl.style.display='';
+    document.getElementById('countSevere').textContent='0';
+    document.getElementById('countModerate').textContent='0';
+    document.getElementById('countMild').textContent='0';
+    return;
+  }
+  emptyEl.style.display='none';
+
+  const found={severe:[],moderate:[],mild:[]};
+  INTERACTIONS.forEach(inter=>{
+    const hasA=patientDrugs.includes(inter.a);
+    const hasB=patientDrugs.includes(inter.b);
+    if(hasA&&hasB){
+      // Check for duplicate (a,b) and (b,a)
+      const key=[inter.a,inter.b].sort().join('+');
+      if(!found[inter.severity].find(x=>[x.a,x.b].sort().join('+')===key)){
+        found[inter.severity].push(inter);
+      }
+    }
+  });
+
+  // Also check serotonergic drugs if linezolid is present
+  if(patientDrugs.includes('linezolid')){
+    const ssri=['sertraline','fluoxetine','paroxetine','citalopram','escitalopram','venlafaxine','duloxetine','tramadol','meperidine'];
+    const hasSerotonergic=patientDrugs.some(id=>ssri.includes(id));
+    if(hasSerotonergic){
+      found.severe.push({a:'linezolid',b:'serotonergic drug',severity:'severe',enzyme:'MAO inhibition',mechanism:'Linezolid is a weak MAO inhibitor → serotonin syndrome risk with serotonergic drugs',action:'Avoid combination. Monitor for serotonin syndrome (agitation, hyperthermia, clonus).',monitoring:'serotonin syndrome symptoms, temperature',alternative:'Daptomycin or vancomycin',evidence:'well-established'});
+    }
+  }
+
+  document.getElementById('countSevere').textContent=found.severe.length;
+  document.getElementById('countModerate').textContent=found.moderate.length;
+  document.getElementById('countMild').textContent=found.mild.length;
+
+  let html='';
+  if(found.severe.length===0&&found.moderate.length===0&&found.mild.length===0){
+    html='<div class="no-interactions"><div class="icon">&#10003;</div><div style="font-size:16px;font-weight:600;color:#4ade80">No Interactions Found</div><div style="margin-top:8px">No known significant interactions between the selected drugs.</div></div>';
+  }else{
+    if(found.severe.length>0){
+      html+='<h3 style="color:#f87171;margin:16px 0 8px">&#9888; SEVERE INTERACTIONS ('+found.severe.length+')</h3>';
+      found.severe.forEach(i=>{html+=renderInteractionCard(i);});
+    }
+    if(found.moderate.length>0){
+      html+='<h3 style="color:#fbbf24;margin:16px 0 8px">&#9889; MODERATE INTERACTIONS ('+found.moderate.length+')</h3>';
+      found.moderate.forEach(i=>{html+=renderInteractionCard(i);});
+    }
+    if(found.mild.length>0){
+      html+='<h3 style="color:#4ade80;margin:16px 0 8px">&#10003; MILD / AWARE ('+found.mild.length+')</h3>';
+      found.mild.forEach(i=>{html+=renderInteractionCard(i);});
+    }
+  }
+  contentEl.innerHTML=html;
+}
+
+function renderInteractionCard(i){
+  const drugA=ICU_DRUGS.find(d=>d.id===i.a);
+  const drugB=ICU_DRUGS.find(d=>d.id===i.b);
+  const nameA=drugA?drugA.name:i.a;
+  const nameB=drugB?drugB.name:i.b;
+  return '<div class="interaction-card '+i.severity+'">'+
+    '<div class="interaction-header">'+
+      '<div class="interaction-drugs">'+nameA+' + '+nameB+'</div>'+
+      '<span class="severity-badge '+i.severity+'">'+i.severity.toUpperCase()+'</span>'+
+    '</div>'+
+    '<div class="interaction-body">'+
+      '<strong>Enzyme/Pathway:</strong> '+i.enzyme+'<br>'+
+      '<strong>Mechanism:</strong> '+i.mechanism+'<br>'+
+      '<div class="action"><strong>Action:</strong> '+i.action+'</div>'+
+      '<div class="monitoring"><strong>Monitor:</strong> '+i.monitoring+'</div>'+
+      '<div class="alternative"><strong>Alternative:</strong> '+i.alternative+'</div>'+
+      '<div style="margin-top:4px;font-size:10px;color:#64748b"><strong>Evidence:</strong> '+i.evidence+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function printReport(){
+  window.print();
+}
+
+renderDrugGrid();
+</script>
+</body>
+</html>
