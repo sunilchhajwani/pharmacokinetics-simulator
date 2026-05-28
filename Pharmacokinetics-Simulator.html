@@ -242,6 +242,36 @@ body.quick-start .warning-box{display:none!important}
         <optgroup label="Immunosuppressants">
           <option value="tacrolimus">Tacrolimus</option>
         </optgroup>
+        <optgroup label="ICU Sedation/Analgesia">
+          <option value="fentanyl">Fentanyl</option>
+          <option value="midazolam">Midazolam</option>
+          <option value="propofol">Propofol</option>
+        </optgroup>
+        <optgroup label="Anticoagulants">
+          <option value="enoxaparin">Enoxaparin (LMWH)</option>
+          <option value="heparin">Heparin (UFH)</option>
+        </optgroup>
+        <optgroup label="Fluoroquinolones">
+          <option value="ciprofloxacin">Ciprofloxacin</option>
+          <option value="levofloxacin">Levofloxacin</option>
+        </optgroup>
+        <optgroup label="TB Drugs">
+          <option value="isoniazid">Isoniazid</option>
+          <option value="rifampin">Rifampin</option>
+        </optgroup>
+        <optgroup label="Antifungals">
+          <option value="voriconazole">Voriconazole</option>
+          <option value="posaconazole">Posaconazole</option>
+        </optgroup>
+        <optgroup label="Antivirals">
+          <option value="acyclovir">Acyclovir</option>
+          <option value="ganciclovir">Ganciclovir</option>
+          <option value="foscarnet">Foscarnet</option>
+        </optgroup>
+        <optgroup label="MDR Gram-Negative">
+          <option value="ceftazidime">Ceftazidime-Avibactam</option>
+          <option value="colistin">Colistin</option>
+        </optgroup>
         <optgroup label="Antifungals">
           <option value="voriconazole">Voriconazole</option>
         </optgroup>
@@ -769,6 +799,46 @@ const DRUGS={
     info:'<strong>Colistin</strong> -- Last-resort gram-negative (MDR Pseudomonas, Acinetobacter). Prodrug (colistimethate). Nephrotoxic, neurotoxic. Complex PK — loading dose critical.',
     defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:300,loadingUnit:'mg stat',hepatic:false,dialyzable:false,interactionNote:'Additive nephrotoxicity with aminoglycosides. Avoid neuromuscular blockers.',
     renalNote:'CrCl 50-80: 2.25-3 mg/kg q12h. CrCl 30-50: 1.5-2.25 mg/kg q12h. CrCl 10-30: 1.5 mg/kg q24h. HD: not significantly removed.'},
+  fentanyl:{name:'Fentanyl',vd:6.0,keAuto:false,halfLife:3.5,f:0.5,pb:80,therapeutic:[0,100],toxic:2,unit:'ng/mL',
+    info:'<strong>Fentanyl</strong> -- Synthetic opioid. ICU sedation/analgesia. Highly lipophilic — accumulates in prolonged infusion (context-sensitive half-life). Active metabolite (norfentanyl) accumulates in renal failure.',
+    defaultDose:50,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 substrate. Azole antifungals increase levels. Serotonin syndrome risk with SSRIs.',
+    renalNote:'Active metabolite accumulates in CKD — reduce infusion rate. No dose adjustment for parent compound.'},
+  midazolam:{name:'Midazolam',vd:1.5,keAuto:false,halfLife:2,f:0.5,pb:96,therapeutic:[0,100],toxic:1,unit:'mcg/L',
+    info:'<strong>Midazolam</strong> -- Benzodiazepine. ICU sedation, procedural sedation. Context-sensitive half-life with prolonged infusion. Active metabolite (alpha-hydroxy-midazolam) accumulates in renal failure.',
+    defaultDose:2,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 substrate. Azole antifungals, macrolides increase levels. Flumazenil reverses effects.',
+    renalNote:'Active metabolite accumulates in CKD — prolonged sedation. Reduce dose or switch to lorazepam (no active metabolite).'},
+  propofol:{name:'Propofol',vd:20,keAuto:false,halfLife:1.5,f:1.0,pb:98,therapeutic:[0,100],toxic:5,unit:'mcg/mL',
+    info:'<strong>Propofol</strong> -- IV sedative-hypnotic. ICU sedation, induction. Rapid redistribution = fast onset/offset. Propofol infusion syndrome (PRIS) with high doses >5mg/kg/h >48h.',
+    defaultDose:50,defaultInterval:0.25,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'No significant CYP interactions. Lipid emulsion — consider calories (1.1 kcal/mL).',
+    renalNote:'No renal adjustment — redistribution-based kinetics. Hypertriglyceridemia risk in renal failure.'},
+  heparin:{name:'Heparin (UFH)',vd:0.05,keAuto:false,halfLife:1.5,f:1.0,pb:0,therapeutic:[0.3,0.7],toxic:1.0,unit:'IU/mL',
+    info:'<strong>Unfractionated Heparin</strong> -- Anticoagulant. VTE, ACS, bridging. Non-linear kinetics — dose-response is unpredictable. aPTT or anti-Xa monitoring. Protamine fully reverses.',
+    defaultDose:5000,defaultInterval:0,route:'iv_bolus',infusionTime:0,loadingDose:80,loadingUnit:'units/kg bolus',hepatic:false,dialyzable:false,interactionNote:'Additive bleeding with anticoagulants, antiplatelets. HIT (heparin-induced thrombocytopenia) — check platelets day 3-5.',
+    renalNote:'No renal adjustment — hepatic reticuloendothelial clearance. But less predictable response in uremia.'},
+  levofloxacin:{name:'Levofloxacin',vd:1.1,keAuto:true,halfLife:7,f:0.99,pb:24,therapeutic:[0,100],toxic:8,unit:'mg/L',
+    info:'<strong>Levofloxacin</strong> -- Fluoroquinolone. Respiratory, UTI, anthrax prophylaxis. Concentration-dependent killing. QTc prolongation. Tendon rupture risk.',
+    defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'QTc prolongation — avoid with other QTc drugs. Antacids reduce absorption.',
+    renalNote:'CrCl 20-49: 250mg q24h. CrCl 10-19: 250mg q48h. HD: 250mg after HD.'},
+  isoniazid:{name:'Isoniazid',vd:0.6,keAuto:false,halfLife:3,f:0.9,pb:10,therapeutic:[0,100],toxic:20,unit:'mg/L',
+    info:'<strong>Isoniazid</strong> -- First-line TB drug. Hepatotoxic (monitor LFTs). Peripheral neuropathy (give pyridoxine/B6). CYP2A6 polymorphism — slow acetylators (50% Caucasians) accumulate drug.',
+    defaultDose:300,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:true,interactionNote:'CYP2E1 inducer. Increases acetaminophen toxicity. Phenytoin levels increase.',
+    renalNote:'No significant renal adjustment. Active metabolite (acetylisoniazid) accumulates — but low toxicity.'},
+  rifampin:{name:'Rifampin',vd:0.6,keAuto:false,halfLife:3.5,f:1.0,pb:80,therapeutic:[0,100],toxic:20,unit:'mg/L',
+    info:'<strong>Rifampin</strong> -- First-line TB drug. Strong CYP3A4 inducer — increases clearance of many drugs. Hepatotoxic. Red-orange body fluids (tears, urine). Autoinduction over 2 weeks.',
+    defaultDose:600,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'<span style="color:#f87171">STRONG CYP3A4 inducer.</span> Reduces levels of tacrolimus, cyclosporine, warfarin, oral contraceptives, protease inhibitors, many others.',
+    renalNote:'No renal adjustment. Hepatic metabolism. Monitor LFTs.'},
+  posaconazole:{name:'Posaconazole',vd:5.0,keAuto:false,halfLife:35,f:0.5,pb:99,therapeutic:[0.7,3.75],toxic:3.75,unit:'mg/L',
+    info:'<strong>Posaconazole</strong> -- Triazole antifungal. Mucor, Aspergillus prophylaxis/treatment. Variable absorption (oral suspension requires fatty meal). TDM recommended for oral suspension.',
+    defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:300,loadingUnit:'mg x3 on day 1',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor (strong). Increases tacrolimus, cyclosporine, sirolimus levels. Avoid with ergot alkaloids.',
+    renalNote:'No renal adjustment — hepatic metabolism. IV formulation contains cyclodextrin (avoid if CrCl <50).'},
+  ceftazidime:{name:'Ceftazidime-Avibactam',vd:0.3,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[0,100],toxic:100,unit:'mg/L',
+    info:'<strong>Ceftazidime-Avibactam</strong> -- Beta-lactam + beta-lactamase inhibitor. MDR gram-negative (KPC-producing Klebsiella, Pseudomonas). Time-dependent killing: T>MIC target 50%.',
+    defaultDose:2500,defaultInterval:8,route:'iv_infusion',infusionTime:2,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions. Probenecid increases levels.',
+    renalNote:'CrCl 31-50: 1.25g q8h. CrCl 16-30: 0.94g q12h. CrCl 6-15: 0.94g q24h. CrCl <6: 0.94g q48h. HD: dose after HD.'},
+  foscarnet:{name:'Foscarnet',vd:0.4,keAuto:false,halfLife:3,f:1.0,pb:15,therapeutic:[0,100],toxic:500,unit:'mcg/mL',
+    info:'<strong>Foscarnet</strong> -- Pyrophosphate analog antiviral. CMV retinitis (ganciclovir-resistant), HSV. Major nephrotoxic — requires aggressive hydration. Electrolyte wasting (Ca2+, Mg2+, K+, PO4).',
+    defaultDose:60,defaultInterval:8,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Additive nephrotoxicity with aminoglycosides, amphotericin, cyclosporine.',
+    renalNote:'CrCl >1.4 mL/min/kg: 60mg/kg q8h. CrCl 1.0-1.4: 45mg/kg q8h. CrCl 0.8-1.0: 35mg/kg q8h. HD: dose after HD. Aggressive hydration required.'},
   custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
 };
 
@@ -1335,7 +1405,17 @@ const MONOGRAPHS={
   acyclovir:'<strong>Acyclovir</strong><br><br><strong>Class:</strong> Nucleoside antiviral<br><strong>Mechanism:</strong> Inhibits viral DNA polymerase (requires viral thymidine kinase activation)<br><strong>Spectrum:</strong> HSV-1/2, VZV, encephalitis, neonatal herpes<br><strong>Key Side Effects:</strong> Nephrotoxicity (crystalluria), neurotoxicity (confusion, seizures at high levels)<br><strong>Monitoring:</strong> SCr, neuro status, hydration<br><strong>Special Notes:</strong> <span style="color:#f87171">Nephrotoxic — aggressive IV hydration required.</span> Neurotoxicity risk increases with renal impairment.',
   enoxaparin:'<strong>Enoxaparin (LMWH)</strong><br><br><strong>Class:</strong> Low molecular weight heparin<br><strong>Mechanism:</strong> Potentiates antithrombin III → inhibits Factor Xa (predominantly)<br><strong>Spectrum:</strong> VTE prophylaxis/treatment, ACS<br><strong>Key Side Effects:</strong> Bleeding, heparin-induced thrombocytopenia (rare), injection site hematoma<br><strong>Monitoring:</strong> Anti-Xa level (target 0.5-1.0 IU/mL for treatment), platelet count<br><strong>Special Notes:</strong> Anti-Xa monitoring for obesity, renal failure, pregnancy. Protamine partially reverses (60%).',
   ganciclovir:'<strong>Ganciclovir</strong><br><br><strong>Class:</strong> Nucleoside antiviral<br><strong>Mechanism:</strong> Inhibits CMV DNA polymerase<br><strong>Spectrum:</strong> CMV retinitis, CMV prophylaxis in transplant, CMV colitis<br><strong>Key Side Effects:</strong> Myelosuppression (neutropenia, thrombocytopenia), nephrotoxicity<br><strong>Monitoring:</strong> CBC (weekly), SCr<br><strong>Special Notes:</strong> Valganciclovir is oral prodrug (90% bioavailability). <span style="color:#f87171">Significant myelosuppression — monitor CBC closely.</span>',
-  colistin:'<strong>Colistin (Polymyxin E)</strong><br><br><strong>Class:</strong> Polymyxin antibiotic<br><strong>Mechanism:</strong> Disrupts outer membrane of gram-negative bacteria<br><strong>Spectrum:</strong> MDR gram-negative (Pseudomonas, Acinetobacter, Klebsiella) — last resort<br><strong>Key Side Effects:</strong> Nephrotoxicity, neurotoxicity (paresthesias, neuromuscular blockade), apnea<br><strong>Monitoring:</strong> SCr, neuro function, respiratory status<br><strong>Special Notes:</strong> Prodrug (colistimethate). <span style="color:#f87171">Loading dose critical.</span> Complex PK. Avoid other nephrotoxins.'
+  colistin:'<strong>Colistin (Polymyxin E)</strong><br><br><strong>Class:</strong> Polymyxin antibiotic<br><strong>Mechanism:</strong> Disrupts outer membrane of gram-negative bacteria<br><strong>Spectrum:</strong> MDR gram-negative (Pseudomonas, Acinetobacter, Klebsiella) — last resort<br><strong>Key Side Effects:</strong> Nephrotoxicity, neurotoxicity (paresthesias, neuromuscular blockade), apnea<br><strong>Monitoring:</strong> SCr, neuro function, respiratory status<br><strong>Special Notes:</strong> Prodrug (colistimethate). <span style="color:#f87171">Loading dose critical.</span> Complex PK. Avoid other nephrotoxins.',
+  fentanyl:'<strong>Fentanyl</strong><br><br><strong>Class:</strong> Synthetic opioid<br><strong>Mechanism:</strong> Mu-opioid receptor agonist<br><strong>Spectrum:</strong> ICU sedation/analgesia, procedural sedation<br><strong>Key Side Effects:</strong> Respiratory depression, chest wall rigidity, ileus, tolerance<br><strong>Monitoring:</strong> Pain scores, sedation level (RASS), respiratory rate<br><strong>Special Notes:</strong> <span style="color:#fbbf24">Context-sensitive half-life</span> — accumulates with prolonged infusion. Active metabolite (norfentanyl) accumulates in renal failure.',
+  midazolam:'<strong>Midazolam</strong><br><br><strong>Class:</strong> Benzodiazepine<br><strong>Mechanism:</strong> GABA-A receptor positive allosteric modulator<br><strong>Spectrum:</strong> ICU sedation, procedural sedation, status epilepticus<br><strong>Key Side Effects:</strong> Respiratory depression, delirium, paradoxical agitation<br><strong>Monitoring:</strong> Sedation level (RASS), respiratory rate, delirium screening<br><strong>Special Notes:</strong> Active metabolite accumulates in renal failure. <span style="color:#f87171">Daily sedation interruption recommended.</span> Flumazenil reversal.',
+  propofol:'<strong>Propofol</strong><br><br><strong>Class:</strong> IV sedative-hypnotic<br><strong>Mechanism:</strong> GABA-A receptor modulator<br><strong>Spectrum:</strong> ICU sedation, anesthesia induction, refractory status epilepticus<br><strong>Key Side Effects:</strong> Hypotension, PRIS (propofol infusion syndrome), hypertriglyceridemia<br><strong>Monitoring:</strong> Sedation level, BP, triglycerides, CK<br><strong>Special Notes:</strong> <span style="color:#f87171">PRIS risk: >5mg/kg/h >48h.</span> Lipid emulsion: 1.1 kcal/mL.',
+  heparin:'<strong>Unfractionated Heparin</strong><br><br><strong>Class:</strong> Anticoagulant<br><strong>Mechanism:</strong> Potentiates antithrombin III — inhibits thrombin and Factor Xa<br><strong>Spectrum:</strong> VTE, ACS, bridging, ECMO<br><strong>Key Side Effects:</strong> Bleeding, HIT (heparin-induced thrombocytopenia)<br><strong>Monitoring:</strong> aPTT (1.5-2.5x) or anti-Xa (0.3-0.7), platelets<br><strong>Special Notes:</strong> <span style="color:#fbbf24">Non-linear kinetics.</span> Protamine fully reverses. Check platelets day 3-5 for HIT.',
+  levofloxacin:'<strong>Levofloxacin</strong><br><br><strong>Class:</strong> Fluoroquinolone<br><strong>Mechanism:</strong> Inhibits DNA gyrase and topoisomerase IV<br><strong>Spectrum:</strong> Respiratory, UTI, anthrax<br><strong>Key Side Effects:</strong> Tendon rupture, QTc prolongation, CNS effects, aortic dissection<br><strong>Monitoring:</strong> Renal function, ECG (QTc)<br><strong>Special Notes:</strong> Concentration-dependent. Once-daily. <span style="color:#fbbf24">FDA Black Box: tendon rupture, peripheral neuropathy.</span>',
+  isoniazid:'<strong>Isoniazid</strong><br><br><strong>Class:</strong> Anti-tubercular<br><strong>Mechanism:</strong> Inhibits mycolic acid synthesis<br><strong>Spectrum:</strong> M. tuberculosis (first-line)<br><strong>Key Side Effects:</strong> Hepatotoxicity, peripheral neuropathy, drug-induced lupus<br><strong>Monitoring:</strong> LFTs (baseline + monthly), neuropathy symptoms<br><strong>Special Notes:</strong> Give pyridoxine (B6) 25-50mg daily. <span style="color:#fbbf24">CYP2A6 polymorphism — slow acetylators (50% Caucasians) higher toxicity risk.</span>',
+  rifampin:'<strong>Rifampin</strong><br><br><strong>Class:</strong> Anti-tubercular<br><strong>Mechanism:</strong> Inhibits bacterial RNA polymerase<br><strong>Spectrum:</strong> TB, MRSA (combination), brucellosis<br><strong>Key Side Effects:</strong> Hepatotoxicity, orange body fluids, thrombocytopenia<br><strong>Monitoring:</strong> LFTs, CBC, co-administered drug levels<br><strong>Special Notes:</strong> <span style="color:#f87171">STRONG CYP3A4 INDUCER.</span> Reduces tacrolimus, cyclosporine, warfarin, OCP, HIV drug levels. Autoinduction over 2 weeks.',
+  posaconazole:'<strong>Posaconazole</strong><br><br><strong>Class:</strong> Triazole antifungal<br><strong>Mechanism:</strong> Inhibits 14-alpha demethylase<br><strong>Spectrum:</strong> Mucor (first-line), Aspergillus, Candida<br><strong>Key Side Effects:</strong> QTc prolongation, hepatotoxicity, nausea<br><strong>Monitoring:</strong> Trough (0.7-3.75 mcg/mL), LFTs, ECG<br><strong>Special Notes:</strong> Oral suspension requires fatty meal. <span style="color:#fbbf24">Strong CYP3A4 inhibitor.</span>',
+  ceftazidime:'<strong>Ceftazidime-Avibactam</strong><br><br><strong>Class:</strong> Beta-lactam + beta-lactamase inhibitor<br><strong>Mechanism:</strong> Inhibits cell wall synthesis; avibactam inhibits KPC, OXA-48, AmpC<br><strong>Spectrum:</strong> MDR gram-negative (KPC-Klebsiella, CRE, MDR Pseudomonas)<br><strong>Key Side Effects:</strong> Nausea, C. difficile<br><strong>Monitoring:</strong> Renal function, clinical response<br><strong>Special Notes:</strong> T>MIC target 50%. <span style="color:#60a5fa">Extended infusion (2-4h) improves PK/PD.</span> Renal dose adjustment required.',
+  foscarnet:'<strong>Foscarnet</strong><br><br><strong>Class:</strong> Pyrophosphate analog antiviral<br><strong>Mechanism:</strong> Directly inhibits viral DNA polymerase<br><strong>Spectrum:</strong> CMV (ganciclovir-resistant), HSV (acyclovir-resistant)<br><strong>Key Side Effects:</strong> Nephrotoxicity, electrolyte wasting (Ca2+, Mg2+, K+, PO4), seizures<br><strong>Monitoring:</strong> SCr, electrolytes q12-24h, ionized calcium<br><strong>Special Notes:</strong> <span style="color:#f87171">Major nephrotoxic — aggressive IV hydration required (2.5L NS/day).</span> Dose adjusts for renal function.'
 };
 
 // === VIAL SIZES ===
