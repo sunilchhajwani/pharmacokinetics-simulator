@@ -518,12 +518,16 @@ body.quick-start .warning-box{display:none!important}
     <div class="tab-content" id="tab-advanced">
       <h3>PK Parameters (Override) <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Manual PK Override:</strong> Override auto-calculated PK parameters for special scenarios or when you have patient-specific data from previous TDM.<br><br><strong>Parameters:</strong><ul><li><strong>Vd (L/kg):</strong> Volume of distribution — how widely the drug distributes. Auto-fills from drug profile</li><li><strong>ke (h-1):</strong> Elimination rate constant — leave blank for auto-calculation from CrCl</li><li><strong>F (bioavailability):</strong> Fraction absorbed (1.0 for IV, 0.5-0.9 for oral)</li><li><strong>Protein Binding:</strong> Affects free (active) drug concentration. High PB drugs: phenytoin (90%), valproic acid (90%)</li></ul>">?</span></h3>
       <div class="row">
-        <div class="field"><label>Vd (L/kg)</label><input type="number" id="vdInput" value="0.7" step="0.01" oninput="recalculate()"></div>
-        <div class="field"><label>ke (h-1) <small style="color:#64748b">blank=auto</small></label><input type="number" id="keInput" value="" step="0.001" placeholder="Auto"></div>
+        <div class="field"><label>Vd (L/kg)</label><input type="number" id="vdInput" value="0.7" step="0.01" oninput="state.userOverrodeVd=true;recalculate()"></div>
+        <div class="field"><label>ke (h-1) <small style="color:#64748b">blank=auto</small></label><input type="number" id="keInput" value="" step="0.001" placeholder="Auto" oninput="recalculate()"></div>
       </div>
       <div class="row">
-        <div class="field"><label>Bioavailability (F)</label><input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1" oninput="recalculate()"></div>
+        <div class="field"><label>Bioavailability (F)</label><input type="number" id="fInput" value="1.0" step="0.05" min="0" max="1" oninput="state.userOverrodeF=true;recalculate()"></div>
         <div class="field"><label>Protein Binding (%)</label><input type="number" id="pbInput" value="0" step="1" min="0" max="99" oninput="recalculate()"></div>
+      </div>
+      <div class="row" id="kaRow" style="display:none">
+        <div class="field"><label>Absorption Rate ka (h-1)</label><input type="number" id="kaInput" value="1.5" step="0.1" oninput="state.ka=parseFloat(this.value)||1.5;recalculate()"></div>
+        <div class="field"><label>&nbsp;</label><div class="info-box" style="margin:0;font-size:10px">Oral only. Typical: fast 2.0, normal 1.5, slow 0.5-0.8</div></div>
       </div>
       <h3>Hepatic Impairment <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>Child-Pugh Classification:</strong> Assesses liver disease severity. Affects clearance of hepatically-metabolized drugs (phenytoin, theophylline, carbamazepine, clozapine, lidocaine, amiodarone).<br><br><strong>Adjustments:</strong><ul><li><strong>Class A (5-6 pts):</strong> Mild — clearance reduced ~15%</li><li><strong>Class B (7-9 pts):</strong> Moderate — clearance reduced ~35%</li><li><strong>Class C (10-15 pts):</strong> Severe — clearance reduced ~55%</li></ul>Only affects drugs marked as hepatically-metabolized. Renally-cleared drugs show a note that hepatic adjustment has minimal effect.">?</span></h3>
       <div class="field"><label>Child-Pugh Class</label><select id="hepaticClass" onchange="recalculate()"><option value="none">None (Normal)</option><option value="A">Class A (5-6 pts)</option><option value="B">Class B (7-9 pts)</option><option value="C">Class C (10-15 pts)</option></select></div>
@@ -708,16 +712,16 @@ const DRUGS={
   gentamicin:{name:'Gentamicin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',info:'<strong>Gentamicin</strong> -- Aminoglycoside. Conventional: Peak 5-12, Trough <2. Extended-interval: 5-7 mg/kg q24h.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin, amphotericin, NSAIDs.'},
   amikacin:{name:'Amikacin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[20,35],toxic:35,unit:'mg/L',info:'<strong>Amikacin</strong> -- Aminoglycoside. Peak 20-35, Trough <5.',defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:15,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar nephrotoxicity profile to gentamicin.'},
   tobramycin:{name:'Tobramycin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',info:'<strong>Tobramycin</strong> -- Aminoglycoside. Peak 5-12, Trough <2.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar to gentamicin.'},
-  phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Phenytoin</strong> -- <span style="color:#fbbf24">Non-linear kinetics (Michaelis-Menten)</span>. First-order approx only. Free = total x (1 - PB/100).',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:15,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Strong CYP inducer. Levels INCREASED by inhibitors (fluconazole, isoniazid). Levels DECREASED by inducers (rifampin).'},
-  valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,therapeutic:[50,100],toxic:100,unit:'mg/L',info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
-  carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,therapeutic:[4,12],toxic:12,unit:'mg/L',info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
-  levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,therapeutic:[12,46],toxic:46,unit:'mcg/mL',info:'<strong>Levetiracetam</strong> -- Therapeutic 12-46. Renally cleared. Wide therapeutic window.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Minimal drug interactions. Not CYP-metabolized.'},
-  digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,therapeutic:[0.8,2.0],toxic:2.0,unit:'mcg/L',info:'<strong>Digoxin</strong> -- Therapeutic 0.8-2.0. Long t½ ~36h. Toxicity risk with hypokalemia.',defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Amiodarone, verapamil, quinidine increase digoxin levels.'},
+  phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,ka:0.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Phenytoin</strong> -- <span style="color:#fbbf24">Non-linear kinetics (Michaelis-Menten)</span>. First-order approx only. Free = total x (1 - PB/100).',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:15,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Strong CYP inducer. Levels INCREASED by inhibitors (fluconazole, isoniazid). Levels DECREASED by inducers (rifampin).'},
+  valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,ka:2.0,therapeutic:[50,100],toxic:100,unit:'mg/L',info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
+  carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,ka:0.8,therapeutic:[4,12],toxic:12,unit:'mg/L',info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
+  levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,ka:1.8,therapeutic:[12,46],toxic:46,unit:'mcg/mL',info:'<strong>Levetiracetam</strong> -- Therapeutic 12-46. Renally cleared. Wide therapeutic window.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Minimal drug interactions. Not CYP-metabolized.'},
+  digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,ka:0.8,therapeutic:[0.8,2.0],toxic:2.0,unit:'mcg/L',info:'<strong>Digoxin</strong> -- Therapeutic 0.8-2.0. Long t½ ~36h. Toxicity risk with hypokalemia.',defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Amiodarone, verapamil, quinidine increase digoxin levels.'},
   lidocaine:{name:'Lidocaine',vd:1.5,keAuto:false,halfLife:1.8,f:0.35,pb:70,therapeutic:[1.5,5.0],toxic:5.0,unit:'mcg/mL',info:'<strong>Lidocaine</strong> -- Antiarrhythmic. Therapeutic 1.5-5. Hepatic metabolism.',defaultDose:100,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:1,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Beta-blockers and cimetidine reduce hepatic clearance.'},
   amiodarone:{name:'Amiodarone',vd:60,keAuto:false,halfLife:55,f:0.35,pb:96,therapeutic:[1.0,2.5],toxic:2.5,unit:'mcg/mL',info:'<strong>Amiodarone</strong> -- Extremely long t½ (40-55 days). Loading takes weeks. Multi-organ toxicity.',defaultDose:200,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Inhibits CYP2D6, CYP3A4. Increases digoxin, warfarin, phenytoin levels.'},
-  lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',info:'<strong>Lithium</strong> -- Therapeutic 0.6-1.2 (12h trough). Toxic >1.5. Narrow index. Renally cleared.',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, ACEi, thiazides increase levels.'},
-  clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
-  theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
+  lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,ka:1.2,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',info:'<strong>Lithium</strong> -- Therapeutic 0.6-1.2 (12h trough). Toxic >1.5. Narrow index. Renally cleared.',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, ACEi, thiazides increase levels.'},
+  clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,ka:1.0,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
+  theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,ka:1.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
   methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
   meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',
     info:'<strong>Meropenem</strong> -- Carbapenem. Time-dependent killing: T>MIC target 40% for bacteremia, 100% for meningitis. Extended infusion (3-4h) improves PK/PD. Adjust for renal impairment.',
@@ -731,11 +735,11 @@ const DRUGS={
     info:'<strong>Ceftriaxone</strong> -- 3rd-gen cephalosporin. Long half-life (8h). Dual elimination (renal + hepatic). No renal adjustment needed unless CrCl <10. Highly protein-bound.',
     defaultDose:2000,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Displaces bilirubin from albumin. Avoid in neonates.',
     renalNote:'No adjustment unless CrCl <10: max 2g/day.'},
-  fluconazole:{name:'Fluconazole',vd:0.7,keAuto:true,halfLife:30,f:0.9,pb:12,therapeutic:[0,100],toxic:80,unit:'mg/L',
+  fluconazole:{name:'Fluconazole',vd:0.7,keAuto:true,halfLife:30,f:0.9,pb:12,ka:1.0,therapeutic:[0,100],toxic:80,unit:'mg/L',
     info:'<strong>Fluconazole</strong> -- Triazole antifungal. High oral bioavailability (90%). Renally cleared. CYP2C9 inhibitor. Loading dose 2x maintenance on day 1.',
     defaultDose:400,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:800,loadingUnit:'mg (day 1)',hepatic:false,dialyzable:true,interactionNote:'Inhibits CYP2C9, CYP2C19, CYP3A4. Increases phenytoin, warfarin levels.',
     renalNote:'CrCl 11-50: 50% dose reduction. HD: full dose after HD.'},
-  vancomycin_oral:{name:'Vancomycin (Oral)',vd:0.7,keAuto:false,halfLife:6,f:0.0,pb:30,therapeutic:[0,100],toxic:100,unit:'mg/L',
+  vancomycin_oral:{name:'Vancomycin (Oral)',vd:0.7,keAuto:false,halfLife:6,f:0.0,pb:30,ka:0.5,therapeutic:[0,100],toxic:100,unit:'mg/L',
     info:'<strong>Oral Vancomycin</strong> -- For C. difficile colitis. NOT absorbed systemically (F=0). Works locally in gut. No TDM needed.',
     defaultDose:125,defaultInterval:6,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'No systemic interactions (not absorbed).',
     renalNote:'No renal adjustment needed (not absorbed).'},
@@ -759,7 +763,7 @@ const DRUGS={
     info:'<strong>Clindamycin</strong> -- Lincosamide. Anaerobic + gram-positive. Excellent tissue/bone penetration. C. difficile risk.',
     defaultDose:600,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor.',
     renalNote:'No renal adjustment (hepatic metabolism).'},
-  tacrolimus:{name:'Tacrolimus',vd:1.0,keAuto:false,halfLife:12,f:0.25,pb:99,therapeutic:[5,15],toxic:20,unit:'ng/mL',
+  tacrolimus:{name:'Tacrolimus',vd:1.0,keAuto:false,halfLife:12,f:0.25,pb:99,ka:0.8,therapeutic:[5,15],toxic:20,unit:'ng/mL',
     info:'<strong>Tacrolimus</strong> -- Calcineurin inhibitor. Transplant immunosuppression. Narrow therapeutic index. CYP3A4/P-gp substrate. TDM essential (trough 12h post-dose).',
     defaultDose:2,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitors (azole antifungals, macrolides) increase levels. Inducers (rifampin, phenytoin) decrease levels. Grapefruit juice increases levels.',
     renalNote:'No renal adjustment — hepatic metabolism. But nephrotoxic itself — monitor SCr.'},
@@ -819,15 +823,15 @@ const DRUGS={
     info:'<strong>Levofloxacin</strong> -- Fluoroquinolone. Respiratory, UTI, anthrax prophylaxis. Concentration-dependent killing. QTc prolongation. Tendon rupture risk.',
     defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'QTc prolongation — avoid with other QTc drugs. Antacids reduce absorption.',
     renalNote:'CrCl 20-49: 250mg q24h. CrCl 10-19: 250mg q48h. HD: 250mg after HD.'},
-  isoniazid:{name:'Isoniazid',vd:0.6,keAuto:false,halfLife:3,f:0.9,pb:10,therapeutic:[0,100],toxic:20,unit:'mg/L',
+  isoniazid:{name:'Isoniazid',vd:0.6,keAuto:false,halfLife:3,f:0.9,pb:10,ka:1.5,therapeutic:[0,100],toxic:20,unit:'mg/L',
     info:'<strong>Isoniazid</strong> -- First-line TB drug. Hepatotoxic (monitor LFTs). Peripheral neuropathy (give pyridoxine/B6). CYP2A6 polymorphism — slow acetylators (50% Caucasians) accumulate drug.',
     defaultDose:300,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:true,interactionNote:'CYP2E1 inducer. Increases acetaminophen toxicity. Phenytoin levels increase.',
     renalNote:'No significant renal adjustment. Active metabolite (acetylisoniazid) accumulates — but low toxicity.'},
-  rifampin:{name:'Rifampin',vd:0.6,keAuto:false,halfLife:3.5,f:1.0,pb:80,therapeutic:[0,100],toxic:20,unit:'mg/L',
+  rifampin:{name:'Rifampin',vd:0.6,keAuto:false,halfLife:3.5,f:1.0,pb:80,ka:1.2,therapeutic:[0,100],toxic:20,unit:'mg/L',
     info:'<strong>Rifampin</strong> -- First-line TB drug. Strong CYP3A4 inducer — increases clearance of many drugs. Hepatotoxic. Red-orange body fluids (tears, urine). Autoinduction over 2 weeks.',
     defaultDose:600,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'<span style="color:#f87171">STRONG CYP3A4 inducer.</span> Reduces levels of tacrolimus, cyclosporine, warfarin, oral contraceptives, protease inhibitors, many others.',
     renalNote:'No renal adjustment. Hepatic metabolism. Monitor LFTs.'},
-  posaconazole:{name:'Posaconazole',vd:5.0,keAuto:false,halfLife:35,f:0.5,pb:99,therapeutic:[0.7,3.75],toxic:3.75,unit:'mg/L',
+  posaconazole:{name:'Posaconazole',vd:5.0,keAuto:false,halfLife:35,f:0.5,pb:99,ka:0.6,therapeutic:[0.7,3.75],toxic:3.75,unit:'mg/L',
     info:'<strong>Posaconazole</strong> -- Triazole antifungal. Mucor, Aspergillus prophylaxis/treatment. Variable absorption (oral suspension requires fatty meal). TDM recommended for oral suspension.',
     defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:300,loadingUnit:'mg x3 on day 1',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor (strong). Increases tacrolimus, cyclosporine, sirolimus levels. Avoid with ergot alkaloids.',
     renalNote:'No renal adjustment — hepatic metabolism. IV formulation contains cyclodextrin (avoid if CrCl <50).'},
@@ -857,7 +861,7 @@ const PROTOCOLS={
   theophylline:{drug:'theophylline',dose:200,interval:8,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Theophylline - Standard',note:'200 mg q8h or 400 mg QHS (SR). Target 10-20 mg/L. Toxic >20 (seizures, arrhythmias). Many drug interactions. Smoking increases clearance.'}
 };
 
-let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null};
+let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,ka:1.5,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null,userOverrodeVd:false,userOverrodeF:false};
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
 
@@ -897,41 +901,38 @@ function calcKe(drug){
   if(pkModel==='population' && d.keAuto){
     // Population PK equations — published models
     if(drug==='vancomycin'){
-      // Matar et al. 2023: CL = 4.28 x (CrCl/100)^0.78 x (Alb/3.5)^0.35
-      // If obese (TBW/IBW >1.2): CL x 0.73
       let cl_vanc = 4.28 * Math.pow(crcl/100, 0.78) * Math.pow(albumin/3.5, 0.35);
       const ibw=calcIBW();
-      if(w/ibw > 1.2) cl_vanc *= 0.73; // obesity adjustment
-      // Vd = 0.7 L/kg (standard), adjusted for albumin
-      // Lower albumin = higher free fraction = apparent Vd increase
-      let vd_vanc = 0.7 * (1 + 0.15*(4.0-albumin)/4.0); // albumin-adjusted
+      if(w/ibw > 1.2) cl_vanc *= 0.73;
+      let vd_vanc = 0.7 * (1 + 0.15*(4.0-albumin)/4.0);
       vdOverride = Math.max(vd_vanc, 0.4);
       clOverride = cl_vanc;
       ke = clOverride / (vdOverride * w);
     }
     else if(drug==='gentamicin'||drug==='tobramycin'){
-      // Goti et al. 2018: CL = 0.0254 x CrCl + 0.0294 x Weight
-      // Vd = 0.255 x Weight^0.78
       clOverride = 0.0254 * crcl + 0.0294 * w;
-      vdOverride = 0.255 * Math.pow(w, 0.78) / w; // convert to L/kg
+      vdOverride = 0.255 * Math.pow(w, 0.78) / w;
       ke = clOverride / (vdOverride * w);
     }
     else if(drug==='amikacin'){
-      // Similar to gentamicin with different coefficients
-      // CL = 0.0312 x CrCl + 0.0358 x Weight
-      // Vd = 0.28 x Weight^0.75
       clOverride = 0.0312 * crcl + 0.0358 * w;
       vdOverride = 0.28 * Math.pow(w, 0.75) / w;
       ke = clOverride / (vdOverride * w);
     }
-    else{
-      // Generic population: ke = 0.00293 x CrCl + 0.014
-      ke = 0.00293 * crcl + 0.014;
-    }
+    // Drug-specific ke formulas (validated population estimates)
+    else if(drug==='digoxin'){ ke = 0.0008 * crcl + 0.012; }
+    else if(drug==='lithium'){ ke = 0.0015 * crcl + 0.02; }
+    else if(drug==='levetiracetam'){ ke = 0.007 * crcl + 0.03; }
+    else{ ke = 0.00293 * crcl + 0.014; }
   }
   else if(d.keAuto){
-    // Simple model: ke = 0.00293 x CrCl + 0.014
-    ke = 0.00293 * crcl + 0.014;
+    // Drug-specific ke formulas for Simple mode too
+    if(drug==='vancomycin'){ ke = 0.0046 * crcl + 0.044; }
+    else if(drug==='gentamicin'||drug==='tobramycin'||drug==='amikacin'){ ke = 0.00293 * crcl + 0.06; }
+    else if(drug==='digoxin'){ ke = 0.0008 * crcl + 0.012; }
+    else if(drug==='lithium'){ ke = 0.0015 * crcl + 0.02; }
+    else if(drug==='levetiracetam'){ ke = 0.007 * crcl + 0.03; }
+    else{ ke = 0.00293 * crcl + 0.014; }
   }
   else{
     ke = 0.693 / d.halfLife;
@@ -981,13 +982,15 @@ function calcKe(drug){
 }
 function calcCL(){return state.ke*getEffW()*state.vd;}
 
-function getCpSingle(t,doseTime,route,dose,ke,vd,f,weight,infTime){
+function getCpSingle(t,doseTime,route,dose,ke,vd,f,weight,infTime,ka){
   const e=t-doseTime;if(e<0)return 0;const vl=vd*weight;
   if(route==='iv_bolus')return(dose/vl)*Math.exp(-ke*e);
   if(route==='iv_infusion'){const k0=dose/infTime;if(e<=infTime)return(k0/(ke*vl))*(1-Math.exp(-ke*e));const ce=(k0/(ke*vl))*(1-Math.exp(-ke*infTime));return ce*Math.exp(-ke*(e-infTime));}
-  const ka=1.5,c0=(f*dose)/vl;return c0*(ka/(ka-ke))*(Math.exp(-ke*e)-Math.exp(-ka*e));
+  if(!ka)ka=1.5;
+  if(Math.abs(ka-ke)<1e-10)return 0;
+  const c0=(f*dose)/vl;return c0*(ka/(ka-ke))*(Math.exp(-ke*e)-Math.exp(-ka*e));
 }
-function getTotalCp(t){let tot=0;const w=getEffW();for(let i=0;i<state.numDoses;i++)tot+=getCpSingle(t,i*state.interval,state.route,state.dose,state.ke,state.vd,state.f,w,state.infusionTime);return tot;}
+function getTotalCp(t){let tot=0;const w=getEffW();for(let i=0;i<state.numDoses;i++)tot+=getCpSingle(t,i*state.interval,state.route,state.dose,state.ke,state.vd,state.f,w,state.infusionTime,state.ka);return tot;}
 
 function recalculate(){
   state.weight=parseFloat(document.getElementById('weightInput').value)||70;
@@ -1008,7 +1011,13 @@ function recalculate(){
     if(mpk>0){const pd=Math.min(mpk*state.weight,maxD);state.dose=pd;document.getElementById('doseInput').value=pd.toFixed(0);document.getElementById('doseRange').value=Math.min(pd,5000);document.getElementById('doseVal').textContent=pd.toFixed(0)+' mg';}
     showPedInfo();
   }
-  if(state.drug!=='custom'){const drug=DRUGS[state.drug];const ae=document.activeElement;if(ae.id!=='vdInput'){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}if(ae.id!=='fInput'){state.f=drug.f;document.getElementById('fInput').value=drug.f;}if(ae.id!=='pbInput'){state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;}}
+  if(state.drug!=='custom'){
+    const drug=DRUGS[state.drug];
+    if(!state.userOverrodeVd){state.vd=drug.vd;document.getElementById('vdInput').value=drug.vd;}
+    if(!state.userOverrodeF){state.f=drug.f;document.getElementById('fInput').value=drug.f;}
+    state.pb=drug.pb;document.getElementById('pbInput').value=drug.pb;
+    if(drug.ka){state.ka=drug.ka;document.getElementById('kaInput').value=drug.ka;}
+  }
   // Pregnancy: Vd increases 30-50% due to increased plasma volume, body water, placental transfer
   const preg=document.getElementById('pregnancyMode').value;
   if(preg==='first')state.vd*=1.1;
@@ -1355,7 +1364,7 @@ function showParamHelp(html){
   document.body.appendChild(tip);
   setTimeout(()=>{const handler=(e)=>{if(!tip.contains(e.target)){tip.remove();document.removeEventListener('click',handler);}};document.addEventListener('click',handler);},10);
 }
-function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
+function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;state.userOverrodeVd=false;state.userOverrodeF=false;state.ka=drug.ka||1.5;document.getElementById('kaInput').value=state.ka;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
 
 function applyProtocol(id){
   const p=PROTOCOLS[id];if(!p)return;
@@ -1790,7 +1799,7 @@ function getExplorerCp(t){
   const w=getEffW();
   let tot=0;
   for(let i=0;i<state.numDoses;i++){
-    tot+=getCpSingle(t,i*state.interval,state.route,state.dose,ke,vd,f,w,state.infusionTime);
+    tot+=getCpSingle(t,i*state.interval,state.route,state.dose,ke,vd,f,w,state.infusionTime,state.ka);
   }
   return tot;
 }
@@ -1892,7 +1901,7 @@ function updateVialInfo(){
   if(num*rounded!==state.dose)html+='<span style="color:#fbbf24">Actual dose will be '+(num*rounded)+' mg ('+((num*rounded/state.dose*100).toFixed(0))+'% of target)</span>';
   info.innerHTML=html;
 }
-function setRoute(r){state.route=r;document.getElementById('btnIVBolus').className='btn btn-sm btn-outline'+(r==='iv_bolus'?' active':'');document.getElementById('btnIVInf').className='btn btn-sm btn-outline'+(r==='iv_infusion'?' active':'');document.getElementById('btnOral').className='btn btn-sm btn-outline'+(r==='oral'?' active':'');document.getElementById('infusionTimeField').style.display=r==='iv_infusion'?'block':'none';recalculate();}
+function setRoute(r){state.route=r;document.getElementById('btnIVBolus').className='btn btn-sm btn-outline'+(r==='iv_bolus'?' active':'');document.getElementById('btnIVInf').className='btn btn-sm btn-outline'+(r==='iv_infusion'?' active':'');document.getElementById('btnOral').className='btn btn-sm btn-outline'+(r==='oral'?' active':'');document.getElementById('infusionTimeField').style.display=r==='iv_infusion'?'block':'none';document.getElementById('kaRow').style.display=r==='oral'?'flex':'none';recalculate();}
 function onDoseChange(){const v=parseFloat(document.getElementById('doseRange').value);document.getElementById('doseVal').textContent=v+' mg';document.getElementById('doseInput').value=v;recalculate();}
 function onDoseInput(){const v=parseFloat(document.getElementById('doseInput').value)||0;document.getElementById('doseRange').value=Math.min(v,5000);document.getElementById('doseVal').textContent=v+' mg';recalculate();}
 function onIntervalChange(){document.getElementById('intervalVal').textContent=document.getElementById('intervalRange').value+' h';recalculate();}
