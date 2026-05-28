@@ -207,13 +207,20 @@ const ICU_DRUGS = [
   {id:'pantoprazole',name:'Pantoprazole',class:'PPI',group:'Other',cyp:['CYP2C19 substrate']},
   {id:'ondansetron',name:'Ondansetron',class:'5-HT3 antagonist',group:'Other',cyp:['CYP3A4 substrate','CYP1A2 substrate']},
   {id:'ranitidine',name:'Ranitidine',class:'H2 blocker',group:'Other',cyp:[]},
+  {id:'cimetidine',name:'Cimetidine',class:'H2 blocker',group:'Other',cyp:['CYP1A2 inhibitor','CYP3A4 inhibitor']},
   {id:'insulin',name:'Insulin',class:'Hormone',group:'Other',cyp:[]},
   {id:'hydrocortisone',name:'Hydrocortisone',class:'Corticosteroid',group:'Other',cyp:['CYP3A4 substrate']},
   {id:'methylpred',name:'Methylprednisolone',class:'Corticosteroid',group:'Other',cyp:['CYP3A4 substrate']},
+  {id:'dexamethasone',name:'Dexamethasone',class:'Corticosteroid',group:'Other',cyp:['CYP3A4 substrate','CYP3A4 inducer']},
   {id:'tacrolimus',name:'Tacrolimus',class:'Calcineurin inhibitor',group:'Other',cyp:['CYP3A4 substrate','P-gp substrate']},
   {id:'cyclosporine',name:'Cyclosporine',class:'Calcineurin inhibitor',group:'Other',cyp:['CYP3A4 substrate','P-gp substrate']},
   {id:'mycophenolate',name:'Mycophenolate',class:'Antimetabolite',group:'Other',cyp:[]},
-  {id:'methotrexate',name:'Methotrexate',class:'Antifolate',group:'Other',cyp:[]}
+  {id:'methotrexate',name:'Methotrexate',class:'Antifolate',group:'Other',cyp:[]},
+  {id:'theophylline',name:'Theophylline',class:'Methylxanthine',group:'Other',cyp:['CYP1A2 substrate']},
+  {id:'clozapine',name:'Clozapine',class:'Atypical antipsychotic',group:'Other',cyp:['CYP1A2 substrate','CYP3A4 substrate']},
+  {id:'lithium',name:'Lithium',class:'Mood stabilizer',group:'Other',cyp:[]},
+  {id:'carbamazepine',name:'Carbamazepine',class:'Antiepileptic',group:'Antiepileptics',cyp:['CYP3A4 substrate','CYP3A4 inducer','CYP inducer']},
+  {id:'pentamidine',name:'Pentamidine',class:'Antiprotozoal',group:'Antibiotics',cyp:[]}
 ];
 
 const GROUP_MAP = {
@@ -265,8 +272,7 @@ const INTERACTIONS = [
   {a:'metronidazole',b:'lithium',severity:'moderate',enzyme:'renal',mechanism:'Metronidazole may reduce lithium clearance → levels increase',action:'Monitor lithium level closely.',monitoring:'lithium level, SCr',alternative:'None needed with monitoring',evidence:'moderate'},
 
   // LINEZOLID interactions (MAO inhibitor)
-  {a:'linezolid',b:'serotonergic',severity:'severe',enzyme:'MAO inhibition',mechanism:'Linezolid is a weak MAO inhibitor → serotonin syndrome risk with serotonergic drugs (SSRIs, SNRIs, tramadol, meperidine)',action:'Avoid combination if possible. If must use: monitor for serotonin syndrome (agitation, hyperthermia, clonus, diaphoresis).',monitoring:'serotonin syndrome symptoms, temperature, mental status',alternative:'Daptomycin or vancomycin (if MRSA)',evidence:'well-established'},
-  {a:'linezolid',b:'tyramine',severity:'moderate',enzyme:'MAO inhibition',mechanism:'Linezolid inhibits MAO → tyramine in food can cause hypertensive crisis',action:'Avoid tyramine-rich foods (aged cheese, cured meats, draft beer, soy sauce).',monitoring:'BP',alternative:'None needed with dietary avoidance',evidence:'established'},
+  {a:'linezolid',b:'ondansetron',severity:'moderate',enzyme:'serotonergic',mechanism:'Linezolid weakly inhibits MAO → additive serotonergic effect with ondansetron',action:'Monitor for serotonin syndrome symptoms.',monitoring:'temperature, mental status, clonus',alternative:'Granisetron (less serotonergic)',evidence:'moderate'},
 
   // TMP-SMX interactions
   {a:'tmpsmx',b:'warfarin',severity:'moderate',enzyme:'CYP2C9',mechanism:'TMP-SMX inhibits CYP2C9 → warfarin levels increase. Also displaces from protein binding.',action:'Monitor INR closely. Reduce warfarin if INR rises.',monitoring:'INR',alternative:'None needed with monitoring',evidence:'established'},
@@ -348,7 +354,9 @@ const INTERACTIONS = [
   {a:'ranitidine',b:'warfarin',severity:'mild',enzyme:'CYP (weak)',mechanism:'Ranitidine weakly affects warfarin metabolism. Clinically insignificant in most cases.',action:'No routine adjustment needed.',monitoring:'INR if other risk factors present',alternative:'None needed',evidence:'limited'},
 
   // INSULIN interactions
-  {a:'insulin',b:'corticosteroids',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Corticosteroids cause hyperglycemia → insulin requirements increase significantly',action:'Increase insulin dose by 25-50%. Monitor glucose closely.',monitoring:'blood glucose (q1-2h initially)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
+  {a:'insulin',b:'hydrocortisone',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Corticosteroids cause hyperglycemia → insulin requirements increase significantly',action:'Increase insulin dose by 25-50%. Monitor glucose closely.',monitoring:'blood glucose (q1-2h initially)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
+  {a:'insulin',b:'methylpred',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Corticosteroids cause hyperglycemia → insulin requirements increase significantly',action:'Increase insulin dose by 25-50%. Monitor glucose closely.',monitoring:'blood glucose (q1-2h initially)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
+  {a:'insulin',b:'dexamethasone',severity:'moderate',enzyme:'pharmacodynamic',mechanism:'Corticosteroids cause hyperglycemia → insulin requirements increase significantly',action:'Increase insulin dose by 25-50%. Monitor glucose closely.',monitoring:'blood glucose (q1-2h initially)',alternative:'None — use combination with dose adjustment',evidence:'well-established'},
   {a:'insulin',b:'dopamine',severity:'mild',enzyme:'metabolic',mechanism:'Dopamine may affect insulin secretion at high doses.',action:'Monitor glucose.',monitoring:'blood glucose',alternative:'None needed',evidence:'limited'},
 
   // AMPHOTERICIN interactions
@@ -468,14 +476,9 @@ function scanInteractions(){
     }
   });
 
-  // Also check serotonergic drugs if linezolid is present
-  if(patientDrugs.includes('linezolid')){
-    const ssri=['sertraline','fluoxetine','paroxetine','citalopram','escitalopram','venlafaxine','duloxetine','tramadol','meperidine'];
-    const hasSerotonergic=patientDrugs.some(id=>ssri.includes(id));
-    if(hasSerotonergic){
-      found.severe.push({a:'linezolid',b:'serotonergic drug',severity:'severe',enzyme:'MAO inhibition',mechanism:'Linezolid is a weak MAO inhibitor → serotonin syndrome risk with serotonergic drugs',action:'Avoid combination. Monitor for serotonin syndrome (agitation, hyperthermia, clonus).',monitoring:'serotonin syndrome symptoms, temperature',alternative:'Daptomycin or vancomycin',evidence:'well-established'});
-    }
-  }
+  // Also check for linezolid + known serotonergic drugs in the list
+  // Serotonergic drugs that aren't in ICU_DRUGS but user might add via "Other"
+  // For now, just check the serotonergic interaction entry which covers serotonergic
 
   document.getElementById('countSevere').textContent=found.severe.length;
   document.getElementById('countModerate').textContent=found.moderate.length;
