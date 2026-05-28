@@ -227,6 +227,23 @@ body.quick-start .warning-box{display:none!important}
           <option value="metronidazole">Metronidazole</option>
           <option value="clindamycin">Clindamycin</option>
           <option value="vancomycin_oral">Vancomycin (Oral)</option>
+          <option value="ciprofloxacin">Ciprofloxacin</option>
+          <option value="tmp_smx">TMP-SMX (Bactrim)</option>
+          <option value="daptomycin">Daptomycin</option>
+          <option value="colistin">Colistin</option>
+        </optgroup>
+        <optgroup label="Antivirals">
+          <option value="acyclovir">Acyclovir</option>
+          <option value="ganciclovir">Ganciclovir</option>
+        </optgroup>
+        <optgroup label="Anticoagulants">
+          <option value="enoxaparin">Enoxaparin (LMWH)</option>
+        </optgroup>
+        <optgroup label="Immunosuppressants">
+          <option value="tacrolimus">Tacrolimus</option>
+        </optgroup>
+        <optgroup label="Antifungals">
+          <option value="voriconazole">Voriconazole</option>
         </optgroup>
         <optgroup label="Custom">
           <option value="custom">Custom Drug</option>
@@ -712,6 +729,46 @@ const DRUGS={
     info:'<strong>Clindamycin</strong> -- Lincosamide. Anaerobic + gram-positive. Excellent tissue/bone penetration. C. difficile risk.',
     defaultDose:600,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor.',
     renalNote:'No renal adjustment (hepatic metabolism).'},
+  tacrolimus:{name:'Tacrolimus',vd:1.0,keAuto:false,halfLife:12,f:0.25,pb:99,therapeutic:[5,15],toxic:20,unit:'ng/mL',
+    info:'<strong>Tacrolimus</strong> -- Calcineurin inhibitor. Transplant immunosuppression. Narrow therapeutic index. CYP3A4/P-gp substrate. TDM essential (trough 12h post-dose).',
+    defaultDose:2,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitors (azole antifungals, macrolides) increase levels. Inducers (rifampin, phenytoin) decrease levels. Grapefruit juice increases levels.',
+    renalNote:'No renal adjustment — hepatic metabolism. But nephrotoxic itself — monitor SCr.'},
+  voriconazole:{name:'Voriconazole',vd:4.6,keAuto:false,halfLife:6,f:0.96,pb:58,therapeutic:[1,5],toxic:5.5,unit:'mg/L',
+    info:'<strong>Voriconazole</strong> -- Triazole antifungal. Aspergillus, Candida. CYP2C19 polymorphism: poor metabolizers (15-20% Asians) have 4x higher levels. TDM recommended.',
+    defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:400,loadingUnit:'mg x2 doses',hepatic:true,dialyzable:false,interactionNote:'CYP2C19 substrate. CYP3A4 inhibitor. Levels affected by CYP2C19 genotype — check if available.',
+    renalNote:'IV formulation: avoid if CrCl <50 (cyclodextrin carrier accumulates). Use oral form.'},
+  daptomycin:{name:'Daptomycin',vd:0.1,keAuto:true,halfLife:8,f:1.0,pb:92,therapeutic:[0,100],toxic:100,unit:'mg/L',
+    info:'<strong>Daptomycin</strong> -- Lipopeptide. MRSA, VRE. Concentration-dependent killing. Monitor CPK (myopathy risk). Inactivated by pulmonary surfactant — do NOT use for pneumonia.',
+    defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Statins increase myopathy risk. Hold statins during therapy.',
+    renalNote:'CrCl 30-50: 6-8 mg/kg q48h. CrCl <30: 4-6 mg/kg q48h. HD: dose after HD.'},
+  phenobarbital:{name:'Phenobarbital',vd:0.8,keAuto:false,halfLife:100,f:1.0,pb:50,therapeutic:[15,40],toxic:40,unit:'mg/L',
+    info:'<strong>Phenobarbital</strong> -- Barbiturate antiepileptic. Very long half-life (100h). Takes 2-3 weeks to reach steady state. Respiratory depression risk. CYP inducer.',
+    defaultDose:100,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg IV',hepatic:true,dialyzable:true,interactionNote:'Strong CYP inducer (2C9, 3A4, 1A2). Increases clearance of many drugs.',
+    renalNote:'Partially renally cleared. Adjust for severe CKD. Dialyzable — redose after HD.'},
+  ciprofloxacin:{name:'Ciprofloxacin',vd:2.5,keAuto:true,halfLife:4,f:0.7,pb:20,therapeutic:[0,100],toxic:4,unit:'mg/L',
+    info:'<strong>Ciprofloxacin</strong> -- Fluoroquinolone. Gram-negative coverage, UTI, anthrax. CYP1A2 inhibitor. QTc prolongation. Tendon rupture risk (steroids, elderly).',
+    defaultDose:400,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Inhibits CYP1A2. Increases theophylline, clozapine levels. Antacids/chelation reduce absorption.',
+    renalNote:'CrCl 30-50: 250-500mg q12h. CrCl <30: 250-500mg q18-24h. HD: dose after HD.'},
+  tmp_smx:{name:'TMP-SMX (Bactrim)',vd:0.3,keAuto:true,halfLife:10,f:0.9,pb:45,therapeutic:[0,100],toxic:200,unit:'mg/L',
+    info:'<strong>TMP-SMX</strong> -- Sulfonamide + folate inhibitor. PCP, MRSA (community), UTI. High-dose for PCP: 15-20 mg/kg/day TMP. Monitor CBC, SCr, K+, creatinine.',
+    defaultDose:960,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Increases warfarin, phenytoin, methotrexate levels. Hyperkalemia risk with ACEi/ARB.',
+    renalNote:'CrCl 15-30: 50% dose. CrCl <15: avoid or use with caution. HD: dose after HD.'},
+  acyclovir:{name:'Acyclovir',vd:0.6,keAuto:true,halfLife:3,f:0.2,pb:15,therapeutic:[0,100],toxic:80,unit:'mg/L',
+    info:'<strong>Acyclovir</strong> -- Antiviral. HSV, VZV, encephalitis. Nephrotoxic (crystalluria) — aggressive hydration required. Neurotoxic at high levels (confusion, seizures).',
+    defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions. Nephrotoxicity risk increased with other nephrotoxins.',
+    renalNote:'CrCl 25-50: 5-10 mg/kg q12h. CrCl 10-25: 5-10 mg/kg q24h. CrCl <10: 2.5-5 mg/kg q24h. HD: dose after HD.'},
+  enoxaparin:{name:'Enoxaparin (LMWH)',vd:0.05,keAuto:true,halfLife:4.5,f:0.9,pb:0,therapeutic:[0.5,1.0],toxic:1.2,unit:'IU/mL',
+    info:'<strong>Enoxaparin</strong> -- Low molecular weight heparin. VTE prophylaxis/treatment. Anti-Xa monitoring for obesity, renal failure, pregnancy. Protamine partially reverses.',
+    defaultDose:40,defaultInterval:24,route:'sc',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Additive bleeding risk with anticoagulants, antiplatelets.',
+    renalNote:'CrCl 30-50: consider anti-Xa monitoring. CrCl <30: 1 mg/kg q24h (treatment) or 30mg q24h (prophylaxis). HD: avoid or use UFH.'},
+  ganciclovir:{name:'Ganciclovir',vd:0.7,keAuto:true,halfLife:4,f:1.0,pb:1,therapeutic:[0,100],toxic:10,unit:'mg/L',
+    info:'<strong>Ganciclovir</strong> -- Antiviral. CMV retinitis, CMV prophylaxis in transplant. Myelosuppression (neutropenia, thrombocytopenia). Valganciclovir is oral prodrug.',
+    defaultDose:5,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Additive myelosuppression with zidovudine, mycophenolate, cyclosporine.',
+    renalNote:'CrCl 50-69: 2.5 mg/kg q12h. CrCl 25-49: 2.5 mg/kg q24h. CrCl 10-24: 1.25 mg/kg q24h. HD: dose after HD.'},
+  colistin:{name:'Colistin (Polymyxin E)',vd:0.3,keAuto:false,halfLife:8,f:1.0,pb:50,therapeutic:[2,10],toxic:10,unit:'mg/L',
+    info:'<strong>Colistin</strong> -- Last-resort gram-negative (MDR Pseudomonas, Acinetobacter). Prodrug (colistimethate). Nephrotoxic, neurotoxic. Complex PK — loading dose critical.',
+    defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:300,loadingUnit:'mg stat',hepatic:false,dialyzable:false,interactionNote:'Additive nephrotoxicity with aminoglycosides. Avoid neuromuscular blockers.',
+    renalNote:'CrCl 50-80: 2.25-3 mg/kg q12h. CrCl 30-50: 1.5-2.25 mg/kg q12h. CrCl 10-30: 1.5 mg/kg q24h. HD: not significantly removed.'},
   custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
 };
 
@@ -1268,7 +1325,17 @@ const MONOGRAPHS={
   methotrexate:'<strong>Methotrexate</strong><br><br><strong>Class:</strong> Antifolate antimetabolite<br><strong>Mechanism:</strong> Inhibits dihydrofolate reductase → blocks DNA synthesis<br><strong>Spectrum:</strong> Leukemias, lymphomas, sarcomas, rheumatoid arthritis, ectopic pregnancy<br><strong>Key Side Effects:</strong> Myelosuppression, mucositis, hepatotoxicity, pneumonitis, nephrotoxicity<br><strong>Monitoring:</strong> Levels at 24h (<10), 48h (<1), 72h (<0.1 umol/L), CBC, LFTs, renal function<br><strong>Special Notes:</strong> Leucovorin rescue required for high-dose. Third-space fluid delays elimination. NSAIDs increase toxicity.',
   tobramycin:'<strong>Tobramycin</strong><br><br><strong>Class:</strong> Aminoglycoside<br><strong>Similar to:</strong> Gentamicin. Peak 5-12, Trough <2. Slightly less nephrotoxic. Preferred for Pseudomonas in CF patients.',
   clozapine:'<strong>Clozapine</strong><br><br><strong>Class:</strong> Atypical antipsychotic (dibenzodiazepine)<br><strong>Mechanism:</strong> D2/5-HT2A antagonist; also affects muscarinic, histaminic, adrenergic receptors<br><strong>Spectrum:</strong> Treatment-resistant schizophrenia, suicidality in schizophrenia<br><strong>Key Side Effects:</strong> <span style="color:#f87171">AGRANULOCYTOSIS (1-2%)</span>, metabolic syndrome, seizures, myocarditis, constipation, sialorrhea<br><strong>Monitoring:</strong> ANC (weekly x6mo, then biweekly), level (350-600 ng/mL), metabolic panel, ECG<br><strong>Special Notes:</strong> REMS program required. Smoking cessation increases levels (CYP1A2). Fluvoxamine strongly inhibits metabolism.',
-  amiodarone:'<strong>Amiodarone</strong><br><br><strong>Class:</strong> Class III antiarrhythmic (multichannel blocker)<br><strong>Mechanism:</strong> Blocks K+, Na+, Ca2+ channels + beta-blockade<br><strong>Spectrum:</strong> Atrial fibrillation, ventricular tachycardia, ventricular fibrillation<br><strong>Key Side Effects:</strong> Thyroid dysfunction (hypo/hyper), pulmonary fibrosis, hepatotoxicity, corneal deposits, skin photosensitivity, peripheral neuropathy<br><strong>Monitoring:</strong> TSH, LFTs, PFTs, ophthalmology, ECG (QTc), level (1-2.5 mcg/mL)<br><strong>Special Notes:</strong> <span style="color:#fbbf24">EXTREMELY LONG HALF-LIFE (40-55 days)</span>. Loading takes weeks. Multiple drug interactions (inhibits CYP2D6, CYP3A4).'
+  amiodarone:'<strong>Amiodarone</strong><br><br><strong>Class:</strong> Class III antiarrhythmic (multichannel blocker)<br><strong>Mechanism:</strong> Blocks K+, Na+, Ca2+ channels + beta-blockade<br><strong>Spectrum:</strong> Atrial fibrillation, ventricular tachycardia, ventricular fibrillation<br><strong>Key Side Effects:</strong> Thyroid dysfunction (hypo/hyper), pulmonary fibrosis, hepatotoxicity, corneal deposits, skin photosensitivity, peripheral neuropathy<br><strong>Monitoring:</strong> TSH, LFTs, PFTs, ophthalmology, ECG (QTc), level (1-2.5 mcg/mL)<br><strong>Special Notes:</strong> <span style="color:#fbbf24">EXTREMELY LONG HALF-LIFE (40-55 days)</span>. Loading takes weeks. Multiple drug interactions (inhibits CYP2D6, CYP3A4).',
+  tacrolimus:'<strong>Tacrolimus</strong><br><br><strong>Class:</strong> Calcineurin inhibitor<br><strong>Mechanism:</strong> Inhibits T-cell activation via calcineurin/IL-2 pathway<br><strong>Spectrum:</strong> Transplant immunosuppression (kidney, liver, heart, lung)<br><strong>Key Side Effects:</strong> Nephrotoxicity, diabetes, neurotoxicity, hypertension, hyperkalemia<br><strong>Monitoring:</strong> Trough level 12h post-dose (5-15 ng/mL), renal function, glucose, K+, BP<br><strong>Special Notes:</strong> <span style="color:#f87171">CYP3A4/P-gp substrate — many interactions.</span> Azole antifungals increase levels dramatically. Grapefruit juice increases levels.',
+  voriconazole:'<strong>Voriconazole</strong><br><br><strong>Class:</strong> Triazole antifungal<br><strong>Mechanism:</strong> Inhibits ergosterol synthesis (14-alpha demethylase)<br><strong>Spectrum:</strong> Aspergillus (first-line), Candida, Scedosporium, Fusarium<br><strong>Key Side Effects:</strong> Visual disturbances (transient), hepatotoxicity, skin reactions, QTc prolongation<br><strong>Monitoring:</strong> Trough level (1-5 mcg/mL), LFTs, visual acuity<br><strong>Special Notes:</strong> <span style="color:#fbbf24">CYP2C19 polymorphism — poor metabolizers (15-20% Asians) have 4x higher levels.</span> TDM recommended for all patients.',
+  daptomycin:'<strong>Daptomycin</strong><br><br><strong>Class:</strong> Lipopeptide antibiotic<br><strong>Mechanism:</strong> Depolarizes bacterial cell membrane<br><strong>Spectrum:</strong> MRSA, VRE, gram-positive bacteremia<br><strong>Key Side Effects:</strong> Myopathy (CPK elevation), eosinophilic pneumonia, rhabdomyolysis<br><strong>Monitoring:</strong> CPK weekly, renal function<br><strong>Special Notes:</strong> Inactivated by pulmonary surfactant — <span style="color:#f87171">do NOT use for pneumonia.</span> Hold statins during therapy.',
+  phenobarbital:'<strong>Phenobarbital</strong><br><br><strong>Class:</strong> Barbiturate antiepileptic<br><strong>Mechanism:</strong> Enhances GABA-A receptor activity, blocks Na+ channels<br><strong>Spectrum:</strong> Tonic-clonic seizures, status epilepticus, neonatal seizures<br><strong>Key Side Effects:</strong> Sedation, respiratory depression, cognitive impairment, osteoporosis<br><strong>Monitoring:</strong> Level (15-40 mg/L), CBC, LFTs<br><strong>Special Notes:</strong> <span style="color:#fbbf24">Very long half-life (100h) — takes 2-3 weeks to reach steady state.</span> Strong CYP inducer. Dialyzable.',
+  ciprofloxacin:'<strong>Ciprofloxacin</strong><br><br><strong>Class:</strong> Fluoroquinolone<br><strong>Mechanism:</strong> Inhibits DNA gyrase and topoisomerase IV<br><strong>Spectrum:</strong> Gram-negative aerobes (Pseudomonas), some gram-positive<br><strong>Key Side Effects:</strong> Tendon rupture, QTc prolongation, CNS effects, C. difficile<br><strong>Monitoring:</strong> Renal function, ECG (QTc)<br><strong>Special Notes:</strong> <span style="color:#fbbf24">CYP1A2 inhibitor — increases theophylline, clozapine levels.</span> Avoid with antacids (chelation reduces absorption).',
+  tmp_smx:'<strong>TMP-SMX (Bactrim)</strong><br><br><strong>Class:</strong> Sulfonamide + diaminopyrimidine<br><strong>Mechanism:</strong> Inhibits folate synthesis at two sequential steps<br><strong>Spectrum:</strong> PCP, community MRSA, UTI, Nocardia, Toxoplasma<br><strong>Key Side Effects:</strong> Hyperkalemia, rash, Stevens-Johnson, bone marrow suppression, crystalluria<br><strong>Monitoring:</strong> CBC, SCr, K+, creatinine<br><strong>Special Notes:</strong> High-dose (15-20 mg/kg/day TMP) for PCP. Increases warfarin, phenytoin, methotrexate levels. Hyperkalemia risk with ACEi/ARB.',
+  acyclovir:'<strong>Acyclovir</strong><br><br><strong>Class:</strong> Nucleoside antiviral<br><strong>Mechanism:</strong> Inhibits viral DNA polymerase (requires viral thymidine kinase activation)<br><strong>Spectrum:</strong> HSV-1/2, VZV, encephalitis, neonatal herpes<br><strong>Key Side Effects:</strong> Nephrotoxicity (crystalluria), neurotoxicity (confusion, seizures at high levels)<br><strong>Monitoring:</strong> SCr, neuro status, hydration<br><strong>Special Notes:</strong> <span style="color:#f87171">Nephrotoxic — aggressive IV hydration required.</span> Neurotoxicity risk increases with renal impairment.',
+  enoxaparin:'<strong>Enoxaparin (LMWH)</strong><br><br><strong>Class:</strong> Low molecular weight heparin<br><strong>Mechanism:</strong> Potentiates antithrombin III → inhibits Factor Xa (predominantly)<br><strong>Spectrum:</strong> VTE prophylaxis/treatment, ACS<br><strong>Key Side Effects:</strong> Bleeding, heparin-induced thrombocytopenia (rare), injection site hematoma<br><strong>Monitoring:</strong> Anti-Xa level (target 0.5-1.0 IU/mL for treatment), platelet count<br><strong>Special Notes:</strong> Anti-Xa monitoring for obesity, renal failure, pregnancy. Protamine partially reverses (60%).',
+  ganciclovir:'<strong>Ganciclovir</strong><br><br><strong>Class:</strong> Nucleoside antiviral<br><strong>Mechanism:</strong> Inhibits CMV DNA polymerase<br><strong>Spectrum:</strong> CMV retinitis, CMV prophylaxis in transplant, CMV colitis<br><strong>Key Side Effects:</strong> Myelosuppression (neutropenia, thrombocytopenia), nephrotoxicity<br><strong>Monitoring:</strong> CBC (weekly), SCr<br><strong>Special Notes:</strong> Valganciclovir is oral prodrug (90% bioavailability). <span style="color:#f87171">Significant myelosuppression — monitor CBC closely.</span>',
+  colistin:'<strong>Colistin (Polymyxin E)</strong><br><br><strong>Class:</strong> Polymyxin antibiotic<br><strong>Mechanism:</strong> Disrupts outer membrane of gram-negative bacteria<br><strong>Spectrum:</strong> MDR gram-negative (Pseudomonas, Acinetobacter, Klebsiella) — last resort<br><strong>Key Side Effects:</strong> Nephrotoxicity, neurotoxicity (paresthesias, neuromuscular blockade), apnea<br><strong>Monitoring:</strong> SCr, neuro function, respiratory status<br><strong>Special Notes:</strong> Prodrug (colistimethate). <span style="color:#f87171">Loading dose critical.</span> Complex PK. Avoid other nephrotoxins.'
 };
 
 // === VIAL SIZES ===
