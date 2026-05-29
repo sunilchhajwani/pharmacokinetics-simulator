@@ -6,11 +6,12 @@
 <title>Pharmacokinetics Simulator</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e6f0;min-height:100vh}
-.header{background:linear-gradient(135deg,#0f1729,#1a2744);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e3055;flex-wrap:wrap;gap:8px}
+html,body{height:100%;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e6f0;height:100vh;margin:0;padding:0;overflow:hidden}
+.header{z-index:100;background:linear-gradient(135deg,#0f1729,#1a2744);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e3055;flex-wrap:wrap;gap:8px}
 .header h1{font-size:18px;font-weight:600;color:#60a5fa}
 .header .subtitle{font-size:11px;color:#64748b}
-.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 52px)}
+.layout{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:340px 1fr;grid-template-rows:1fr;background:#1a1a2e}
 .panel{background:#111827;border-right:1px solid #1e3055;overflow-y:auto;padding:14px;font-size:12px}
 .panel h2{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
 .panel h3{font-size:12px;font-weight:600;color:#60a5fa;margin:14px 0 6px}
@@ -32,10 +33,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-success{background:#059669;color:#fff}
 .btn-success:hover{background:#047857}
 .btn-group{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
-.main{display:flex;flex-direction:column;overflow:hidden}
-.chart-area{flex:1;position:relative;padding:12px}
-canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
-.params-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;padding:10px 12px;background:#111827;border-top:1px solid #1e3055}
+.main{display:flex;flex-direction:column;position:relative;background:#0d1321;z-index:1;width:100%;height:100%}
+.chart-area{position:relative;width:100%;flex:1;min-height:0;overflow:hidden}
+canvas{border-radius:8px;background:#1a2744;display:block;position:absolute;top:0;left:0;width:100%;height:100%}
+.params-bar{flex-shrink:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;padding:10px 12px;background:#111827;border-top:1px solid #1e3055;z-index:2}
+.legend{flex-shrink:0;display:flex;gap:12px;padding:6px 12px;background:#0f1729;border-top:1px solid #1e3055;font-size:11px;flex-wrap:wrap;z-index:2}
 .param-card{background:#1e293b;border-radius:6px;padding:8px 10px;text-align:center}
 .param-card .label{font-size:10px;color:#64748b;text-transform:uppercase}
 .param-card .value{font-size:15px;font-weight:700;margin-top:1px}
@@ -46,7 +48,6 @@ canvas{width:100%;height:100%;border-radius:8px;background:#0d1321}
 .param-card.red .value{color:#f87171}
 .param-card.purple .value{color:#c084fc}
 .param-card.cyan .value{color:#22d3ee}
-.legend{display:flex;gap:12px;padding:6px 12px;background:#0f1729;border-top:1px solid #1e3055;font-size:11px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:4px}
 .legend-dot{width:8px;height:8px;border-radius:50%}
 .info-box{background:#1e293b;border-radius:6px;padding:10px;margin-top:10px;font-size:11px;line-height:1.5;color:#94a3b8}
@@ -659,9 +660,9 @@ body.quick-start .warning-box{display:none!important}
     <div class="tab-content" id="tab-study">
       <!-- SHOW THE MATH -->
       <div class="collapsible-header" onclick="toggleCollapse('mathSection')">
-        <h3 style="margin:0">Show the Math <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Show the Math:</strong> See the actual formulas and step-by-step calculations behind every PK parameter.<br><br><strong>Includes:</strong><ul><li>Elimination rate constant (ke) calculation from CrCl</li><li>Half-life derivation</li><li>Clearance calculation</li><li>Volume of distribution</li><li>Concentration-time equations (IV bolus, infusion, oral)</li><li>Loading dose formula</li><li>Steady-state equations</li><li>AUC calculation (trapezoidal rule)</li></ul>Expand each section to see the formula with your patient's actual values substituted.">?</span></h3><span id="mathArrow">&#9660;</span>
+        <h3 style="margin:0">Show the Math <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Show the Math:</strong> See the actual formulas and step-by-step calculations behind every PK parameter.<br><br><strong>Includes:</strong><ul><li>Elimination rate constant (ke) calculation from CrCl</li><li>Half-life derivation</li><li>Clearance calculation</li><li>Volume of distribution</li><li>Concentration-time equations (IV bolus, infusion, oral)</li><li>Loading dose formula</li><li>Steady-state equations</li><li>AUC calculation (trapezoidal rule)</li></ul>Expand each section to see the formula with your patient's actual values substituted.">?</span></h3><span id="mathArrow">&#9654;</span>
       </div>
-      <div class="collapsible-body" id="mathSection">
+      <div class="collapsible-body collapsed" id="mathSection">
         <div id="mathContent" class="info-box" style="font-family:monospace;font-size:11px;line-height:1.8"></div>
       </div>
 
@@ -732,9 +733,9 @@ body.quick-start .warning-box{display:none!important}
         <div id="lpStepArea"></div>
         <div id="lpFeedbackArea"></div>
         <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn btn-sm btn-outline" id="lpPrevBtn" onclick="lpPrevStep()" style="display:none">Previous</button>
-          <button class="btn btn-sm btn-primary" id="lpNextBtn" onclick="lpNextStep()">Next</button>
-          <button class="btn btn-sm btn-outline" onclick="lpBackToChapters()">Back</button>
+          <button class="btn btn-sm btn-outline" id="lpPrevBtn" onclick="lpPrev()" style="display:none">Previous</button>
+          <button class="btn btn-sm btn-primary" id="lpNextBtn" onclick="lpNext()">Next</button>
+          <button class="btn btn-sm btn-outline" onclick="lpBack()">Back</button>
         </div>
       </div>
       <div id="lpOverall" class="lp-overall hidden">
@@ -744,7 +745,7 @@ body.quick-start .warning-box{display:none!important}
         <button class="btn btn-sm btn-outline" onclick="lpResetProgress()" style="margin-top:8px">Reset Progress</button>
       </div>
     </div>
-
+  </div>
   <div class="main">
     <div class="chart-area"><canvas id="chart"></canvas></div>
     <div id="compInfo" class="info-box hidden" style="margin:8px 12px"></div>
@@ -776,7 +777,6 @@ body.quick-start .warning-box{display:none!important}
       <div class="legend-item" title="Orange dashed: concept explorer curve (drag sliders in Study tab)" style="cursor:help"><div class="legend-dot" style="background:#fb923c"></div>Explorer</div>
     </div>
   </div>
-</div>
 
 <div id="reportOverlay"><div id="reportBox"></div></div>
 
@@ -938,8 +938,23 @@ const PROTOCOLS={
 let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,ka:1.5,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null,userOverrodeVd:false,userOverrodeF:false};
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
+const layoutEl=document.querySelector('.layout');
+const headerEl=document.querySelector('.header');
 
-function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+function positionLayout(){
+  layoutEl.style.top=headerEl.offsetHeight+'px';
+}
+positionLayout();
+new ResizeObserver(()=>{positionLayout();resizeCanvas();drawChart();}).observe(headerEl);
+new ResizeObserver(()=>{resizeCanvas();drawChart();}).observe(canvas.parentElement);
+
+function resizeCanvas(){
+  const r=canvas.getBoundingClientRect();
+  if(r.width<10||r.height<10)return;
+  canvas.width=r.width*devicePixelRatio;
+  canvas.height=r.height*devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
 function calcIBW(){const h=state.height;return state.sex==='male'?50+0.91*(h-152.4):45.5+0.91*(h-152.4);}
 function calcABW(){return calcIBW()+0.4*(state.weight-calcIBW());}
 function getEffW(){const b=document.getElementById('weightBasis').value;return b==='ibw'?calcIBW():b==='abw'?calcABW():state.weight;}
@@ -2002,12 +2017,12 @@ function resetAll(){state.adjustedKe=null;state.measuredCp=null;document.getElem
 let lpState={active:null,currentStep:0,score:0,totalQ:0,answers:[]};
 let lpCPOk=false;
 function lpLoadProgress(){try{const s=localStorage.getItem('pkLP');if(s)return JSON.parse(s);}catch(e){}const p={v:1,ch:{}};LEARNING_PATH.forEach(c=>{p.ch[c.id]={s:'ns',step:0,sc:0,tq:0};});return p;}
-let lpProgress=lpLoadProgress();
+let lpProgress={v:1,ch:{}}; // Will be initialized after LEARNING_PATH
 function lpSave(){try{localStorage.setItem('pkLP',JSON.stringify(lpProgress));}catch(e){}}
 function lpInit(){try{lpRenderGrid();lpUpdateOverall();}catch(e){console.error('LP Init error:',e);}}
-function lpRenderGrid(){const tiers={Foundation:[],Core:[],'Clinical Application':[]};LEARNING_PATH.forEach(ch=>{const cp=lpProgress.ch[ch.id]||{s:'ns',sc:0,tq:0};const pct=cp.s==='c'?100:cp.s==='ip'?Math.round((cp.step/ch.steps.length)*100):0;const st=cp.s==='c'?'Done ('+cp.sc+'/'+cp.tq+')':cp.s==='ip'?'In Progress':'Start';const sc=cp.s==='c'?'completed':'';tiers[ch.tier].push('<div class="lp-card '+sc+'" onclick="lpStart(\''+ch.id+'\')"><div class="lp-num">'+ch.chapter+'</div><div class="lp-title">'+ch.title+'</div><div class="lp-status">'+st+'</div><div class="lp-bar"><div class="lp-bar-fill" style="width:'+pct+'%"></div></div></div>');});let h='';Object.entries(tiers).forEach(([t,c])=>{if(c.length)h+='<div class="lp-tier">'+t+'</div><div class="lp-grid">'+c.join('')+'</div>';});document.getElementById('lpChapterGrid').innerHTML=h;}
+function lpRenderGrid(){try{const tiers={Foundation:[],Core:[],'Clinical Application':[]};LEARNING_PATH.forEach(ch=>{if(!tiers[ch.tier])tiers[ch.tier]=[];const cp=lpProgress.ch[ch.id]||{s:'ns',sc:0,tq:0};const pct=cp.s==='c'?100:cp.s==='ip'?Math.round((cp.step/ch.steps.length)*100):0;const st=cp.s==='c'?'Done ('+cp.sc+'/'+cp.tq+')':cp.s==='ip'?'In Progress':'Start';const sc=cp.s==='c'?'completed':'';tiers[ch.tier].push('<div class="lp-card '+sc+'" onclick="lpStart(\''+ch.id+'\')"><div class="lp-num">'+ch.chapter+'</div><div class="lp-title">'+ch.title+'</div><div class="lp-status">'+st+'</div><div class="lp-bar"><div class="lp-bar-fill" style="width:'+pct+'%"></div></div></div>');});let h='';Object.entries(tiers).forEach(([t,c])=>{if(c.length)h+='<div class="lp-tier">'+t+'</div><div class="lp-grid">'+c.join('')+'</div>';});document.getElementById('lpChapterGrid').innerHTML=h;}catch(e){console.error('lpRenderGrid error:',e);}}
 function lpUpdateOverall(){let c=0,ts=0,tq=0;LEARNING_PATH.forEach(ch=>{const cp=lpProgress.ch[ch.id];if(cp&&cp.s==='c'){c++;ts+=cp.sc;tq+=cp.tq;}});document.getElementById('lpOverallScore').textContent=tq>0?Math.round(ts/tq*100)+'%':'0%';document.getElementById('lpOverallDetail').textContent=c+' of '+LEARNING_PATH.length+' chapters completed';document.getElementById('lpOverall').classList.remove('hidden');}
-function lpStart(id){try{const ch=LEARNING_PATH.find(c=>c.id===id);if(!ch){console.error('LP: chapter not found:',id);return;}lpState={active:id,currentStep:lpProgress.ch[id]?.step||0,score:0,totalQ:0,answers:[]};document.getElementById('lpChapterGrid').classList.add('hidden');document.getElementById('lpOverall').classList.add('hidden');document.getElementById('lpActive').classList.remove('hidden');lpProgress.ch[id].s='ip';lpSave();lpStep();}catch(e){console.error('LP Start error:',e);}}
+function lpStart(id){try{const ch=LEARNING_PATH.find(c=>c.id===id);if(!ch){console.error('LP: chapter not found:',id);return;}if(!lpProgress.ch[id])lpProgress.ch[id]={s:'ns',step:0,sc:0,tq:0};lpState={active:id,currentStep:lpProgress.ch[id]?.step||0,score:0,totalQ:0,answers:[]};document.getElementById('lpChapterGrid').classList.add('hidden');document.getElementById('lpOverall').classList.add('hidden');document.getElementById('lpActive').classList.remove('hidden');lpProgress.ch[id].s='ip';lpSave();lpStep();}catch(e){console.error('LP Start error:',e);}}
 function lpStep(){try{const ch=LEARNING_PATH.find(c=>c.id===lpState.active);if(!ch){console.error('LP Step: no chapter for',lpState.active);return;}const step=ch.steps[lpState.currentStep],total=ch.steps.length;document.getElementById('lpHeader').innerHTML='Chapter '+ch.chapter+': '+ch.title;document.getElementById('lpProgressFill').style.width=(lpState.currentStep/total*100)+'%';document.getElementById('lpProgressText').textContent='Step '+(lpState.currentStep+1)+' of '+total;const obj=document.getElementById('lpObjectives');if(lpState.currentStep===0){obj.classList.remove('hidden');obj.innerHTML='<strong>Objectives:</strong><br>'+ch.objectives.map(o=>'• '+o).join('<br>');}else obj.classList.add('hidden');document.getElementById('lpPrevBtn').style.display=lpState.currentStep>0?'inline-block':'none';document.getElementById('lpNextBtn').textContent=lpState.currentStep<total-1?'Next':'Complete';let h='';if(step.type==='explain'){h+='<div class="lp-step"><div class="lp-step-type">Concept</div><div class="lp-step-title">'+step.title+'</div><div class="lp-content">'+step.content+'</div></div>';}else if(step.type==='demo'){h+='<div class="lp-step"><div class="lp-step-type">Demo</div><div class="lp-step-title">'+step.title+'</div><div class="lp-content"><p>'+step.instructions+'</p></div>';if(step.guidedSteps)h+='<div class="lp-guided">'+step.guidedSteps.map((g,i)=>'<div class="lp-guide-step"><strong>'+(i+1)+'.</strong> '+g+'</div>').join('')+'</div>';if(step.checkpoint){const cp=step.checkpoint;h+='<div class="lp-checkpoint"><div class="lp-cp-question">'+cp.question+'</div>'+(cp.options||cp.o).map((o,i)=>'<button class="lp-cp-option" onclick="lpCP(this,'+i+')">'+o+'</button>').join('')+'<div id="lpCPFB"></div></div>';}h+='</div>';if(step.setupActions)lpSetup(step.setupActions);}else if(step.type==='quiz'){h+='<div class="lp-step"><div class="lp-step-type">Quiz</div><div class="lp-step-title">'+step.title+'</div>';step.questions.forEach((q,qi)=>{h+='<div class="lp-checkpoint" style="margin-top:10px"><div class="lp-cp-question">'+(qi+1)+'. '+(q.question||q.q)+'</div>'+(q.options||q.o).map((o,oi)=>'<button class="lp-cp-option" onclick="lpQ(this,'+qi+','+oi+')">'+o+'</button>').join('')+'<div id="lpQF'+qi+'"></div></div>';});h+='</div>';lpState.totalQ=step.questions.length;}document.getElementById('lpStepArea').innerHTML=h;document.getElementById('lpFeedbackArea').innerHTML='';}catch(e){console.error('LP Step error:',e);document.getElementById('lpStepArea').innerHTML='<div class="lp-step" style="color:#f87171">Error rendering step: '+e.message+'</div>';}}
 function lpSetup(a){a.forEach(x=>{switch(x.action){case'setDrug':document.getElementById('drugSelect').value=x.value;onDrugChange();break;case'setDose':document.getElementById('doseInput').value=x.value;document.getElementById('doseRange').value=Math.min(x.value,5000);document.getElementById('doseVal').textContent=x.value+' mg';break;case'setInterval':document.getElementById('intervalRange').value=x.value;document.getElementById('intervalVal').textContent=x.value+' h';break;case'setNumDoses':document.getElementById('numDosesRange').value=x.value;document.getElementById('numDosesVal').textContent=x.value;break;case'setRoute':setRoute(x.value);break;case'setWeight':document.getElementById('weightInput').value=x.value;break;case'setAge':document.getElementById('ageInput').value=x.value;break;case'setSex':document.getElementById('sexSelect').value=x.value;break;case'setScr':document.getElementById('scrInput').value=x.value;break;}});recalculate();}
 function lpCP(el,idx){const ch=LEARNING_PATH.find(c=>c.id===lpState.active),cp=ch.steps[lpState.currentStep].checkpoint;const correct=cp.correct!==undefined?cp.correct:cp.c;const ok=idx===correct;el.parentElement.querySelectorAll('.lp-cp-option').forEach((o,i)=>{if(i===correct)o.classList.add('correct');else if(i===idx&&!ok)o.classList.add('wrong');});lpState.score+=ok?1:0;lpState.answers.push({s:lpState.currentStep,c:ok});document.getElementById('lpCPFB').innerHTML='<div class="lp-feedback '+(ok?'correct':'wrong')+'"><strong>'+(ok?'Correct!':'Not quite.')+'</strong> '+(cp.explanation||cp.e||'')+'</div>';}
@@ -2366,7 +2381,15 @@ function simReset(){
 }
 
 window.addEventListener('resize',()=>{resizeCanvas();drawChart();});
+window.addEventListener('error', function(e) { console.error('JS Error:', e.message, 'at', e.filename, ':', e.lineno); });
+
+// Initialize lpProgress after LEARNING_PATH is defined
+if(!lpProgress.v){try{lpProgress=lpLoadProgress();}catch(e){lpProgress={v:1,ch:{}};}}
 resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();lpInit();recalculate();
+// Multiple delayed chart draws
+setTimeout(()=>{resizeCanvas();drawChart();},50);
+setTimeout(()=>{resizeCanvas();drawChart();},200);
+setTimeout(()=>{resizeCanvas();drawChart();},500);
 </script>
 </body>
 </html>
