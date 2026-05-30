@@ -3052,19 +3052,73 @@ function sbRenderScenario(){
 }
 
 function sbRenderGuided(s,drug){
+  const guidedStep=sbState.guidedStep||1;
   const steps=[
     {num:1,title:'Read the Level',text:'The trough is <strong style="color:#f87171">'+s.labValue+' '+s.labUnit+'</strong>. The therapeutic range is <strong>'+drug.therapeutic[0]+'-'+drug.therapeutic[1]+' '+drug.unit+'</strong>. This level is <strong style="color:'+(s.labValue>drug.toxic?'#f87171':s.labValue<drug.therapeutic[0]?'#fbbf24':'#4ade80')+'">'+(s.labValue>drug.toxic?'TOXIC':s.labValue<drug.therapeutic[0]?'SUBTHERAPEUTIC':'THERAPEUTIC')+'</strong>.'},
     {num:2,title:'Assess the Patient',text:'SCr = <strong>'+s.patient.scr+'</strong>, CrCl ≈ <strong style="color:#60a5fa">'+calcCrCl().toFixed(0)+' mL/min</strong>. '+(calcCrCl()>60?'Kidneys work well — clearance is normal.':'Kidneys are impaired — clearance is reduced. This affects how fast the drug is removed.')},
     {num:3,title:'Identify the Problem',text:s.labValue>drug.toxic?'The level is <strong style="color:#f87171">too high</strong>. The drug is accumulating. '+((calcCrCl()<50)?'With CrCl < 50, the kidneys cannot clear the drug fast enough.':'The current dose is simply too large for this interval.'):(s.labValue<drug.therapeutic[0]?'The level is <strong style="color:#fbbf24">too low</strong>. The drug is not reaching therapeutic concentrations. '+((calcCrCl()>60)?'With normal kidneys, you simply need more drug.':'Even with reduced clearance, the dose is too low.'):''+ 'The level is in range.')},
-    {num:4,title:'Choose Your Strategy',text:s.principleAction},
-    {num:5,title:'Make the Adjustment',text:'Recommended: <strong style="color:#4ade80">'+s.optimalDose+'mg q'+s.optimalInterval+'h</strong>. Watch how the chart changes — the new curve (solid) should land troughs inside the green band.'}
+    {num:4,title:'Choose Your Strategy',text:s.principleAction}
   ];
   let h='';
+  // Show completed steps
   steps.forEach(st=>{
-    h+='<div class="sb-guided-step"><span class="sb-gs-num">Step '+st.num+':</span> <strong>'+st.title+'</strong><br>'+st.text+'</div>';
+    if(st.num<=guidedStep){
+      h+='<div class="sb-guided-step"><span class="sb-gs-num">Step '+st.num+':</span> <strong>'+st.title+'</strong><br>'+st.text+'</div>';
+    }
   });
-  h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended Adjustment</button></div>';
+  // Step 5: Interactive adjustment with sliders
+  if(guidedStep>=5){
+    h+='<div class="sb-guided-step"><span class="sb-gs-num">Step 5:</span> <strong>Make the Adjustment</strong><br>Try adjusting the dose and interval below. Watch the chart update in real-time. The goal: get the trough inside the green band.</div>';
+    h+='<div class="sb-adjust-area">';
+    h+='<div class="sb-adj-title">🔧 Your Adjustment</div>';
+    const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
+    const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
+    const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
+    const iMax=Math.min(96,Math.round(s.currentInterval*4));
+    h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
+    h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" id="sbIntervalSlider" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
+    h+='</div>';
+    h+=sbRenderPrediction(s,drug);
+    // Show recommended if they haven't found optimal
+    const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
+    const infTime=sbState.adjustInterval>=24?2:1;
+    const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
+    let troughCp=0;
+    for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+sbState.adjustInterval,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);}
+    const troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
+    if(!troughOk){
+      h+='<div class="sb-guided-step" style="border-left-color:#fbbf24"><strong style="color:#fbbf24">💡 Tip:</strong> The recommended adjustment is <strong style="color:#4ade80">'+s.optimalDose+'mg q'+s.optimalInterval+'h</strong>. Try moving the sliders toward those values and watch how the chart changes.</div>';
+    } else {
+      h+='<div class="sb-guided-step" style="border-left-color:#4ade80"><strong style="color:#4ade80">✓ Great!</strong> Your adjustment brings the trough into the therapeutic range. The new curve (solid blue) should now sit inside the green band on the chart.</div>';
+    }
+    h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended: '+s.optimalDose+'mg q'+s.optimalInterval+'h</button>';
+    if(troughOk)h+='<button class="btn btn-sm btn-success" onclick="sbGuidedComplete()" style="background:#059669;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">✓ Complete Scenario</button>';
+    h+='</div>';
+  } else {
+    // Show "Next" button to advance steps
+    h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbGuidedNext()">Next Step →</button></div>';
+  }
   return h;
+}
+
+function sbGuidedNext(){
+  if(!sbState.guidedStep)sbState.guidedStep=1;
+  sbState.guidedStep++;
+  if(sbState.guidedStep>=5){
+    // Step 5 reached — enable sliders and chart interaction
+    sbState.adjustDose=sbState.adjustDose||SB_SCENARIOS.find(x=>x.id===sbState.activeScenario).currentDose;
+    sbState.adjustInterval=sbState.adjustInterval||SB_SCENARIOS.find(x=>x.id===sbState.activeScenario).currentInterval;
+  }
+  renderSandbox();
+}
+
+function sbGuidedComplete(){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  // Auto-submit with current slider values as the answer
+  sbState.submitted=false;
+  sbSubmit();
+  sbState.guidedStep=6; // show completed state
+  renderSandbox();
 }
 
 function sbRenderPrediction(s,drug){
