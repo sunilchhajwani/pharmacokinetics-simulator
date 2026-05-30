@@ -665,7 +665,7 @@ body.quick-start .warning-box{display:none!important}
       <button class="btn btn-sm btn-primary" onclick="bayesianFit()" style="margin-top:4px">Fit ke + Vd</button>
       <div id="bayesResult" class="info-box hidden"></div>
       <hr class="section-divider">
-      <h3>Vancomycin AUC-Guided Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>AUC-Guided Vancomycin Dosing:</strong> The current IDSA guideline recommends AUC/MIC-based monitoring (not trough-only). Target 24h AUC/MIC = 400-600.<br><br><strong>How to use:</strong><ul><li>Check Enable to activate AUC monitoring</li><li>Enter the organism's MIC (from culture & sensitivity)</li><li>Set target AUC24 (default 500 mg*h/L)</li><li>The panel shows: AUC24, AUC/MIC ratio, and whether you're on target</li><li>Adjust dose or interval to hit the AUC target</li><li>AUC24 and AUC/MIC appear in the bottom params bar</li></ul>">?</span></h3>
+      <h3 id="aucSectionTitle">AUC-Guided Dosing <span class="help-icon" onclick="toggleHelp(this)" data-tip="<strong>AUC-Guided Dosing:</strong> Monitors total drug exposure over 24 hours. For vancomycin, target AUC24/MIC 400-600 (IDSA 2020). For aminoglycosides, target AUC24/MIC 80-120. For fluoroquinolones, target AUC24/MIC 125-250. The simulator auto-detects the right target for each drug.<br><br><strong>How to use:</strong><ul><li>Check Enable to activate AUC monitoring</li><li>Enter the organism MIC (from culture & sensitivity)</li><li>Target AUC24 auto-fills based on the drug</li><li>Adjust dose or interval to hit the target</li><li>If AUC is out of range, guidance appears with an Auto-Adjust button</li><li>AUC24 and AUC/MIC appear in the bottom params bar</li></ul>">?</span></h3>
       <div class="field"><label><input type="checkbox" id="aucMode" onchange="recalculate()"> Enable AUC monitoring</label></div>
       <div class="row">
         <div class="field"><label>MIC (mg/L)</label><input type="number" id="vancMIC" value="1" step="0.5" oninput="recalculate()"></div>
@@ -828,6 +828,28 @@ body.quick-start .warning-box{display:none!important}
         </div>
       </div>
 
+      <!-- AUC CONCEPT EXPLORER -->
+      <div class="collapsible-header" onclick="toggleCollapse('aucExplorerSection')">
+        <h3 style="margin:0">📊 AUC Explorer <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>AUC Explorer:</strong> Interactive visualization of how dose and interval affect 24-hour AUC. See the AUC formula come alive — drag the sliders and watch the shaded area change in real time.<br><br><strong>Learn:</strong><ul><li>AUC24 = (Dose x F) / (CL x tau) x 24/interval</li><li>Doubling the dose doubles AUC</li><li>Doubling the interval halves AUC</li><li>Higher clearance = lower AUC</li><li>The shaded area on the chart represents total drug exposure</li></ul>">?</span></h3><span id="aucExplorerArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="aucExplorerSection">
+        <div class="field">
+          <label>Explorer Dose (mg): <span id="aucExpDoseVal" style="color:#60a5fa">1000</span></label>
+          <input type="range" id="aucExpDose" min="100" max="5000" step="25" value="1000" oninput="updateAUCExplorer()">
+        </div>
+        <div class="field">
+          <label>Explorer Interval (h): <span id="aucExpIntVal" style="color:#60a5fa">12</span></label>
+          <input type="range" id="aucExpInt" min="4" max="48" step="1" value="12" oninput="updateAUCExplorer()">
+        </div>
+        <div class="field">
+          <label>Explorer CL (L/h): <span id="aucExpCLVal" style="color:#60a5fa">5.0</span></label>
+          <input type="range" id="aucExpCL" min="0.5" max="15" step="0.5" value="5" oninput="updateAUCExplorer()">
+        </div>
+        <div class="info-box" id="aucExplorerResult" style="line-height:1.8">
+          <div id="aucExpCalc"></div>
+        </div>
+      </div>
+
       <!-- CLINICAL SIMULATIONS -->
       <div class="collapsible-header" onclick="toggleCollapse('simSection')">
         <h3 style="margin:0">Clinical Simulations <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Clinical Simulations:</strong> Multi-step patient scenarios that evolve over time. Work through realistic clinical cases with decision points, lab results, and dose adjustments.<br><br><strong>How to use:</strong><ul><li>Select a simulation from the list</li><li>Read each clinical vignette carefully</li><li>Answer questions at each decision point</li><li>Use Load into Simulator to verify your calculations on the chart</li><li>Get feedback after each step</li><li>Track your score across the entire case</li></ul><strong>8 scenarios:</strong> Vancomycin ICU, Gentamicin OD, Phenytoin Status, Lithium Overdose, Pediatric Vanc, Renal Impairment, Drug Interactions, Aminoglycoside TDM.">?</span></h3><span id="simArrow">&#9660;</span>
@@ -922,10 +944,10 @@ body.quick-start .warning-box{display:none!important}
 
 <script>
 const DRUGS={
-  vancomycin:{name:'Vancomycin',vd:0.7,keAuto:true,halfLife:6,f:1.0,pb:30,therapeutic:[15,20],toxic:30,unit:'mg/L',info:'<strong>Vancomycin</strong> -- Glycopeptide. Target AUC/MIC >=400 (24h AUC 400-600). Trough 15-20 for serious infections. Nephrotoxic >20.',defaultDose:1000,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:25,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'No major CYP interactions (not CYP-metabolized).'},
-  gentamicin:{name:'Gentamicin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',info:'<strong>Gentamicin</strong> -- Aminoglycoside. Conventional: Peak 5-12, Trough <2. Extended-interval: 5-7 mg/kg q24h.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin, amphotericin, NSAIDs.'},
-  amikacin:{name:'Amikacin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[20,35],toxic:35,unit:'mg/L',info:'<strong>Amikacin</strong> -- Aminoglycoside. Peak 20-35, Trough <5.',defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:15,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar nephrotoxicity profile to gentamicin.'},
-  tobramycin:{name:'Tobramycin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',info:'<strong>Tobramycin</strong> -- Aminoglycoside. Peak 5-12, Trough <2.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar to gentamicin.'},
+  vancomycin:{name:'Vancomycin',vd:0.7,keAuto:true,halfLife:6,f:1.0,pb:30,therapeutic:[15,20],toxic:30,unit:'mg/L',aucTarget:[400,600],aucMIC:true,info:'<strong>Vancomycin</strong> -- Glycopeptide. Target AUC/MIC >=400 (24h AUC 400-600). Trough 15-20 for serious infections. Nephrotoxic >20.',defaultDose:1000,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:25,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'No major CYP interactions (not CYP-metabolized).'},
+  gentamicin:{name:'Gentamicin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Gentamicin</strong> -- Aminoglycoside. Conventional: Peak 5-12, Trough <2. Extended-interval: 5-7 mg/kg q24h.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin, amphotericin, NSAIDs.'},
+  amikacin:{name:'Amikacin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[20,35],toxic:35,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Amikacin</strong> -- Aminoglycoside. Peak 20-35, Trough <5.',defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:15,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar nephrotoxicity profile to gentamicin.'},
+  tobramycin:{name:'Tobramycin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Tobramycin</strong> -- Aminoglycoside. Peak 5-12, Trough <2.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar to gentamicin.'},
   phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,ka:0.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Phenytoin</strong> -- <span style="color:#fbbf24">Non-linear kinetics (Michaelis-Menten)</span>. First-order approx only. Free = total x (1 - PB/100).',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:15,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Strong CYP inducer. Levels INCREASED by inhibitors (fluconazole, isoniazid). Levels DECREASED by inducers (rifampin).'},
   valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,ka:2.0,therapeutic:[50,100],toxic:100,unit:'mg/L',info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
   carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,ka:0.8,therapeutic:[4,12],toxic:12,unit:'mg/L',info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
@@ -937,11 +959,11 @@ const DRUGS={
   clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,ka:1.0,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
   theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,ka:1.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
   methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
-  meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',
+  meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',aucTarget:[150,300],aucMIC:false,
     info:'<strong>Meropenem</strong> -- Carbapenem. Time-dependent killing: T>MIC target 40% for bacteremia, 100% for meningitis. Extended infusion (3-4h) improves PK/PD. Adjust for renal impairment.',
     defaultDose:1000,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions.',
     renalNote:'CrCl 26-50: 1g q12h. CrCl 10-25: 500mg q12h. CrCl <10: 500mg q24h. HD: dose after HD.'},
-  piperacillin:{name:'Piperacillin-Tazobactam',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:30,therapeutic:[0,100],toxic:200,unit:'mg/L',
+  piperacillin:{name:'Piperacillin-Tazobactam',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:30,therapeutic:[0,100],toxic:200,unit:'mg/L',aucTarget:[150,300],aucMIC:false,
     info:'<strong>Pip-Tazo</strong> -- Beta-lactam + beta-lactamase inhibitor. Time-dependent: T>MIC target 50%. Extended infusion (4h) preferred. Nephrotoxic risk especially with vancomycin.',
     defaultDose:4500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin.',
     renalNote:'CrCl 20-40: 3.375g q8h. CrCl <20: 2.25g q8h. HD: 2.25g q8h + dose after HD.'},
@@ -949,7 +971,7 @@ const DRUGS={
     info:'<strong>Ceftriaxone</strong> -- 3rd-gen cephalosporin. Long half-life (8h). Dual elimination (renal + hepatic). No renal adjustment needed unless CrCl <10. Highly protein-bound.',
     defaultDose:2000,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Displaces bilirubin from albumin. Avoid in neonates.',
     renalNote:'No adjustment unless CrCl <10: max 2g/day.'},
-  fluconazole:{name:'Fluconazole',vd:0.7,keAuto:true,halfLife:30,f:0.9,pb:12,ka:1.0,therapeutic:[0,100],toxic:80,unit:'mg/L',
+  fluconazole:{name:'Fluconazole',vd:0.7,keAuto:true,halfLife:30,f:0.9,pb:12,ka:1.0,therapeutic:[0,100],toxic:80,unit:'mg/L',aucTarget:[200,400],aucMIC:true,
     info:'<strong>Fluconazole</strong> -- Triazole antifungal. High oral bioavailability (90%). Renally cleared. CYP2C9 inhibitor. Loading dose 2x maintenance on day 1.',
     defaultDose:400,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:800,loadingUnit:'mg (day 1)',hepatic:false,dialyzable:true,interactionNote:'Inhibits CYP2C9, CYP2C19, CYP3A4. Increases phenytoin, warfarin levels.',
     renalNote:'CrCl 11-50: 50% dose reduction. HD: full dose after HD.'},
@@ -957,7 +979,7 @@ const DRUGS={
     info:'<strong>Oral Vancomycin</strong> -- For C. difficile colitis. NOT absorbed systemically (F=0). Works locally in gut. No TDM needed.',
     defaultDose:125,defaultInterval:6,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'No systemic interactions (not absorbed).',
     renalNote:'No renal adjustment needed (not absorbed).'},
-  linezolid:{name:'Linezolid',vd:0.6,keAuto:false,halfLife:5,f:1.0,pb:31,therapeutic:[0,100],toxic:20,unit:'mg/L',
+  linezolid:{name:'Linezolid',vd:0.6,keAuto:false,halfLife:5,f:1.0,pb:31,therapeutic:[0,100],toxic:20,unit:'mg/L',aucTarget:[80,120],aucMIC:true,
     info:'<strong>Linezolid</strong> -- Oxazolidinone. MRSA/VRE coverage. Monitor for thrombocytopenia (>14 days). MAO inhibitor.',
     defaultDose:600,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'MAO inhibitor. Avoid SSRIs, tramadol, tyramine foods.',
     renalNote:'No renal adjustment. Accumulation of metabolites in severe CKD.'},
@@ -985,7 +1007,7 @@ const DRUGS={
     info:'<strong>Voriconazole</strong> -- Triazole antifungal. Aspergillus, Candida. CYP2C19 polymorphism: poor metabolizers (15-20% Asians) have 4x higher levels. TDM recommended.',
     defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:400,loadingUnit:'mg x2 doses',hepatic:true,dialyzable:false,interactionNote:'CYP2C19 substrate. CYP3A4 inhibitor. Levels affected by CYP2C19 genotype — check if available.',
     renalNote:'IV formulation: avoid if CrCl <50 (cyclodextrin carrier accumulates). Use oral form.'},
-  daptomycin:{name:'Daptomycin',vd:0.1,keAuto:true,halfLife:8,f:1.0,pb:92,therapeutic:[0,100],toxic:100,unit:'mg/L',
+  daptomycin:{name:'Daptomycin',vd:0.1,keAuto:true,halfLife:8,f:1.0,pb:92,therapeutic:[0,100],toxic:100,unit:'mg/L',aucTarget:[200,400],aucMIC:true,
     info:'<strong>Daptomycin</strong> -- Lipopeptide. MRSA, VRE. Concentration-dependent killing. Monitor CPK (myopathy risk). Inactivated by pulmonary surfactant — do NOT use for pneumonia.',
     defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Statins increase myopathy risk. Hold statins during therapy.',
     renalNote:'CrCl 30-50: 6-8 mg/kg q48h. CrCl <30: 4-6 mg/kg q48h. HD: dose after HD.'},
@@ -993,7 +1015,7 @@ const DRUGS={
     info:'<strong>Phenobarbital</strong> -- Barbiturate antiepileptic. Very long half-life (100h). Takes 2-3 weeks to reach steady state. Respiratory depression risk. CYP inducer.',
     defaultDose:100,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg IV',hepatic:true,dialyzable:true,interactionNote:'Strong CYP inducer (2C9, 3A4, 1A2). Increases clearance of many drugs.',
     renalNote:'Partially renally cleared. Adjust for severe CKD. Dialyzable — redose after HD.'},
-  ciprofloxacin:{name:'Ciprofloxacin',vd:2.5,keAuto:true,halfLife:4,f:0.7,pb:20,therapeutic:[0,100],toxic:4,unit:'mg/L',
+  ciprofloxacin:{name:'Ciprofloxacin',vd:2.5,keAuto:true,halfLife:4,f:0.7,pb:20,therapeutic:[0,100],toxic:4,unit:'mg/L',aucTarget:[125,250],aucMIC:true,
     info:'<strong>Ciprofloxacin</strong> -- Fluoroquinolone. Gram-negative coverage, UTI, anthrax. CYP1A2 inhibitor. QTc prolongation. Tendon rupture risk (steroids, elderly).',
     defaultDose:400,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Inhibits CYP1A2. Increases theophylline, clozapine levels. Antacids/chelation reduce absorption.',
     renalNote:'CrCl 30-50: 250-500mg q12h. CrCl <30: 250-500mg q18-24h. HD: dose after HD.'},
@@ -1033,7 +1055,7 @@ const DRUGS={
     info:'<strong>Unfractionated Heparin</strong> -- Anticoagulant. VTE, ACS, bridging. Non-linear kinetics — dose-response is unpredictable. aPTT or anti-Xa monitoring. Protamine fully reverses.',
     defaultDose:5000,defaultInterval:0,route:'iv_bolus',infusionTime:0,loadingDose:80,loadingUnit:'units/kg bolus',hepatic:false,dialyzable:false,interactionNote:'Additive bleeding with anticoagulants, antiplatelets. HIT (heparin-induced thrombocytopenia) — check platelets day 3-5.',
     renalNote:'No renal adjustment — hepatic reticuloendothelial clearance. But less predictable response in uremia.'},
-  levofloxacin:{name:'Levofloxacin',vd:1.1,keAuto:true,halfLife:7,f:0.99,pb:24,therapeutic:[0,100],toxic:8,unit:'mg/L',
+  levofloxacin:{name:'Levofloxacin',vd:1.1,keAuto:true,halfLife:7,f:0.99,pb:24,therapeutic:[0,100],toxic:8,unit:'mg/L',aucTarget:[125,250],aucMIC:true,
     info:'<strong>Levofloxacin</strong> -- Fluoroquinolone. Respiratory, UTI, anthrax prophylaxis. Concentration-dependent killing. QTc prolongation. Tendon rupture risk.',
     defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'QTc prolongation — avoid with other QTc drugs. Antacids reduce absorption.',
     renalNote:'CrCl 20-49: 250mg q24h. CrCl 10-19: 250mg q48h. HD: 250mg after HD.'},
@@ -1049,7 +1071,7 @@ const DRUGS={
     info:'<strong>Posaconazole</strong> -- Triazole antifungal. Mucor, Aspergillus prophylaxis/treatment. Variable absorption (oral suspension requires fatty meal). TDM recommended for oral suspension.',
     defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:300,loadingUnit:'mg x3 on day 1',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor (strong). Increases tacrolimus, cyclosporine, sirolimus levels. Avoid with ergot alkaloids.',
     renalNote:'No renal adjustment — hepatic metabolism. IV formulation contains cyclodextrin (avoid if CrCl <50).'},
-  ceftazidime:{name:'Ceftazidime-Avibactam',vd:0.3,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[0,100],toxic:100,unit:'mg/L',
+  ceftazidime:{name:'Ceftazidime-Avibactam',vd:0.3,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[0,100],toxic:100,unit:'mg/L',aucTarget:[150,300],aucMIC:false,
     info:'<strong>Ceftazidime-Avibactam</strong> -- Beta-lactam + beta-lactamase inhibitor. MDR gram-negative (KPC-producing Klebsiella, Pseudomonas). Time-dependent killing: T>MIC target 50%.',
     defaultDose:2500,defaultInterval:8,route:'iv_infusion',infusionTime:2,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions. Probenecid increases levels.',
     renalNote:'CrCl 31-50: 1.25g q8h. CrCl 16-30: 0.94g q12h. CrCl 6-15: 0.94g q24h. CrCl <6: 0.94g q48h. HD: dose after HD.'},
@@ -1057,7 +1079,7 @@ const DRUGS={
     info:'<strong>Foscarnet</strong> -- Pyrophosphate analog antiviral. CMV retinitis (ganciclovir-resistant), HSV. Major nephrotoxic — requires aggressive hydration. Electrolyte wasting (Ca2+, Mg2+, K+, PO4).',
     defaultDose:60,defaultInterval:8,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Additive nephrotoxicity with aminoglycosides, amphotericin, cyclosporine.',
     renalNote:'CrCl >1.4 mL/min/kg: 60mg/kg q8h. CrCl 1.0-1.4: 45mg/kg q8h. CrCl 0.8-1.0: 35mg/kg q8h. HD: dose after HD. Aggressive hydration required.'},
-  custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
+  custom:{name:'Custom Drug',vd:0.7,keAuto:false,halfLife:6,f:1.0,pb:0,therapeutic:[0,100],toxic:100,unit:'mg/L',aucTarget:[0,0],aucMIC:false,info:'<strong>Custom Drug</strong> -- Adjust all parameters manually.',defaultDose:1000,defaultInterval:12,route:'iv_bolus',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:''}
 };
 
 const PROTOCOLS={
@@ -1075,7 +1097,7 @@ const PROTOCOLS={
   theophylline:{drug:'theophylline',dose:200,interval:8,route:'oral',infusionTime:0,numDoses:10,mic:0,targetAUC:0,label:'Theophylline - Standard',note:'200 mg q8h or 400 mg QHS (SR). Target 10-20 mg/L. Toxic >20 (seizures, arrhythmias). Many drug interactions. Smoking increases clearance.'}
 };
 
-let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,ka:1.5,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null,userOverrodeVd:false,userOverrodeF:false};
+let state={drug:'vancomycin',route:'iv_bolus',dose:1000,interval:12,numDoses:6,weight:70,height:170,scr:1.0,age:50,sex:'male',vd:0.7,ke:null,f:1.0,pb:30,ka:1.5,infusionTime:1,showTherapeutic:true,showGrid:true,showIndicators:true,measuredCp:null,measuredTime:null,adjustedKe:null,tmicPct:null,auc24:null,aucMic:null,popPK_cl:null,popPK_vd:null,userOverrodeVd:false,userOverrodeF:false,aucExpDose:1000,aucExpInt:12,aucExpCL:5};
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
 const layoutEl=document.querySelector('.layout');
@@ -1380,8 +1402,8 @@ function updateHepaticInfo(){const hp=document.getElementById('hepaticClass').va
 function updateDialysisInfo(){const dm=document.getElementById('dialysisMode').value,i=document.getElementById('dialysisInfo'),d=DRUGS[state.drug];if(dm!=='none'){i.classList.remove('hidden');if(d.dialyzable){i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+{ihd:'4h session removes ~50-70%. Redose after HD.',cvvhd:'Continuous clearance. May need higher/more frequent doses.',sled:'Extended session. Intermediate clearance.',pd:'Minimal removal (5-15%).'}[dm]+' ke increased.';}else{i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+d.name+' is NOT significantly dialyzable.';}}else i.classList.add('hidden');}
 function updateInteractionInfo(){const enz=document.getElementById('interactionEnzyme').checked,inh=document.getElementById('interactionInhibitor').checked,i=document.getElementById('interactionInfo'),d=DRUGS[state.drug];if(enz||inh){i.classList.remove('hidden');let m=d.interactionNote||'No specific interactions noted.';if(enz)m+='<br><span style="color:#fbbf24">CYP inducer: ke increased ~40% (faster clearance).</span>';if(inh)m+='<br><span style="color:#f87171">CYP inhibitor: ke decreased ~35% (slower clearance).</span>';i.innerHTML=m;}else i.classList.add('hidden');}
 function calcTMIC(){const mic=parseFloat(document.getElementById('micInput').value)||0,tgt=parseFloat(document.getElementById('tMicTarget').value)||40,res=document.getElementById('tMicResult');if(mic<=0){res.innerHTML='Enter MIC to calculate T>MIC.';return;}const tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval,dt=0.05;let above=0,tot=0;for(let t=lds;t<=tEnd;t+=dt){tot+=dt;if(getTotalCp(t)>=mic)above+=dt;}const pct=(above/tot)*100;state.tmicPct=pct;res.innerHTML='<strong>T>MIC: '+pct.toFixed(1)+'%</strong> (target >='+tgt+'%) <span class="badge '+(pct>=tgt?'badge-green':'badge-red')+'">'+(pct>=tgt?'MET':'NOT MET')+'</span>';}
-function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1,tgt=parseFloat(document.getElementById('targetAUC').value)||500,am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;let s,sc;if(r>=0.9&&r<=1.1){s='ON TARGET';sc='badge-green';}else if(r<0.9){s='BELOW TARGET';sc='badge-amber';}else{s='ABOVE TARGET';sc='badge-red';}let guide='';
-if(auc>600){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(auc<400){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br><strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >=400) <span class="badge '+(am>=400?'badge-green':'badge-red')+'">'+(am>=400?'MET':'LOW')+'</span><br><strong>Target AUC24: '+tgt+'</strong> <span class="badge '+sc+'">'+s+'</span>'+guide;}
+function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[400,600];const hasMIC=drug.aucMIC!==false;const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1;let tgt=parseFloat(document.getElementById('targetAUC').value)||500;const midTgt=(aucTgt[0]+aucTgt[1])/2;if(tgt<midTgt*0.8||tgt>midTgt*1.2)tgt=midTgt;const am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;const aucInTarget=auc>=aucTgt[0]&&auc<=aucTgt[1];let s,sc;if(aucInTarget){s='ON TARGET';sc='badge-green';}else if(auc<aucTgt[0]){s='BELOW TARGET ('+aucTgt[0]+'-'+aucTgt[1]+')';sc='badge-amber';}else{s='ABOVE TARGET ('+aucTgt[0]+'-'+aucTgt[1]+')';sc='badge-red';}let guide='';
+if(auc>600){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(auc<400){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br>'+((hasMIC)?'<strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >='+aucTgt[0]/mic.toFixed(0)+') <span class="badge '+(am>=aucTgt[0]/mic?'badge-green':'badge-red')+'">'+(am>=aucTgt[0]/mic?'MET':'LOW')+'</span><br>':'')+ '<strong>Target AUC24: '+aucTgt[0]+'-'+aucTgt[1]+'</strong> <span class="badge '+sc+'">'+s+'</span>'+(aucInTarget?'':('<div style="margin-top:8px;padding:8px 10px;background:'+(auc>aucTgt[1]?'rgba(239,68,68,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(auc>aucTgt[1]?'rgba(239,68,68,0.25)':'rgba(251,191,36,0.25)')+';border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:'+(auc>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(auc>aucTgt[1]?'>'+aucTgt[1]+' — '+(drug.name==='Vancomycin'?'Nephrotoxicity risk. Reduce dose or extend interval.':'Risk of toxicity. Adjust dosing.'):'<'+aucTgt[0]+' — Subtherapeutic exposure. Increase dose or shorten interval.')+'</strong><br><span style="color:#94a3b8;font-size:10px">AUC24 = (Dose x F) / (CL x interval) x 24. Change dose or interval to bring AUC into range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust AUC</button> '+(aucInTarget===false?'<button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust All (AUC + Trough)</button>':'')+'</div>'))+']}
 function updateParams(){
   const tEnd=state.numDoses*state.interval,dt=0.05;let cmax=0,cmin=Infinity;const lds=(state.numDoses-1)*state.interval;
   for(let t=lds;t<=lds+state.interval*2;t+=dt){const cp=getTotalCp(t);if(cp>cmax)cmax=cp;}cmin=getTotalCp(tEnd);
@@ -1395,6 +1417,16 @@ function updateParams(){
   document.getElementById('pAUC').innerHTML=auc.toFixed(1)+'<span class="unit">mg*h/L</span>';
   document.getElementById('pCss').innerHTML=css.toFixed(2)+'<span class="unit">'+drug.unit+'</span>';
   document.getElementById('pAUC24').innerHTML=(state.auc24||auc).toFixed(0)+'<span class="unit">mg*h/L</span>';
+  // Color AUC24 card based on drug target
+  var aucCard=document.getElementById('pAUC24').parentElement;
+  var drug=DRUGS[state.drug];
+  var aucVal=state.auc24||auc;
+  var aucTgt=drug.aucTarget||[400,600];
+  if(aucTgt[0]>0){
+    if(aucVal<aucTgt[0])aucCard.className='param-card amber';
+    else if(aucVal>aucTgt[1])aucCard.className='param-card red';
+    else aucCard.className='param-card green';
+  }
   document.getElementById('pTMIC').innerHTML=state.tmicPct!=null?state.tmicPct.toFixed(0)+'<span class="unit">%</span>':'<span class="unit">--</span>';
   document.getElementById('pCmax').parentElement.className='param-card '+(cmax>drug.toxic?'red':cmax>drug.therapeutic[1]?'amber':'blue');
   document.getElementById('pCmin').parentElement.className='param-card '+(cmin<drug.therapeutic[0]?'amber':cmin>drug.toxic?'red':'blue');
@@ -1418,6 +1450,32 @@ function drawChart(){
   if(mic>0&&state.showIndicators){const micY=yS(mic);ctx.strokeStyle='rgba(34,211,238,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(m.left,micY);ctx.lineTo(w-m.right,micY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(34,211,238,0.7)';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('MIC: '+mic+' '+drug.unit,m.left+4,micY-4);const lds=(state.numDoses-1)*state.interval;ctx.fillStyle='rgba(34,211,238,0.06)';let inR=false,rS=0;for(let t=lds;t<=tEnd;t+=dt){const cp=getTotalCp(t);if(cp>=mic&&!inR){inR=true;rS=t;}if((cp<mic||t>=tEnd-dt)&&inR){ctx.fillRect(xS(rS),yS(Math.max(cp,mic)),xS(t)-xS(rS),yS(0)-yS(Math.max(cp,mic)));inR=false;}}}
 
   if(state.showIndicators){const ssT=5*(0.693/state.ke);if(ssT<tEnd){const ssX=xS(ssT);ctx.strokeStyle='rgba(192,132,252,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.beginPath();ctx.moveTo(ssX,m.top);ctx.lineTo(ssX,h-m.bottom);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(192,132,252,0.7)';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('~Steady State',ssX,m.top-6);ctx.fillText('('+ssT.toFixed(0)+'h)',ssX,m.top+6);}}
+
+  // AUC shading on chart
+  if(document.getElementById('aucMode')&&document.getElementById('aucMode').checked){
+    var aucShadeStart=(state.numDoses-1)*state.interval;
+    var aucShadeEnd=state.numDoses*state.interval;
+    var aucDt=0.1;
+    var aucPrevCp=getTotalCp(aucShadeStart);
+    ctx.fillStyle='rgba(34,197,94,0.12)';
+    ctx.beginPath();
+    ctx.moveTo(xS(aucShadeStart),yS(0));
+    for(var aucT=aucShadeStart;aucT<=aucShadeEnd;aucT+=aucDt){
+      var aucCp=getTotalCp(aucT);
+      ctx.lineTo(xS(aucT),yS(aucCp));
+      aucPrevCp=aucCp;
+    }
+    ctx.lineTo(xS(aucShadeEnd),yS(0));
+    ctx.closePath();
+    ctx.fill();
+    // Label
+    var aucMidT=(aucShadeStart+aucShadeEnd)/2;
+    var aucMidCp=getTotalCp(aucMidT);
+    ctx.fillStyle='rgba(34,197,94,0.6)';
+    ctx.font='bold 10px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('AUC',xS(aucMidT),Math.min(yS(aucMidCp)-8,m.top+15));
+  }
 
   ctx.globalAlpha=0.15;ctx.strokeStyle='#60a5fa';ctx.lineWidth=1;const ew=getEffW();
   for(let i=0;i<state.numDoses;i++){ctx.beginPath();let st=false;const dt2=i*state.interval;for(let t=dt2;t<=tEnd;t+=dt){const cp=getCpSingle(t,dt2,state.route,state.dose,state.ke,state.vd,state.f,ew,state.infusionTime);const x=xS(t),y=yS(cp);if(!st){ctx.moveTo(x,y);st=true;}else ctx.lineTo(x,y);}ctx.stroke();}
@@ -1616,7 +1674,22 @@ function showParamHelp(html){
   document.body.appendChild(tip);
   setTimeout(()=>{const handler=(e)=>{if(!tip.contains(e.target)){tip.remove();document.removeEventListener('click',handler);}};document.addEventListener('click',handler);},10);
 }
-function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;state.userOverrodeVd=false;state.userOverrodeF=false;state.ka=drug.ka||1.5;document.getElementById('kaInput').value=state.ka;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
+function onDrugChange(){state.drug=document.getElementById('drugSelect').value;const drug=DRUGS[state.drug];
+  // Update AUC section title and target based on drug
+  var aucTitle=document.getElementById('aucSectionTitle');
+  if(aucTitle){
+    var aucTgt=drug.aucTarget||[400,600];
+    var drugLabel=drug.name;
+    if(drug.name==='Vancomycin')drugLabel='Vancomycin';
+    aucTitle.innerHTML=drugLabel+' AUC-Guided Dosing <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>AUC-Guided '+drugLabel+' Dosing:</strong> Target AUC24 = '+aucTgt[0]+'-'+aucTgt[1]+'. '+(drug.aucMIC?'AUC/MIC >='+aucTgt[0]/1+'. ':'')+'Monitor total drug exposure to optimize efficacy and minimize toxicity.<br><br><strong>How to use:</strong><ul><li>Check Enable to activate AUC monitoring</li><li>'+((drug.aucMIC!==false)?'Enter the organism MIC from culture &amp; sensitivity':'MIC not applicable for this drug')+'</li><li>Target AUC24 auto-fills based on the drug ('+aucTgt[0]+'-'+aucTgt[1]+')</li><li>If AUC is out of range, guidance appears with an Auto-Adjust button</li></ul>">?</span>';
+  }
+  // Update target AUC field default based on drug
+  var targetInput=document.getElementById('targetAUC');
+  if(targetInput){
+    var aucTgt=drug.aucTarget||[400,600];
+    targetInput.value=Math.round((aucTgt[0]+aucTgt[1])/2);
+  }
+state.dose=drug.defaultDose;state.interval=drug.defaultInterval;state.route=drug.route;state.infusionTime=drug.infusionTime;state.adjustedKe=null;state.measuredCp=null;state.userOverrodeVd=false;state.userOverrodeF=false;state.ka=drug.ka||1.5;document.getElementById('kaInput').value=state.ka;document.getElementById('doseInput').value=drug.defaultDose;document.getElementById('doseRange').value=Math.min(drug.defaultDose,5000);document.getElementById('doseVal').textContent=drug.defaultDose+' mg';document.getElementById('intervalRange').value=drug.defaultInterval;document.getElementById('intervalVal').textContent=drug.defaultInterval+' h';document.getElementById('infusionTimeRange').value=drug.infusionTime;document.getElementById('infusionTimeVal').textContent=drug.infusionTime.toFixed(2)+' h';document.getElementById('ldTarget').value=drug.therapeutic[1];setRoute(drug.route);}
 
 function applyProtocol(id){
   const p=PROTOCOLS[id];if(!p)return;
@@ -2093,6 +2166,26 @@ function updateShowMath(){
   html+='<code>AUC = Dose / CL (single dose, IV bolus)</code><br>';
   html+='<code>AUC = '+state.dose+' / '+cl.toFixed(2)+'</code><br>';
   html+='<code style="color:#4ade80">AUC = '+(state.dose/cl).toFixed(1)+' mg*h/L</code><br>';
+  html+='<br>';
+  html+='<strong style="color:#60a5fa;font-size:13px">AUC24 Breakdown (for dosing interval)</strong><br><br>';
+  var auc24calc=(state.auc24||(state.dose*state.f)/(cl*state.interval)*24/state.interval);
+  var drugTgt=drug.aucTarget||[400,600];
+  html+='<div style="background:#1e293b;border-radius:8px;padding:10px;margin-bottom:8px">';
+  html+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">Step</span><span style="color:#e0e6f0;font-family:monospace">Calculation</span></div>';
+  html+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">1. Dose per interval</span><span style="color:#60a5fa">'+state.dose+' mg x F('+state.f.toFixed(2)+') = '+(state.dose*state.f).toFixed(0)+' mg</span></div>';
+  html+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">2. Divide by CL</span><span style="color:#60a5fa">'+(state.dose*state.f).toFixed(0)+' / '+cl.toFixed(2)+' = '+(state.dose*state.f/cl).toFixed(1)+' mg*h/L</span></div>';
+  html+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">3. Multiply by (24/tau)</span><span style="color:#60a5fa">'+(state.dose*state.f/cl).toFixed(1)+' x (24/'+state.interval+') = '+(auc24calc).toFixed(0)+' mg*h/L</span></div>';
+  html+='</div>';
+  html+='<div style="background:'+(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'rgba(34,197,94,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'rgba(34,197,94,0.25)':'rgba(251,191,36,0.25)')+';border-radius:8px;padding:10px;text-align:center">';
+  html+='<div style="font-size:18px;font-weight:700;color:'+(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'#4ade80':'#fbbf24')+'">'+auc24calc.toFixed(0)+' <span style="font-size:12px">mg*h/L</span></div>';
+  html+='<div style="font-size:11px;color:'+(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'#4ade80':'#fbbf24')+'">'+(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'✓ Within target range ('+drugTgt[0]+'-'+drugTgt[1]+')':'⚠ Outside target range ('+drugTgt[0]+'-'+drugTgt[1]+')')+'</div>';
+  html+='</div>';
+  html+='<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.5">';
+  html+='<strong style="color:#e0e6f0">Clinical significance:</strong><br>';
+  html+=(auc24calc>drugTgt[1]?'Above target → risk of nephrotoxicity (for vancomycin) or other drug-specific toxicity. <span style="color:#4ade80">Reduce dose or extend interval.</span>':'');
+  html+=(auc24calc<drugTgt[0]?'Below target → risk of treatment failure. <span style="color:#4ade80">Increase dose or shorten interval.</span>':'');
+  html+=(auc24calc>=drugTgt[0]&&auc24calc<=drugTgt[1]?'Within target range — effective and safe exposure.':'');
+  html+='</div>';
 
   document.getElementById('mathContent').innerHTML=html;
 }
@@ -2370,7 +2463,21 @@ const LEARNING_PATH=[
 {q:'Why extended infusion for vancomycin?',o:['Tastes better','Avoid Red Man Syndrome + improve PK/PD','Cheaper','Better F'],c:1,e:'Two reasons: 1) Prevents Red Man Syndrome (histamine release from rapid infusion). 2) Improves PK/PD — longer time above MIC means better bacterial killing, especially for resistant organisms.'},
 {q:'Patient on vancomycin develops AKI. What do?',o:['Same dose','Increase dose','Hold, check level, adjust when stable','Switch to gentamicin'],c:2,e:'AKI reduces clearance → drug accumulates → toxicity. HOLD vancomycin, check the level, and restart at a lower dose/extended interval once levels drop and kidney function stabilizes. This is the safest approach — you can always give more drug, but you can\'t take it back once it\'s toxic.'},
 {q:'The PK framework for ANY drug:',o:['Guess and check','Vd → CL → ke → dose → monitor → adjust','Standard dose for everyone','Only check if toxic'],c:1,e:'This 6-step framework works for all 46 drugs in this simulator: know the drug\'s PK → assess the patient → calculate loading dose → set maintenance → monitor levels at SS → adjust based on results. It\'s systematic, evidence-based, and personalized.'}
-]}]}
+]}},
+{id:'ch10',title:'AUC-Guided Dosing',tier:'Clinical Application',chapter:10,estMin:20,objectives:['Explain what AUC24 represents and why it matters clinically','Calculate AUC24 from dose, clearance, and interval','Identify AUC targets for vancomycin, aminoglycosides, and fluoroquinolones','Use the AUC auto-adjust feature to optimize dosing','Compare AUC-based vs trough-based monitoring strategies'],steps:[
+{type:'explain',title:'What is AUC and Why Does It Matter?',content:'<p><strong>AUC (Area Under the Curve)</strong> measures total drug exposure over 24 hours. Think of it as the total amount of drug your body "sees" in a day.</p><p><strong>Why AUC matters more than a single level:</strong></p><p>• A <strong>trough</strong> is ONE point on the curve — it tells you the minimum concentration at one moment.</p><p>• A <strong>peak</strong> is ONE point — it tells you the maximum at one moment.</p><p>• <strong>AUC24</strong> captures the ENTIRE curve — total exposure, accounting for both how high and how long the drug stays above therapeutic levels.</p><p><strong>The IDSA 2020 Vancomycin Guideline</strong> shifted from trough-based to AUC-based monitoring because:</p><p>1. Two different dosing regimens can produce the SAME trough but DIFFERENT AUCs</p><p>2. A trough of 15 mg/L might correspond to AUC24 of 350 (subtherapeutic) OR 450 (therapeutic) depending on the patient\'s clearance</p><p>3. AUC24/MIC ≥ 400 predicts efficacy better than trough alone</p><p>4. AUC24 > 600 increases nephrotoxicity risk</p><p><strong>For other drug classes:</strong></p><p>• <strong>Aminoglycosides</strong> (gentamicin, tobramycin): AUC/MIC 80-120 for efficacy</p><p>• <strong>Fluoroquinolones</strong> (levofloxacin, ciprofloxacin): AUC/MIC ≥ 125 for gram-negative, ≥ 250 for S. pneumoniae</p><p>• <strong>Beta-lactams</strong> (meropenem, pip-tazo): %T>MIC is the target, not AUC</p>'},
+{type:'demo',title:'Calculating AUC24 Step by Step',instructions:'Let\'s walk through the AUC24 calculation using the simulator. Switch to vancomycin 1000mg IV q12h.',setupActions:[{action:'setDrug',value:'vancomycin'},{action:'setDose',value:1000},{action:'setInterval',value:12},{action:'setNumDoses',value:6},{action:'setRoute',value:'iv_infusion'}],guided:['<strong>Step 1: Know your parameters.</strong> Vancomycin 1000mg q12h IV infusion over 1h. Patient 70kg, SCr 1.0, CrCl ≈ 100 mL/min. The simulator calculates CL and ke automatically.','<strong>Step 2: The steady-state AUC formula.</strong> AUC24 = (Dose × F) / (CL × τ) × (24/τ). This gives total daily exposure. For IV drugs, F=1.0.','<strong>Step 3: Plug in the numbers.</strong> Dose=1000mg, F=1.0, CL≈5.83 L/h (from ke×Vd), τ=12h. AUC24 = (1000 × 1.0) / (5.83 × 12) × (24/12) ≈ 343 mg·h/L.','<strong>Step 4: Check against target.</strong> Vancomycin target: AUC24 400-600. Our AUC of 343 is BELOW target — risk of treatment failure!','<strong>Step 5: Enable AUC mode.</strong> Check the "Enable AUC Monitoring" box. Enter MIC=1. The simulator shows AUC24=343, AUC/MIC=343, both flagged as below target.','<strong>Step 6: See the green shaded area.</strong> The chart now shows a green shaded area under the concentration-time curve. This visually represents AUC24. Compare it to the target range indicator.'],checkpoint:{question:'Vancomycin 1000mg q12h gives AUC24=343 (below 400-600 target). What\'s the best adjustment?',o:['Increase to 1500mg q12h','Increase to 1000mg q8h','Extend to 1000mg q24h','No change needed'],c:1,e:'Increasing frequency (q12h → q8h) while keeping the same dose brings AUC24 closer to target because AUC24 = (Dose/CL) × (24/τ). Shorter interval = more doses per day = higher total exposure. 1000mg q8h gives AUC24 ≈ 457, within the 400-600 target.'}},
+{type:'practical',title:'Using AUC Auto-Adjust',content:'<p><span class="lp-tip-badge practice">Practice</span> <strong>Try the AUC auto-adjust feature:</strong></p><p>1. Select <strong>vancomycin</strong> and set dose 750mg q12h</p><p>2. Enable AUC mode and set MIC = 2</p><p>3. Notice the AUC24 is below target (likely ~250)</p><p>4. Click <strong>"⚡ Auto-Adjust AUC"</strong> — the simulator finds a dose/interval that hits AUC24 400-600</p><p>5. Try <strong>"⚡ Auto-Adjust All"</strong> — this optimizes BOTH AUC and trough simultaneously</p><p>6. Switch to <strong>levofloxacin</strong> and notice the AUC target changes to 125-250</p><p>7. Switch to <strong>gentamicin</strong> and notice the AUC target changes to 80-120</p><div class="lp-chart-tip">📊 <strong>AUC Explorer:</strong> Open the AUC Explorer section to drag dose/interval/CL sliders and see how each parameter affects AUC24 in real time. The formula walks you through each step.</div>'},
+{type:'explain',title:'AUC vs Trough-Based Monitoring',content:'<p><strong>The great debate: AUC or Trough?</strong></p><p><strong>Trough-only monitoring (old approach):</strong></p><p>• ✅ Simple — draw one level before the next dose</p><p>• ✅ Well-established — decades of experience</p><p>• ❌ Misleading — same trough can mean different AUCs</p><p>• ❌ Overtreatment — trough 15-20 may push AUC >600</p><p>• ❌ Undertreatment — trough <15 doesn\'t guarantee AUC ≥400</p><p><strong>AUC-based monitoring (IDSA 2020 guideline):</strong></p><p>• ✅ More accurate — captures total drug exposure</p><p>• ✅ Better predictor of efficacy (AUC/MIC ≥ 400)</p><p>• ✅ Less nephrotoxic — avoids AUC >600</p><p>• ❌ Requires 2 levels (peak + trough) or Bayesian software</p><p>• ❌ More complex calculation</p><p><strong>Key clinical point:</strong> The IDSA 2020 guideline recommends AUC/MIC-based dosing for vancomycin, with a target AUC24/MIC ≥ 400. Trough monitoring alone should no longer be used as the sole target. However, trough-only monitoring remains acceptable when Bayesian AUC tools are unavailable.</p><p><strong>For other drugs:</strong></p><p>• <strong>Aminoglycosides:</strong> Both peak/trough AND AUC are used. Extended-interval dosing uses nomograms (AUC proxy)</p><p>• <strong>Fluoroquinolones:</strong> AUC/MIC ratio is the PK/PD target, but routine TDM is rarely done</p><p>• <strong>Beta-lactams:</strong> %T>MIC is the target, not AUC</p>'},
+{type:'quiz',title:'AUC Knowledge Check',questions:[
+{q:'What does AUC24 measure?',o:['Peak concentration at steady state','Total drug exposure over 24 hours','Time above MIC','Drug clearance rate'],c:1,e:'AUC24 = Area Under the Concentration-time Curve over 24 hours. It represents total drug exposure — both how high the concentration goes AND how long it stays there.'},
+{q:'Vancomycin AUC24/MIC target (IDSA 2020):',o:['100-200','400-600','800-1000','15-20'],c:1,e:'IDSA 2020: Target AUC24/MIC ≥ 400 for efficacy, with target range 400-600 to avoid nephrotoxicity (AUC >600 increases kidney injury risk).'},
+{q:'AUC24 formula:',o:['AUC24 = Dose × Vd / CL','AUC24 = (Dose × F) / (CL × τ) × (24/τ)','AUC24 = Cmin × τ','AUC24 = Peak - Trough'],c:1,e:'AUC24 = (Dose × F) / (CL × τ) × (24/τ). For IV drugs F=1.0. Doubling dose doubles AUC. Doubling interval halves AUC. Higher clearance = lower AUC.'},
+{q:'Two regimens produce the same trough. They have:',o:['The same AUC24','The same AUC/MIC','Different AUCs possible','Identical PK profiles'],c:2,e:'Key limitation of trough monitoring: same trough does NOT guarantee same AUC. A q12h regimen and q8h regimen can have similar troughs but different total daily exposures. This is why AUC monitoring is preferred.'},
+{q:'A patient has AUC24 = 680. What is the risk?',o:['Treatment failure','Nephrotoxicity','No risk — it\'s therapeutic','Red Man Syndrome'],c:1,e:'AUC24 >600 for vancomycin is associated with increased nephrotoxicity risk. The simulator shows a red warning and offers auto-adjust to bring AUC back into the 400-600 range.'},
+{q:'Which drug class uses %T>MIC instead of AUC/MIC?',o:['Aminoglycosides','Fluoroquinolones','Beta-lactams (meropenem, pip-tazo)','Vancomycin'],c:2,e:'Beta-lactams (penicillins, cephalosporins, carbapenems) are time-dependent killers. Their PK/PD target is %T>MIC — the percentage of the dosing interval that concentration exceeds MIC. AUC is less relevant for these drugs.'}
+]}
+]}]
 ];
 
 // === CLINICAL SIMULATIONS ===
@@ -2439,8 +2546,33 @@ steps:[
 {type:'lab_result',text:'Peak (30min post) = 4.2 mg/L. Trough (30min pre) = 2.8 mg/L.',labValue:4.2,labUnit:'mg/L',options:['Both therapeutic','Peak too low, trough too high','Peak OK, trough too high','Peak too low, trough OK'],correct:1,explanation:'Targets: Peak 5-12, Trough <2. Peak 4.2 BELOW. Trough 2.8 ABOVE.'},
 {type:'question_mc',text:'What adjustment?',options:['Increase dose to 160mg q8h','Extend to 120mg q12h','Increase dose AND extend interval','Switch to once-daily'],correct:2,explanation:'Peak low = increase dose. Trough high = extend interval. Try 160mg q12h.'},
 {type:'lab_result',text:'After 160mg q12h: Peak = 7.8, Trough = 1.2.',labValue:7.8,labUnit:'mg/L',options:['Both therapeutic — continue','Peak too high','Trough too low','Switch to OD'],correct:0,explanation:'Peak 7.8 in range (5-12). Trough 1.2 in range (<2). Continue.'},
-{type:'outcome',text:'Day 5: Peak 8.1, Trough 1.0. SCr 1.1. Cultures negative. Continue x 5 more days.',score:100}]}
+{type:'outcome',text:'Day 5: Peak 8.1, Trough 1.0. SCr 1.1. Cultures negative. Continue x 5 more days.',score:100}},
+{id:'vanc_auc',title:'Vancomycin AUC — Subtherapeutic Exposure',difficulty:'Intermediate',drug:'vancomycin',
+description:'Use AUC-guided dosing to optimize vancomycin when trough alone is misleading.',
+steps:[
+{type:'vignette',text:'A 58-year-old female (65kg, 160cm) with MRSA bacteremia. SCr 0.8. Started on vancomycin 1000mg q12h IV over 1h. Day 3: trough = 12 mg/L.',patient:{weight:65,height:160,age:58,sex:'female',scr:0.8}},
+{type:'question_mc',text:'Trough is 12 mg/L (below target 15-20). What should you do FIRST?',options:['Increase dose to 1500mg q12h','Check AUC24 before adjusting','Extend interval to q24h','Add gentamicin for synergy'],correct:1,explanation:'IDSA 2020: Check AUC24 before dose escalation. A trough of 12 may still achieve AUC24 ≥400 in some patients. Trough alone can be misleading.'},
+{type:'lab_result',text:'AUC24 calculated = 385 mg·h/L (below target 400-600). MIC = 1. AUC/MIC = 385.',labValue:385,labUnit:'mg·h/L',options:['Increase dose to 1500mg q12h','Increase to 1000mg q8h','No change — close enough','Switch to linezolid'],correct:1,explanation:'AUC24=385 is below target. Increasing frequency (q12h→q8h) at same dose raises AUC24 by 33% to ~514. Alternatively, increasing dose also works. q8h provides better time above MIC.'},
+{type:'lab_result',text:'After 1000mg q8h: AUC24 = 514 mg·h/L. Trough = 16. MIC = 1.',labValue:514,labUnit:'mg·h/L',options:['AUC24 in target — continue','Still below target','AUC too high — reduce dose','Switch back to q12h'],correct:0,explanation:'AUC24=514 is within the 400-600 target. Trough 16 is also within 15-20 range. This demonstrates that AUC and trough targets can be achieved simultaneously with the right regimen.'},
+{type:'outcome',text:'Day 7: AUC24=510, Trough=15.5, SCr stable 0.9. Blood cultures negative at 48h. Complete 14-day course. Key lesson: A trough of 12 appeared subtherapeutic, but AUC revealed the regimen was only slightly below target — a modest adjustment was sufficient.',score:100}]},
+{id:'vanc_auc_tox',title:'Vancomycin AUC — Nephrotoxicity Risk',difficulty:'Advanced',drug:'vancomycin',
+description:'Recognize AUC-guided nephrotoxicity risk and adjust before damage occurs.',
+steps:[
+{type:'vignette',text:'A 72-year-old male (90kg, 178cm) with MRSA pneumonia. SCr 1.5 (CrCl ≈ 52). Started vancomycin 1500mg q12h IV. Day 2: trough = 19 mg/L.',patient:{weight:90,height:178,age:72,sex:'male',scr:1.5}},
+{type:'question_mc',text:'Trough 19 mg/L appears "therapeutic" (target 15-20). What is your concern?',options:['No concern — trough is perfect','Trough in range but AUC may be >600','Dose is too low','Patient needs loading dose'],correct:1,explanation:'A trough of 19 in an elderly patient with reduced CrCl can correspond to AUC24 >600, which increases nephrotoxicity risk. This is exactly why IDSA 2020 recommends AUC-based monitoring — trough alone can miss overexposure.'},
+{type:'lab_result',text:'AUC24 = 684 mg·h/L (ABOVE target). MIC = 1. AUC/MIC = 684. SCr now 1.8 (rising).',labValue:684,labUnit:'mg·h/L',options:['Continue current dose — trough is fine','Reduce to 1000mg q12h and recheck','Switch to linezolid immediately','Increase interval to q24h'],correct:1,explanation:'AUC24=684 exceeds the 600 nephrotoxicity threshold. SCr is already rising. Reduce the dose and recheck. In the simulator, use Auto-Adjust AUC to find an optimal regimen.'},
+{type:'lab_result',text:'After 1000mg q12h: AUC24 = 456. Trough = 13. SCr stabilizing at 1.6.',labValue:456,labUnit:'mg·h/L',options:['AUC24 in target — continue','Still above target','Need to reduce further','Switch antibiotics'],correct:0,explanation:'AUC24=456 is within target 400-600. Trough 13 is below the old target but the AUC is therapeutic. This is why AUC monitoring matters — the patient is effectively treated without nephrotoxicity risk.'},
+{type:'outcome',text:'Day 7: AUC24=450, SCr back to 1.4. Cultures clearing. Key lesson: Trough 15-20 can mask AUC>600, especially in patients with reduced clearance. AUC-based monitoring prevents both under- and over-treatment.',score:100}]},
+{id:'levo_auc',title:'Levofloxacin AUC/MIC — Respiratory Infection',difficulty:'Intermediate',drug:'levofloxacin',
+description:'Apply AUC/MIC targets for fluoroquinolone dosing in a respiratory infection.',
+steps:[
+{type:'vignette',text:'A 62-year-old male (80kg) with community-acquired pneumonia. S. pneumoniae isolated, MIC = 0.5 mg/L. Started levofloxacin 500mg q24h IV. SCr 1.0.',patient:{weight:80,height:175,age:62,sex:'male',scr:1.0}},
+{type:'question_mc',text:'For fluoroquinolones, what is the AUC/MIC target for S. pneumoniae?',options:['AUC/MIC ≥ 25-50','AUC/MIC ≥ 125','AUC/MIC ≥ 250-400','AUC/MIC ≥ 400-600'],correct:2,explanation:'For fluoroquinolones against S. pneumoniae: AUC/MIC ≥ 250 predicts efficacy. For gram-negative organisms, AUC/MIC ≥ 125 is sufficient. Higher targets are needed for streptococci.'},
+{type:'lab_result',text:'Levofloxacin 500mg q24h: AUC24 = 210 mg·h/L. MIC = 0.5. AUC/MIC = 420.',labValue:210,labUnit:'mg·h/L',options:['AUC/MIC adequate (≥250) — continue','AUC/MIC too low — increase dose','Switch to moxifloxacin','Check peak level instead'],correct:0,explanation:'AUC24=210, MIC=0.5, AUC/MIC=420 ≥ 250. The regimen provides adequate exposure for S. pneumoniae. Fluoroquinolone AUC/MIC targets differ from vancomycin — they are drug-class specific.'},
+{type:'lab_result',text:'Day 3: Patient improving. SCr now 1.8 (AKI). Recheck: AUC24 now = 310 mg·h/L. AUC/MIC = 620.',labValue:310,labUnit:'mg·h/L',options:['Continue 500mg q24h — AUC/MIC fine','Reduce to 500mg q48h for renal adjustment','Switch to oral','Stop levofloxacin'],correct:1,explanation:'SCr rose → CrCl dropped → levofloxacin clearance decreased → AUC24 increased. For fluoroquinolones, AUC/MIC >625 (some sources >250-300) may increase toxicity risk (QTc, tendon). Reduce dose or extend interval.'},
+{type:'outcome',text:'Levofloxacin 500mg q48h: AUC24=155, AUC/MIC=310. QTc stable. Patient clinically improved. Complete 7-day course. Key lesson: AUC/MIC targets vary by drug class and organism. Renal changes can dramatically shift AUC.',score:100}]}
 ];
+
 
 let simState={active:false,simId:null,currentStep:0,score:0,answers:[],feedbackShown:false};
 let simSelectedOption=-1;
@@ -3569,6 +3701,59 @@ function renderPracticalTips(){
 
 // Initialize lpProgress after LEARNING_PATH is defined
 if(!lpProgress.v){try{lpProgress=lpLoadProgress();}catch(e){lpProgress={v:1,ch:{}};}}
+
+function updateAUCExplorer(){
+  var dose=parseFloat(document.getElementById('aucExpDose').value)||1000;
+  var interval=parseFloat(document.getElementById('aucExpInt').value)||12;
+  var cl=parseFloat(document.getElementById('aucExpCL').value)||5;
+  var f=1.0;
+  var w=getEffW();
+  var ke=cl/(state.vd*w);
+  var aucDose=dose*f/(cl);
+  var auc24=aucDose*(24/interval);
+  var hl=0.693/ke;
+  var drug=DRUGS[state.drug];
+  var aucTgt=drug.aucTarget||[400,600];
+  var aucInTarget=auc24>=aucTgt[0]&&auc24<=aucTgt[1];
+
+  document.getElementById('aucExpDoseVal').textContent=dose+' mg';
+  document.getElementById('aucExpIntVal').textContent=interval+' h';
+  document.getElementById('aucExpCLVal').textContent=cl.toFixed(1)+' L/h';
+
+  var calc=document.getElementById('aucExpCalc');
+  var statusColor=aucInTarget?'#4ade80':'#fbbf24';
+  var statusText=aucInTarget?'✓ In target range':'⚠ Outside range';
+  var statusIcon=aucInTarget?'✓':'⚠';
+  var targetLabel=aucTgt[0]+'-'+aucTgt[1];
+
+  calc.innerHTML='<strong style="color:#60a5fa;font-size:14px">AUC24 Calculator</strong><br><br>'+
+    '<div style="background:#1e293b;border-radius:8px;padding:10px;margin-bottom:8px">'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">Formula</span><span style="color:#e0e6f0;font-family:monospace">AUC24 = (Dose x F) / (CL x tau) x (24/tau)</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">Dose</span><span style="color:#60a5fa;font-weight:bold">'+dose+' mg</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">F (bioavailability)</span><span style="color:#60a5fa">'+f.toFixed(2)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">CL (clearance)</span><span style="color:#60a5fa">'+cl.toFixed(2)+' L/h</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">Interval (tau)</span><span style="color:#60a5fa">'+interval+' h</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">Dose per interval</span><span style="color:#60a5fa">'+aucDose.toFixed(1)+' mg*h/L</span></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e3055"><span style="color:#94a3b8">x (24/tau)</span><span style="color:#60a5fa">'+(24/interval).toFixed(2)+'</span></div>'+
+    '</div>'+
+    '<div style="background:'+(aucInTarget?'rgba(34,197,94,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(aucInTarget?'rgba(34,197,94,0.25)':'rgba(251,191,36,0.25)')+';border-radius:8px;padding:12px;text-align:center">'+
+    '<div style="font-size:22px;font-weight:700;color:'+statusColor+'">'+auc24.toFixed(0)+' <span style="font-size:12px">mg*h/L</span></div>'+
+    '<div style="font-size:11px;color:'+statusColor+';margin-top:4px">'+statusIcon+' '+statusText+' ('+targetLabel+')</div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:#94a3b8;margin-top:8px;line-height:1.6">'+
+    '<strong style="color:#e0e6f0">Key relationships:</strong><br>'+
+    '• <span style="color:#60a5fa">Double the dose</span> → AUC doubles (linear relationship)<br>'+
+    '• <span style="color:#60a5fa">Double the interval</span> → AUC halves (inverse relationship)<br>'+
+    '• <span style="color:#60a5fa">Increase CL</span> → AUC decreases (more drug cleared)<br>'+
+    '• <span style="color:#fbbf24">Too high AUC</span> → Toxicity risk (nephrotoxicity for vancomycin)<br>'+
+    '• <span style="color:#fbbf24">Too low AUC</span> → Treatment failure (subtherapeutic exposure)'+
+    '</div>';
+
+  // Also update the main chart to show the explorer AUC shading
+  state.aucExpDose=dose;
+  state.aucExpInt=interval;
+  state.aucExpCL=cl;
+}
 
 function autoAdjustAUCMain(){
   const drug=DRUGS[state.drug];
