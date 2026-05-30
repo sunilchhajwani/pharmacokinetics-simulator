@@ -3778,6 +3778,21 @@ function autoAdjustAUCMain(){
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
     }
   }
+  // Fallback: if no exact match, find closest AUC regardless of target
+  if(bestScore===Infinity){
+    bestScore=Infinity;
+    for(const iv of intervals){
+      for(const d of practicalDoses){
+        const aucDose2=d*f/(ke*vd*w);
+        const auc24_2=aucDose2*(24/iv);
+        const aucVal2=hasMIC?auc24_2/mic:auc24_2;
+        const dist=Math.abs(aucVal2-(aucTgt[0]+aucTgt[1])/2);
+        const practicality=practicalityScore(d,iv,state.drug);
+        const score=dist+practicality;
+        if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+      }
+    }
+  }
   document.getElementById('doseInput').value=bestDose;
   document.getElementById('doseRange').value=Math.min(bestDose,5000);
   document.getElementById('doseVal').textContent=bestDose+' mg';
@@ -3804,7 +3819,7 @@ function autoAdjustAllMain(){
       for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
       let peakCp=0;
       for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
-      if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
+      if(troughCp>drug.toxic*1.3||peakCp>drug.toxic*1.3)continue;
       const aucDist=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
