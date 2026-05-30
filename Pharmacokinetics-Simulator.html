@@ -4025,7 +4025,7 @@ function autoAdjustAUCMain(){
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   // Update route to drug default and infusion time based on interval
   setRoute(drugRoute);
-  const newInfTime=drugInfTime||(drugRoute==='iv_infusion'?1:0);
+  const newInfTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Show loading dose suggestion
@@ -4097,7 +4097,7 @@ function autoAdjustAllMain(){
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   // Update route to drug default and infusion time based on interval
   setRoute(drugRoute);
-  const newInfTime=drugInfTime||(drugRoute==='iv_infusion'?1:0);
+  const newInfTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Show loading dose suggestion
