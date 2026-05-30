@@ -1402,7 +1402,7 @@ function updateHepaticInfo(){const hp=document.getElementById('hepaticClass').va
 function updateDialysisInfo(){const dm=document.getElementById('dialysisMode').value,i=document.getElementById('dialysisInfo'),d=DRUGS[state.drug];if(dm!=='none'){i.classList.remove('hidden');if(d.dialyzable){i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+{ihd:'4h session removes ~50-70%. Redose after HD.',cvvhd:'Continuous clearance. May need higher/more frequent doses.',sled:'Extended session. Intermediate clearance.',pd:'Minimal removal (5-15%).'}[dm]+' ke increased.';}else{i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+d.name+' is NOT significantly dialyzable.';}}else i.classList.add('hidden');}
 function updateInteractionInfo(){const enz=document.getElementById('interactionEnzyme').checked,inh=document.getElementById('interactionInhibitor').checked,i=document.getElementById('interactionInfo'),d=DRUGS[state.drug];if(enz||inh){i.classList.remove('hidden');let m=d.interactionNote||'No specific interactions noted.';if(enz)m+='<br><span style="color:#fbbf24">CYP inducer: ke increased ~40% (faster clearance).</span>';if(inh)m+='<br><span style="color:#f87171">CYP inhibitor: ke decreased ~35% (slower clearance).</span>';i.innerHTML=m;}else i.classList.add('hidden');}
 function calcTMIC(){const mic=parseFloat(document.getElementById('micInput').value)||0,tgt=parseFloat(document.getElementById('tMicTarget').value)||40,res=document.getElementById('tMicResult');if(mic<=0){res.innerHTML='Enter MIC to calculate T>MIC.';return;}const tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval,dt=0.05;let above=0,tot=0;for(let t=lds;t<=tEnd;t+=dt){tot+=dt;if(getTotalCp(t)>=mic)above+=dt;}const pct=(above/tot)*100;state.tmicPct=pct;res.innerHTML='<strong>T>MIC: '+pct.toFixed(1)+'%</strong> (target >='+tgt+'%) <span class="badge '+(pct>=tgt?'badge-green':'badge-red')+'">'+(pct>=tgt?'MET':'NOT MET')+'</span>';}
-function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[400,600];const hasMIC=drug.aucMIC!==false;const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1;let tgt=parseFloat(document.getElementById('targetAUC').value)||500;const midTgt=(aucTgt[0]+aucTgt[1])/2;if(tgt<midTgt*0.8||tgt>midTgt*1.2)tgt=midTgt;const am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;const aucCheckVal=hasMIC?am:auc;const aucInTarget=aucCheckVal>=aucTgt[0]&&aucCheckVal<=aucTgt[1];let s,sc;if(aucInTarget){s='ON TARGET';sc='badge-green';}else if(aucCheckVal<aucTgt[0]){s='BELOW TARGET ('+aucTgt[0]+'-'+aucTgt[1]+(hasMIC?' AUC/MIC':'')+')';sc='badge-amber';}else{s='ABOVE TARGET ('+aucTgt[0]+'-'+aucTgt[1]+(hasMIC?' AUC/MIC':'')+')';sc='badge-red';}let guide='';
+function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[400,600];const hasMIC=drug.aucMIC!==false;const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1;let tgt=parseFloat(document.getElementById('targetAUC').value)||500;const midTgt=(aucTgt[0]+aucTgt[1])/2;if(tgt<midTgt*0.8||tgt>midTgt*1.2)tgt=midTgt;const am=auc/mic,r=am/tgt;state.auc24=auc*(24/state.interval);state.aucMic=am;const aucCheckVal=hasMIC?am:auc;const aucInTarget=aucCheckVal>=aucTgt[0]&&aucCheckVal<=aucTgt[1];let s,sc;if(aucInTarget){s='ON TARGET';sc='badge-green';}else if(aucCheckVal<aucTgt[0]){s='BELOW TARGET ('+aucTgt[0]+'-'+aucTgt[1]+(hasMIC?' AUC/MIC':'')+')';sc='badge-amber';}else{s='ABOVE TARGET ('+aucTgt[0]+'-'+aucTgt[1]+(hasMIC?' AUC/MIC':'')+')';sc='badge-red';}let guide='';
 if(aucTgt[0]>0&&aucCheckVal>aucTgt[1]){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(aucTgt[0]>0&&aucCheckVal<aucTgt[0]){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br>'+((hasMIC)?'<strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >='+aucTgt[0]/mic.toFixed(0)+') <span class="badge '+(am>=aucTgt[0]/mic?'badge-green':'badge-red')+'">'+(am>=aucTgt[0]/mic?'MET':'LOW')+'</span><br>':'')+ '<strong>Target AUC24: '+aucTgt[0]+'-'+aucTgt[1]+'</strong> <span class="badge '+sc+'">'+s+'</span>'+(aucInTarget?'':('<div style="margin-top:8px;padding:8px 10px;background:'+(aucCheckVal>aucTgt[1]?'rgba(239,68,68,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(aucCheckVal>aucTgt[1]?'rgba(239,68,68,0.25)':'rgba(251,191,36,0.25)')+';border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:'+(aucCheckVal>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(aucCheckVal>aucTgt[1]?'>'+aucTgt[1]+' — '+(drug.name==='Vancomycin'?'Nephrotoxicity risk. Reduce dose or extend interval.':'Risk of toxicity. Adjust dosing.'):'<'+aucTgt[0]+' — Subtherapeutic exposure. Increase dose or shorten interval.')+'</strong><br><span style="color:#94a3b8;font-size:10px">AUC24 = (Dose x F) / (CL x interval) x 24. Change dose or interval to bring AUC into range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust AUC</button> '+(aucInTarget===false?'<button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust All (AUC + Trough)</button>':'')+'</div>'));}
 function updateParams(){
   const tEnd=state.numDoses*state.interval,dt=0.05;let cmax=0,cmin=Infinity;const lds=(state.numDoses-1)*state.interval;
@@ -3770,27 +3770,13 @@ function autoAdjustAUCMain(){
   const intervals=PREFERRED_INTERVALS.filter(iv=>iv>=Math.max(4,Math.round(state.interval*0.3))&&iv<=Math.min(96,Math.round(state.interval*4)));
   for(const iv of intervals){
     for(const d of practicalDoses){
-      const aucDose=d*f/(ke*vd*w);
-      const auc24=aucDose*(24/iv);
-      const aucVal=hasMIC?auc24/mic:auc24;if(aucVal<aucTgt[0]||aucVal>aucTgt[1])continue;
+      const auc24=(d*f)/(ke*vd*w)*(24/iv);
+      const aucVal=hasMIC?auc24/mic:auc24;
+      const dist=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2);
       const practicality=practicalityScore(d,iv,state.drug);
-      const score=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2)+practicality;
-      if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
-    }
-  }
-  // Fallback: if no exact match, find closest AUC regardless of target
-  if(bestScore===Infinity){
-    bestScore=Infinity;
-    for(const iv of intervals){
-      for(const d of practicalDoses){
-        const aucDose2=d*f/(ke*vd*w);
-        const auc24_2=aucDose2*(24/iv);
-        const aucVal2=hasMIC?auc24_2/mic:auc24_2;
-        const dist=Math.abs(aucVal2-(aucTgt[0]+aucTgt[1])/2);
-        const practicality=practicalityScore(d,iv,state.drug);
-        const score=dist+practicality;
-        if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
-      }
+      const score=dist+practicality;
+      if(aucVal>=aucTgt[0]&&aucVal<=aucTgt[1]){if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}}
+      else if(bestScore===Infinity){if(score<bestScore){bestScore=score+1000;bestDose=d;bestInterval=iv;}}
     }
   }
   document.getElementById('doseInput').value=bestDose;
@@ -3819,13 +3805,34 @@ function autoAdjustAllMain(){
       for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
       let peakCp=0;
       for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
-      if(troughCp>drug.toxic*1.3||peakCp>drug.toxic*1.3)continue;
+      if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
       const aucDist=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
       const practicality=practicalityScore(d,iv,state.drug);
       const score=aucDist+troughDist*1.5+practicality;
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+    }
+  }
+  // Second pass: if no combo passes both AUC + toxicity, relax toxicity to 1.25x
+  if(bestScore===Infinity){
+    for(const iv of intervals){
+      for(const d of practicalDoses){
+        const auc24=(d*f)/(ke*vd*w)*(24/iv);
+        const aucVal=hasMIC?auc24/mic:auc24;
+        if(aucVal<aucTgt[0]||aucVal>aucTgt[1])continue;
+        const infTime=iv>=24?2:1;
+        const lastDoseStart=(state.numDoses-1)*iv;
+        let troughCp=0;for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
+        let peakCp=0;for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+        if(troughCp>drug.toxic*1.25||peakCp>drug.toxic*1.25)continue;
+        const aucDist=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2);
+        const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
+        const troughDist=Math.abs(troughCp-troughMid);
+        const practicality=practicalityScore(d,iv,state.drug);
+        const score=aucDist+troughDist*1.5+practicality+500;
+        if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+      }
     }
   }
   document.getElementById('doseInput').value=bestDose;
