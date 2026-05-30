@@ -948,17 +948,17 @@ const DRUGS={
   gentamicin:{name:'Gentamicin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Gentamicin</strong> -- Aminoglycoside. Conventional: Peak 5-12, Trough <2. Extended-interval: 5-7 mg/kg q24h.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin, amphotericin, NSAIDs.'},
   amikacin:{name:'Amikacin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[20,35],toxic:35,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Amikacin</strong> -- Aminoglycoside. Peak 20-35, Trough <5.',defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:15,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar nephrotoxicity profile to gentamicin.'},
   tobramycin:{name:'Tobramycin',vd:0.25,keAuto:true,halfLife:2.5,f:1.0,pb:10,therapeutic:[5,12],toxic:12,unit:'mg/L',aucTarget:[80,120],aucMIC:true,info:'<strong>Tobramycin</strong> -- Aminoglycoside. Peak 5-12, Trough <2.',defaultDose:120,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:5,loadingUnit:'mg/kg',hepatic:false,dialyzable:true,interactionNote:'Similar to gentamicin.'},
-  phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,ka:0.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Phenytoin</strong> -- <span style="color:#fbbf24">Non-linear kinetics (Michaelis-Menten)</span>. First-order approx only. Free = total x (1 - PB/100).',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:15,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Strong CYP inducer. Levels INCREASED by inhibitors (fluconazole, isoniazid). Levels DECREASED by inducers (rifampin).'},
-  valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,ka:2.0,therapeutic:[50,100],toxic:100,unit:'mg/L',info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
-  carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,ka:0.8,therapeutic:[4,12],toxic:12,unit:'mg/L',info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
-  levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,ka:1.8,therapeutic:[12,46],toxic:46,unit:'mcg/mL',info:'<strong>Levetiracetam</strong> -- Therapeutic 12-46. Renally cleared. Wide therapeutic window.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Minimal drug interactions. Not CYP-metabolized.'},
+  phenytoin:{name:'Phenytoin',vd:0.7,keAuto:false,halfLife:22,f:0.9,pb:90,ka:0.5,therapeutic:[10,20],toxic:20,unit:'mg/L',aucTarget:[240,480],aucMIC:false,info:'<strong>Phenytoin</strong> -- <span style="color:#fbbf24">Non-linear kinetics (Michaelis-Menten)</span>. First-order approx only. Free = total x (1 - PB/100).',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:15,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Strong CYP inducer. Levels INCREASED by inhibitors (fluconazole, isoniazid). Levels DECREASED by inducers (rifampin).'},
+  valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,ka:2.0,therapeutic:[50,100],toxic:100,unit:'mg/L',aucTarget:[0,0],aucMIC:false,info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
+  carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,ka:0.8,therapeutic:[4,12],toxic:12,unit:'mg/L',aucTarget:[0,0],aucMIC:false,info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
+  levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,ka:1.8,therapeutic:[12,46],toxic:46,unit:'mcg/mL',aucTarget:[0,0],aucMIC:false,info:'<strong>Levetiracetam</strong> -- Therapeutic 12-46. Renally cleared. Wide therapeutic window.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Minimal drug interactions. Not CYP-metabolized.'},
   digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,ka:0.8,therapeutic:[0.8,2.0],toxic:2.0,unit:'mcg/L',aucTarget:[15,25],aucMIC:false,info:'<strong>Digoxin</strong> -- Therapeutic 0.8-2.0. Long t½ ~36h. Toxicity risk with hypokalemia.',defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Amiodarone, verapamil, quinidine increase digoxin levels.'},
-  lidocaine:{name:'Lidocaine',vd:1.5,keAuto:false,halfLife:1.8,f:0.35,pb:70,therapeutic:[1.5,5.0],toxic:5.0,unit:'mcg/mL',info:'<strong>Lidocaine</strong> -- Antiarrhythmic. Therapeutic 1.5-5. Hepatic metabolism.',defaultDose:100,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:1,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Beta-blockers and cimetidine reduce hepatic clearance.'},
-  amiodarone:{name:'Amiodarone',vd:60,keAuto:false,halfLife:55,f:0.35,pb:96,therapeutic:[1.0,2.5],toxic:2.5,unit:'mcg/mL',info:'<strong>Amiodarone</strong> -- Extremely long t½ (40-55 days). Loading takes weeks. Multi-organ toxicity.',defaultDose:200,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Inhibits CYP2D6, CYP3A4. Increases digoxin, warfarin, phenytoin levels.'},
+  lidocaine:{name:'Lidocaine',vd:1.5,keAuto:false,halfLife:1.8,f:0.35,pb:70,therapeutic:[1.5,5.0],toxic:5.0,unit:'mcg/mL',aucTarget:[0,0],aucMIC:false,info:'<strong>Lidocaine</strong> -- Antiarrhythmic. Therapeutic 1.5-5. Hepatic metabolism.',defaultDose:100,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:1,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Beta-blockers and cimetidine reduce hepatic clearance.'},
+  amiodarone:{name:'Amiodarone',vd:60,keAuto:false,halfLife:55,f:0.35,pb:96,therapeutic:[1.0,2.5],toxic:2.5,unit:'mcg/mL',aucTarget:[0,0],aucMIC:false,info:'<strong>Amiodarone</strong> -- Extremely long t½ (40-55 days). Loading takes weeks. Multi-organ toxicity.',defaultDose:200,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Inhibits CYP2D6, CYP3A4. Increases digoxin, warfarin, phenytoin levels.'},
   lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,ka:1.2,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',aucTarget:[14,28],aucMIC:false,info:'<strong>Lithium</strong> -- Therapeutic 0.6-1.2 (12h trough). Toxic >1.5. Narrow index. Renally cleared.',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, ACEi, thiazides increase levels.'},
-  clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,ka:1.0,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
-  theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,ka:1.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
-  methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
+  clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,ka:1.0,therapeutic:[350,600],toxic:1000,unit:'ng/mL',aucTarget:[0,0],aucMIC:false,info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
+  theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,ka:1.5,therapeutic:[10,20],toxic:20,unit:'mg/L',aucTarget:[0,0],aucMIC:false,info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
+  methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',aucTarget:[0,0],aucMIC:false,info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
   meropenem:{name:'Meropenem',vd:0.3,keAuto:true,halfLife:1,f:1.0,pb:2,therapeutic:[2,16],toxic:64,unit:'mg/L',aucTarget:[150,300],aucMIC:false,
     info:'<strong>Meropenem</strong> -- Carbapenem. Time-dependent killing: T>MIC target 40% for bacteremia, 100% for meningitis. Extended infusion (3-4h) improves PK/PD. Adjust for renal impairment.',
     defaultDose:1000,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions.',
@@ -967,7 +967,7 @@ const DRUGS={
     info:'<strong>Pip-Tazo</strong> -- Beta-lactam + beta-lactamase inhibitor. Time-dependent: T>MIC target 50%. Extended infusion (4h) preferred. Nephrotoxic risk especially with vancomycin.',
     defaultDose:4500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Synergistic nephrotoxicity with vancomycin.',
     renalNote:'CrCl 20-40: 3.375g q8h. CrCl <20: 2.25g q8h. HD: 2.25g q8h + dose after HD.'},
-  ceftriaxone:{name:'Ceftriaxone',vd:0.16,keAuto:false,halfLife:8,f:1.0,pb:95,therapeutic:[0,100],toxic:300,unit:'mg/L',
+  ceftriaxone:{name:'Ceftriaxone',vd:0.16,keAuto:false,halfLife:8,f:1.0,pb:95,therapeutic:[0,100],toxic:300,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Ceftriaxone</strong> -- 3rd-gen cephalosporin. Long half-life (8h). Dual elimination (renal + hepatic). No renal adjustment needed unless CrCl <10. Highly protein-bound.',
     defaultDose:2000,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Displaces bilirubin from albumin. Avoid in neonates.',
     renalNote:'No adjustment unless CrCl <10: max 2g/day.'},
@@ -975,7 +975,7 @@ const DRUGS={
     info:'<strong>Fluconazole</strong> -- Triazole antifungal. High oral bioavailability (90%). Renally cleared. CYP2C9 inhibitor. Loading dose 2x maintenance on day 1.',
     defaultDose:400,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:800,loadingUnit:'mg (day 1)',hepatic:false,dialyzable:true,interactionNote:'Inhibits CYP2C9, CYP2C19, CYP3A4. Increases phenytoin, warfarin levels.',
     renalNote:'CrCl 11-50: 50% dose reduction. HD: full dose after HD.'},
-  vancomycin_oral:{name:'Vancomycin (Oral)',vd:0.7,keAuto:false,halfLife:6,f:0.0,pb:30,ka:0.5,therapeutic:[0,100],toxic:100,unit:'mg/L',
+  vancomycin_oral:{name:'Vancomycin (Oral)',vd:0.7,keAuto:false,halfLife:6,f:0.0,pb:30,ka:0.5,therapeutic:[0,100],toxic:100,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Oral Vancomycin</strong> -- For C. difficile colitis. NOT absorbed systemically (F=0). Works locally in gut. No TDM needed.',
     defaultDose:125,defaultInterval:6,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'No systemic interactions (not absorbed).',
     renalNote:'No renal adjustment needed (not absorbed).'},
@@ -983,27 +983,27 @@ const DRUGS={
     info:'<strong>Linezolid</strong> -- Oxazolidinone. MRSA/VRE coverage. Monitor for thrombocytopenia (>14 days). MAO inhibitor.',
     defaultDose:600,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'MAO inhibitor. Avoid SSRIs, tramadol, tyramine foods.',
     renalNote:'No renal adjustment. Accumulation of metabolites in severe CKD.'},
-  azithromycin:{name:'Azithromycin',vd:30,keAuto:false,halfLife:68,f:0.37,pb:7,therapeutic:[0,100],toxic:1,unit:'mg/L',
+  azithromycin:{name:'Azithromycin',vd:30,keAuto:false,halfLife:68,f:0.37,pb:7,therapeutic:[0,100],toxic:1,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Azithromycin</strong> -- Macrolide. Extremely high Vd (tissue tropic). Very long half-life (68h). Short course provides extended coverage.',
     defaultDose:500,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:500,loadingUnit:'mg (day 1)',hepatic:true,dialyzable:false,interactionNote:'QTc prolongation risk.',
     renalNote:'No renal adjustment (hepatic elimination).'},
-  amphotericin:{name:'Amphotericin B (Liposomal)',vd:0.5,keAuto:false,halfLife:15,f:1.0,pb:90,therapeutic:[0,100],toxic:5,unit:'mg/L',
+  amphotericin:{name:'Amphotericin B (Liposomal)',vd:0.5,keAuto:false,halfLife:15,f:1.0,pb:90,therapeutic:[0,100],toxic:5,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Liposomal Amphotericin B</strong> -- Antifungal. Nephrotoxic. Electrolyte wasting (K+, Mg2+). Liposomal form less nephrotoxic.',
     defaultDose:300,defaultInterval:24,route:'iv_infusion',infusionTime:2,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Additive nephrotoxicity with aminoglycosides.',
     renalNote:'No dose adjustment for renal impairment.'},
-  metronidazole:{name:'Metronidazole',vd:0.7,keAuto:false,halfLife:8,f:1.0,pb:20,therapeutic:[0,100],toxic:25,unit:'mg/L',
+  metronidazole:{name:'Metronidazole',vd:0.7,keAuto:false,halfLife:8,f:1.0,pb:20,therapeutic:[0,100],toxic:25,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Metronidazole</strong> -- Nitroimidazole. Anaerobic coverage, C. difficile. CNS toxicity at high doses. Disulfiram reaction with alcohol.',
     defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:true,interactionNote:'Warfarin potentiation. Disulfiram reaction with alcohol.',
     renalNote:'No significant renal adjustment.'},
-  clindamycin:{name:'Clindamycin',vd:1.1,keAuto:false,halfLife:3,f:0.9,pb:90,therapeutic:[0,100],toxic:10,unit:'mg/L',
+  clindamycin:{name:'Clindamycin',vd:1.1,keAuto:false,halfLife:3,f:0.9,pb:90,therapeutic:[0,100],toxic:10,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Clindamycin</strong> -- Lincosamide. Anaerobic + gram-positive. Excellent tissue/bone penetration. C. difficile risk.',
     defaultDose:600,defaultInterval:8,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor.',
     renalNote:'No renal adjustment (hepatic metabolism).'},
-  tacrolimus:{name:'Tacrolimus',vd:1.0,keAuto:false,halfLife:12,f:0.25,pb:99,ka:0.8,therapeutic:[5,15],toxic:20,unit:'ng/mL',
+  tacrolimus:{name:'Tacrolimus',vd:1.0,keAuto:false,halfLife:12,f:0.25,pb:99,ka:0.8,therapeutic:[5,15],toxic:20,unit:'ng/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Tacrolimus</strong> -- Calcineurin inhibitor. Transplant immunosuppression. Narrow therapeutic index. CYP3A4/P-gp substrate. TDM essential (trough 12h post-dose).',
     defaultDose:2,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitors (azole antifungals, macrolides) increase levels. Inducers (rifampin, phenytoin) decrease levels. Grapefruit juice increases levels.',
     renalNote:'No renal adjustment — hepatic metabolism. But nephrotoxic itself — monitor SCr.'},
-  voriconazole:{name:'Voriconazole',vd:4.6,keAuto:false,halfLife:6,f:0.96,pb:58,therapeutic:[1,5],toxic:5.5,unit:'mg/L',
+  voriconazole:{name:'Voriconazole',vd:4.6,keAuto:false,halfLife:6,f:0.96,pb:58,therapeutic:[1,5],toxic:5.5,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Voriconazole</strong> -- Triazole antifungal. Aspergillus, Candida. CYP2C19 polymorphism: poor metabolizers (15-20% Asians) have 4x higher levels. TDM recommended.',
     defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:400,loadingUnit:'mg x2 doses',hepatic:true,dialyzable:false,interactionNote:'CYP2C19 substrate. CYP3A4 inhibitor. Levels affected by CYP2C19 genotype — check if available.',
     renalNote:'IV formulation: avoid if CrCl <50 (cyclodextrin carrier accumulates). Use oral form.'},
@@ -1011,7 +1011,7 @@ const DRUGS={
     info:'<strong>Daptomycin</strong> -- Lipopeptide. MRSA, VRE. Concentration-dependent killing. Monitor CPK (myopathy risk). Inactivated by pulmonary surfactant — do NOT use for pneumonia.',
     defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:0.5,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Statins increase myopathy risk. Hold statins during therapy.',
     renalNote:'CrCl 30-50: 6-8 mg/kg q48h. CrCl <30: 4-6 mg/kg q48h. HD: dose after HD.'},
-  phenobarbital:{name:'Phenobarbital',vd:0.8,keAuto:false,halfLife:100,f:1.0,pb:50,therapeutic:[15,40],toxic:40,unit:'mg/L',
+  phenobarbital:{name:'Phenobarbital',vd:0.8,keAuto:false,halfLife:100,f:1.0,pb:50,therapeutic:[15,40],toxic:40,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Phenobarbital</strong> -- Barbiturate antiepileptic. Very long half-life (100h). Takes 2-3 weeks to reach steady state. Respiratory depression risk. CYP inducer.',
     defaultDose:100,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg IV',hepatic:true,dialyzable:true,interactionNote:'Strong CYP inducer (2C9, 3A4, 1A2). Increases clearance of many drugs.',
     renalNote:'Partially renally cleared. Adjust for severe CKD. Dialyzable — redose after HD.'},
@@ -1019,39 +1019,39 @@ const DRUGS={
     info:'<strong>Ciprofloxacin</strong> -- Fluoroquinolone. Gram-negative coverage, UTI, anthrax. CYP1A2 inhibitor. QTc prolongation. Tendon rupture risk (steroids, elderly).',
     defaultDose:400,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Inhibits CYP1A2. Increases theophylline, clozapine levels. Antacids/chelation reduce absorption.',
     renalNote:'CrCl 30-50: 250-500mg q12h. CrCl <30: 250-500mg q18-24h. HD: dose after HD.'},
-  tmp_smx:{name:'TMP-SMX (Bactrim)',vd:0.3,keAuto:true,halfLife:10,f:0.9,pb:45,therapeutic:[0,100],toxic:200,unit:'mg/L',
+  tmp_smx:{name:'TMP-SMX (Bactrim)',vd:0.3,keAuto:true,halfLife:10,f:0.9,pb:45,therapeutic:[0,100],toxic:200,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>TMP-SMX</strong> -- Sulfonamide + folate inhibitor. PCP, MRSA (community), UTI. High-dose for PCP: 15-20 mg/kg/day TMP. Monitor CBC, SCr, K+, creatinine.',
     defaultDose:960,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Increases warfarin, phenytoin, methotrexate levels. Hyperkalemia risk with ACEi/ARB.',
     renalNote:'CrCl 15-30: 50% dose. CrCl <15: avoid or use with caution. HD: dose after HD.'},
-  acyclovir:{name:'Acyclovir',vd:0.6,keAuto:true,halfLife:3,f:0.2,pb:15,therapeutic:[0,100],toxic:80,unit:'mg/L',
+  acyclovir:{name:'Acyclovir',vd:0.6,keAuto:true,halfLife:3,f:0.2,pb:15,therapeutic:[0,100],toxic:80,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Acyclovir</strong> -- Antiviral. HSV, VZV, encephalitis. Nephrotoxic (crystalluria) — aggressive hydration required. Neurotoxic at high levels (confusion, seizures).',
     defaultDose:500,defaultInterval:8,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions. Nephrotoxicity risk increased with other nephrotoxins.',
     renalNote:'CrCl 25-50: 5-10 mg/kg q12h. CrCl 10-25: 5-10 mg/kg q24h. CrCl <10: 2.5-5 mg/kg q24h. HD: dose after HD.'},
-  enoxaparin:{name:'Enoxaparin (LMWH)',vd:0.05,keAuto:true,halfLife:4.5,f:0.9,pb:0,therapeutic:[0.5,1.0],toxic:1.2,unit:'IU/mL',
+  enoxaparin:{name:'Enoxaparin (LMWH)',vd:0.05,keAuto:true,halfLife:4.5,f:0.9,pb:0,therapeutic:[0.5,1.0],toxic:1.2,unit:'IU/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Enoxaparin</strong> -- Low molecular weight heparin. VTE prophylaxis/treatment. Anti-Xa monitoring for obesity, renal failure, pregnancy. Protamine partially reverses.',
     defaultDose:40,defaultInterval:24,route:'sc',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Additive bleeding risk with anticoagulants, antiplatelets.',
     renalNote:'CrCl 30-50: consider anti-Xa monitoring. CrCl <30: 1 mg/kg q24h (treatment) or 30mg q24h (prophylaxis). HD: avoid or use UFH.'},
-  ganciclovir:{name:'Ganciclovir',vd:0.7,keAuto:true,halfLife:4,f:1.0,pb:1,therapeutic:[0,100],toxic:10,unit:'mg/L',
+  ganciclovir:{name:'Ganciclovir',vd:0.7,keAuto:true,halfLife:4,f:1.0,pb:1,therapeutic:[0,100],toxic:10,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Ganciclovir</strong> -- Antiviral. CMV retinitis, CMV prophylaxis in transplant. Myelosuppression (neutropenia, thrombocytopenia). Valganciclovir is oral prodrug.',
     defaultDose:5,defaultInterval:12,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Additive myelosuppression with zidovudine, mycophenolate, cyclosporine.',
     renalNote:'CrCl 50-69: 2.5 mg/kg q12h. CrCl 25-49: 2.5 mg/kg q24h. CrCl 10-24: 1.25 mg/kg q24h. HD: dose after HD.'},
-  colistin:{name:'Colistin (Polymyxin E)',vd:0.3,keAuto:false,halfLife:8,f:1.0,pb:50,therapeutic:[2,10],toxic:10,unit:'mg/L',
+  colistin:{name:'Colistin (Polymyxin E)',vd:0.3,keAuto:false,halfLife:8,f:1.0,pb:50,therapeutic:[2,10],toxic:10,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Colistin</strong> -- Last-resort gram-negative (MDR Pseudomonas, Acinetobacter). Prodrug (colistimethate). Nephrotoxic, neurotoxic. Complex PK — loading dose critical.',
     defaultDose:300,defaultInterval:12,route:'iv_infusion',infusionTime:0.5,loadingDose:300,loadingUnit:'mg stat',hepatic:false,dialyzable:false,interactionNote:'Additive nephrotoxicity with aminoglycosides. Avoid neuromuscular blockers.',
     renalNote:'CrCl 50-80: 2.25-3 mg/kg q12h. CrCl 30-50: 1.5-2.25 mg/kg q12h. CrCl 10-30: 1.5 mg/kg q24h. HD: not significantly removed.'},
-  fentanyl:{name:'Fentanyl',vd:6.0,keAuto:false,halfLife:3.5,f:0.5,pb:80,therapeutic:[0,100],toxic:2,unit:'ng/mL',
+  fentanyl:{name:'Fentanyl',vd:6.0,keAuto:false,halfLife:3.5,f:0.5,pb:80,therapeutic:[0,100],toxic:2,unit:'ng/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Fentanyl</strong> -- Synthetic opioid. ICU sedation/analgesia. Highly lipophilic — accumulates in prolonged infusion (context-sensitive half-life). Active metabolite (norfentanyl) accumulates in renal failure.',
     defaultDose:50,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 substrate. Azole antifungals increase levels. Serotonin syndrome risk with SSRIs.',
     renalNote:'Active metabolite accumulates in CKD — reduce infusion rate. No dose adjustment for parent compound.'},
-  midazolam:{name:'Midazolam',vd:1.5,keAuto:false,halfLife:2,f:0.5,pb:96,therapeutic:[0,100],toxic:1,unit:'mcg/L',
+  midazolam:{name:'Midazolam',vd:1.5,keAuto:false,halfLife:2,f:0.5,pb:96,therapeutic:[0,100],toxic:1,unit:'mcg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Midazolam</strong> -- Benzodiazepine. ICU sedation, procedural sedation. Context-sensitive half-life with prolonged infusion. Active metabolite (alpha-hydroxy-midazolam) accumulates in renal failure.',
     defaultDose:2,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 substrate. Azole antifungals, macrolides increase levels. Flumazenil reverses effects.',
     renalNote:'Active metabolite accumulates in CKD — prolonged sedation. Reduce dose or switch to lorazepam (no active metabolite).'},
-  propofol:{name:'Propofol',vd:20,keAuto:false,halfLife:1.5,f:1.0,pb:98,therapeutic:[0,100],toxic:5,unit:'mcg/mL',
+  propofol:{name:'Propofol',vd:20,keAuto:false,halfLife:1.5,f:1.0,pb:98,therapeutic:[0,100],toxic:5,unit:'mcg/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Propofol</strong> -- IV sedative-hypnotic. ICU sedation, induction. Rapid redistribution = fast onset/offset. Propofol infusion syndrome (PRIS) with high doses >5mg/kg/h >48h.',
     defaultDose:50,defaultInterval:0.25,route:'iv_bolus',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'No significant CYP interactions. Lipid emulsion — consider calories (1.1 kcal/mL).',
     renalNote:'No renal adjustment — redistribution-based kinetics. Hypertriglyceridemia risk in renal failure.'},
-  heparin:{name:'Heparin (UFH)',vd:0.05,keAuto:false,halfLife:1.5,f:1.0,pb:0,therapeutic:[0.3,0.7],toxic:1.0,unit:'IU/mL',
+  heparin:{name:'Heparin (UFH)',vd:0.05,keAuto:false,halfLife:1.5,f:1.0,pb:0,therapeutic:[0.3,0.7],toxic:1.0,unit:'IU/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Unfractionated Heparin</strong> -- Anticoagulant. VTE, ACS, bridging. Non-linear kinetics — dose-response is unpredictable. aPTT or anti-Xa monitoring. Protamine fully reverses.',
     defaultDose:5000,defaultInterval:0,route:'iv_bolus',infusionTime:0,loadingDose:80,loadingUnit:'units/kg bolus',hepatic:false,dialyzable:false,interactionNote:'Additive bleeding with anticoagulants, antiplatelets. HIT (heparin-induced thrombocytopenia) — check platelets day 3-5.',
     renalNote:'No renal adjustment — hepatic reticuloendothelial clearance. But less predictable response in uremia.'},
@@ -1059,15 +1059,15 @@ const DRUGS={
     info:'<strong>Levofloxacin</strong> -- Fluoroquinolone. Respiratory, UTI, anthrax prophylaxis. Concentration-dependent killing. QTc prolongation. Tendon rupture risk.',
     defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'QTc prolongation — avoid with other QTc drugs. Antacids reduce absorption.',
     renalNote:'CrCl 20-49: 250mg q24h. CrCl 10-19: 250mg q48h. HD: 250mg after HD.'},
-  isoniazid:{name:'Isoniazid',vd:0.6,keAuto:false,halfLife:3,f:0.9,pb:10,ka:1.5,therapeutic:[0,100],toxic:20,unit:'mg/L',
+  isoniazid:{name:'Isoniazid',vd:0.6,keAuto:false,halfLife:3,f:0.9,pb:10,ka:1.5,therapeutic:[0,100],toxic:20,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Isoniazid</strong> -- First-line TB drug. Hepatotoxic (monitor LFTs). Peripheral neuropathy (give pyridoxine/B6). CYP2A6 polymorphism — slow acetylators (50% Caucasians) accumulate drug.',
     defaultDose:300,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:true,interactionNote:'CYP2E1 inducer. Increases acetaminophen toxicity. Phenytoin levels increase.',
     renalNote:'No significant renal adjustment. Active metabolite (acetylisoniazid) accumulates — but low toxicity.'},
-  rifampin:{name:'Rifampin',vd:0.6,keAuto:false,halfLife:3.5,f:1.0,pb:80,ka:1.2,therapeutic:[0,100],toxic:20,unit:'mg/L',
+  rifampin:{name:'Rifampin',vd:0.6,keAuto:false,halfLife:3.5,f:1.0,pb:80,ka:1.2,therapeutic:[0,100],toxic:20,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Rifampin</strong> -- First-line TB drug. Strong CYP3A4 inducer — increases clearance of many drugs. Hepatotoxic. Red-orange body fluids (tears, urine). Autoinduction over 2 weeks.',
     defaultDose:600,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'<span style="color:#f87171">STRONG CYP3A4 inducer.</span> Reduces levels of tacrolimus, cyclosporine, warfarin, oral contraceptives, protease inhibitors, many others.',
     renalNote:'No renal adjustment. Hepatic metabolism. Monitor LFTs.'},
-  posaconazole:{name:'Posaconazole',vd:5.0,keAuto:false,halfLife:35,f:0.5,pb:99,ka:0.6,therapeutic:[0.7,3.75],toxic:3.75,unit:'mg/L',
+  posaconazole:{name:'Posaconazole',vd:5.0,keAuto:false,halfLife:35,f:0.5,pb:99,ka:0.6,therapeutic:[0.7,3.75],toxic:3.75,unit:'mg/L',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Posaconazole</strong> -- Triazole antifungal. Mucor, Aspergillus prophylaxis/treatment. Variable absorption (oral suspension requires fatty meal). TDM recommended for oral suspension.',
     defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:300,loadingUnit:'mg x3 on day 1',hepatic:true,dialyzable:false,interactionNote:'CYP3A4 inhibitor (strong). Increases tacrolimus, cyclosporine, sirolimus levels. Avoid with ergot alkaloids.',
     renalNote:'No renal adjustment — hepatic metabolism. IV formulation contains cyclodextrin (avoid if CrCl <50).'},
@@ -1075,7 +1075,7 @@ const DRUGS={
     info:'<strong>Ceftazidime-Avibactam</strong> -- Beta-lactam + beta-lactamase inhibitor. MDR gram-negative (KPC-producing Klebsiella, Pseudomonas). Time-dependent killing: T>MIC target 50%.',
     defaultDose:2500,defaultInterval:8,route:'iv_infusion',infusionTime:2,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'No significant CYP interactions. Probenecid increases levels.',
     renalNote:'CrCl 31-50: 1.25g q8h. CrCl 16-30: 0.94g q12h. CrCl 6-15: 0.94g q24h. CrCl <6: 0.94g q48h. HD: dose after HD.'},
-  foscarnet:{name:'Foscarnet',vd:0.4,keAuto:false,halfLife:3,f:1.0,pb:15,therapeutic:[0,100],toxic:500,unit:'mcg/mL',
+  foscarnet:{name:'Foscarnet',vd:0.4,keAuto:false,halfLife:3,f:1.0,pb:15,therapeutic:[0,100],toxic:500,unit:'mcg/mL',aucTarget:[0,0],aucMIC:false,
     info:'<strong>Foscarnet</strong> -- Pyrophosphate analog antiviral. CMV retinitis (ganciclovir-resistant), HSV. Major nephrotoxic — requires aggressive hydration. Electrolyte wasting (Ca2+, Mg2+, K+, PO4).',
     defaultDose:60,defaultInterval:8,route:'iv_infusion',infusionTime:1,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Additive nephrotoxicity with aminoglycosides, amphotericin, cyclosporine.',
     renalNote:'CrCl >1.4 mL/min/kg: 60mg/kg q8h. CrCl 1.0-1.4: 45mg/kg q8h. CrCl 0.8-1.0: 35mg/kg q8h. HD: dose after HD. Aggressive hydration required.'},
@@ -1403,7 +1403,7 @@ function updateDialysisInfo(){const dm=document.getElementById('dialysisMode').v
 function updateInteractionInfo(){const enz=document.getElementById('interactionEnzyme').checked,inh=document.getElementById('interactionInhibitor').checked,i=document.getElementById('interactionInfo'),d=DRUGS[state.drug];if(enz||inh){i.classList.remove('hidden');let m=d.interactionNote||'No specific interactions noted.';if(enz)m+='<br><span style="color:#fbbf24">CYP inducer: ke increased ~40% (faster clearance).</span>';if(inh)m+='<br><span style="color:#f87171">CYP inhibitor: ke decreased ~35% (slower clearance).</span>';i.innerHTML=m;}else i.classList.add('hidden');}
 function calcTMIC(){const mic=parseFloat(document.getElementById('micInput').value)||0,tgt=parseFloat(document.getElementById('tMicTarget').value)||40,res=document.getElementById('tMicResult');if(mic<=0){res.innerHTML='Enter MIC to calculate T>MIC.';return;}const tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval,dt=0.05;let above=0,tot=0;for(let t=lds;t<=tEnd;t+=dt){tot+=dt;if(getTotalCp(t)>=mic)above+=dt;}const pct=(above/tot)*100;state.tmicPct=pct;res.innerHTML='<strong>T>MIC: '+pct.toFixed(1)+'%</strong> (target >='+tgt+'%) <span class="badge '+(pct>=tgt?'badge-green':'badge-red')+'">'+(pct>=tgt?'MET':'NOT MET')+'</span>';}
 function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[400,600];const hasMIC=drug.aucMIC!==false;const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1;let tgt=parseFloat(document.getElementById('targetAUC').value)||500;const midTgt=(aucTgt[0]+aucTgt[1])/2;if(tgt<midTgt*0.8||tgt>midTgt*1.2)tgt=midTgt;const am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;const aucInTarget=auc>=aucTgt[0]&&auc<=aucTgt[1];let s,sc;if(aucInTarget){s='ON TARGET';sc='badge-green';}else if(auc<aucTgt[0]){s='BELOW TARGET ('+aucTgt[0]+'-'+aucTgt[1]+')';sc='badge-amber';}else{s='ABOVE TARGET ('+aucTgt[0]+'-'+aucTgt[1]+')';sc='badge-red';}let guide='';
-if(auc>600){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(auc<400){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br>'+((hasMIC)?'<strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >='+aucTgt[0]/mic.toFixed(0)+') <span class="badge '+(am>=aucTgt[0]/mic?'badge-green':'badge-red')+'">'+(am>=aucTgt[0]/mic?'MET':'LOW')+'</span><br>':'')+ '<strong>Target AUC24: '+aucTgt[0]+'-'+aucTgt[1]+'</strong> <span class="badge '+sc+'">'+s+'</span>'+(aucInTarget?'':('<div style="margin-top:8px;padding:8px 10px;background:'+(auc>aucTgt[1]?'rgba(239,68,68,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(auc>aucTgt[1]?'rgba(239,68,68,0.25)':'rgba(251,191,36,0.25)')+';border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:'+(auc>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(auc>aucTgt[1]?'>'+aucTgt[1]+' — '+(drug.name==='Vancomycin'?'Nephrotoxicity risk. Reduce dose or extend interval.':'Risk of toxicity. Adjust dosing.'):'<'+aucTgt[0]+' — Subtherapeutic exposure. Increase dose or shorten interval.')+'</strong><br><span style="color:#94a3b8;font-size:10px">AUC24 = (Dose x F) / (CL x interval) x 24. Change dose or interval to bring AUC into range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust AUC</button> '+(aucInTarget===false?'<button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust All (AUC + Trough)</button>':'')+'</div>'));}
+if(aucTgt[0]>0&&auc>aucTgt[1]){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(aucTgt[0]>0&&auc<aucTgt[0]){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br>'+((hasMIC)?'<strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >='+aucTgt[0]/mic.toFixed(0)+') <span class="badge '+(am>=aucTgt[0]/mic?'badge-green':'badge-red')+'">'+(am>=aucTgt[0]/mic?'MET':'LOW')+'</span><br>':'')+ '<strong>Target AUC24: '+aucTgt[0]+'-'+aucTgt[1]+'</strong> <span class="badge '+sc+'">'+s+'</span>'+(aucInTarget?'':('<div style="margin-top:8px;padding:8px 10px;background:'+(auc>aucTgt[1]?'rgba(239,68,68,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(auc>aucTgt[1]?'rgba(239,68,68,0.25)':'rgba(251,191,36,0.25)')+';border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:'+(auc>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(auc>aucTgt[1]?'>'+aucTgt[1]+' — '+(drug.name==='Vancomycin'?'Nephrotoxicity risk. Reduce dose or extend interval.':'Risk of toxicity. Adjust dosing.'):'<'+aucTgt[0]+' — Subtherapeutic exposure. Increase dose or shorten interval.')+'</strong><br><span style="color:#94a3b8;font-size:10px">AUC24 = (Dose x F) / (CL x interval) x 24. Change dose or interval to bring AUC into range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust AUC</button> '+(aucInTarget===false?'<button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">⚡ Auto-Adjust All (AUC + Trough)</button>':'')+'</div>'));}
 function updateParams(){
   const tEnd=state.numDoses*state.interval,dt=0.05;let cmax=0,cmin=Infinity;const lds=(state.numDoses-1)*state.interval;
   for(let t=lds;t<=lds+state.interval*2;t+=dt){const cp=getTotalCp(t);if(cp>cmax)cmax=cp;}cmin=getTotalCp(tEnd);
@@ -3758,7 +3758,7 @@ function updateAUCExplorer(){
 }
 
 function autoAdjustAUCMain(){
-  const drug=DRUGS[state.drug];
+  const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[0,0];if(aucTgt[0]===0)return;
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f;
   let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
@@ -3769,9 +3769,9 @@ function autoAdjustAUCMain(){
     for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
-      if(auc24<400||auc24>600)continue;
+      if(auc24<aucTgt[0]||auc24>aucTgt[1])continue;
       const practicality=practicalityScore(d,iv,state.drug);
-      const score=Math.abs(auc24-500)+practicality;
+      const score=Math.abs(auc24-(aucTgt[0]+aucTgt[1])/2)+practicality;
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
     }
   }
@@ -3783,7 +3783,7 @@ function autoAdjustAUCMain(){
   recalculate();
 }
 function autoAdjustAllMain(){
-  const drug=DRUGS[state.drug];
+  const drug=DRUGS[state.drug];const aucTgt=drug.aucTarget||[0,0];if(aucTgt[0]===0)return;
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
   let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
@@ -3794,7 +3794,7 @@ function autoAdjustAllMain(){
     for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
-      if(auc24<400||auc24>600)continue;
+      if(auc24<aucTgt[0]||auc24>aucTgt[1])continue;
       const infTime=iv>=24?2:1;
       const lastDoseStart=(state.numDoses-1)*iv;
       let troughCp=0;
@@ -3802,7 +3802,7 @@ function autoAdjustAllMain(){
       let peakCp=0;
       for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
       if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
-      const aucDist=Math.abs(auc24-500);
+      const aucDist=Math.abs(auc24-(aucTgt[0]+aucTgt[1])/2);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
       const practicality=practicalityScore(d,iv,state.drug);
