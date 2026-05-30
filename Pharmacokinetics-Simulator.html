@@ -214,6 +214,84 @@ body.quick-start .warning-box{display:none!important}
 .lp-practical .lp-tip-badge.danger{background:rgba(239,68,68,.15);color:#f87171}
 .lp-practical .lp-tip-badge.chart{background:rgba(96,165,250,.15);color:#60a5fa}
 .lp-practical .lp-chart-tip{background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:6px;padding:6px 8px;margin-top:8px;font-size:11px;color:#60a5fa}
+.sb-section{margin-top:6px}
+.sb-level-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.sb-level-tab{padding:5px 10px;background:#1e293b;border:1px solid #334155;border-radius:5px;font-size:11px;cursor:pointer;transition:all .15s;color:#94a3b8;font-weight:600}
+.sb-level-tab:hover{border-color:#3b82f6;color:#60a5fa}
+.sb-level-tab.active{border-color:#3b82f6;background:rgba(59,130,246,.12);color:#60a5fa}
+.sb-level-tab.locked{opacity:.4;cursor:not-allowed}
+.sb-scenario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
+.sb-scenario-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .15s}
+.sb-scenario-card:hover{border-color:#3b82f6}
+.sb-scenario-card.active{border-color:#3b82f6;background:rgba(59,130,246,.08)}
+.sb-scenario-card.completed{border-color:#22c55e;background:rgba(34,197,94,.05)}
+.sb-scenario-card.locked{opacity:.4;cursor:not-allowed}
+.sb-scenario-card .sb-sc-title{font-size:11px;font-weight:600;color:#e0e6f0;margin-bottom:2px}
+.sb-scenario-card .sb-sc-drug{font-size:10px;color:#64748b}
+.sb-scenario-card .sb-sc-diff{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;margin-top:3px}
+.sb-scenario-card .sb-sc-diff.easy{background:rgba(34,197,94,.15);color:#4ade80}
+.sb-scenario-card .sb-sc-diff.medium{background:rgba(251,191,36,.15);color:#fbbf24}
+.sb-scenario-card .sb-sc-diff.hard{background:rgba(239,68,68,.15);color:#f87171}
+.sb-scenario-card .sb-sc-score{font-size:10px;color:#64748b;margin-top:3px}
+.sb-scenario-card.completed .sb-sc-score{color:#4ade80}
+.sb-vignette{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;margin-bottom:10px;font-size:12px;line-height:1.6;color:#94a3b8}
+.sb-vignette strong{color:#e0e6f0}
+.sb-vignette .sb-vit-title{font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:6px}
+.sb-vit-data{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:6px;font-size:11px}
+.sb-vit-data .sb-vit-label{color:#64748b}
+.sb-vit-data .sb-vit-val{color:#e0e6f0;font-weight:600}
+.sb-vit-val.toxic{color:#f87171}
+.sb-vit-val.low{color:#fbbf24}
+.sb-vit-val.ok{color:#4ade80}
+.sb-current-regimen{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;margin-bottom:10px;font-size:11px}
+.sb-current-regimen .sb-reg-title{font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:4px}
+.sb-adjust-area{background:#1e293b;border:1px solid #1e3055;border-radius:8px;padding:12px;margin-bottom:10px}
+.sb-adjust-area .sb-adj-title{font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px}
+.sb-slider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sb-slider-row label{font-size:11px;color:#94a3b8;min-width:60px}
+.sb-slider-row input[type=range]{flex:1;height:5px;-webkit-appearance:none;background:#334155;border-radius:3px;border:none}
+.sb-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#3b82f6;border-radius:50%;cursor:pointer}
+.sb-slider-val{min-width:65px;text-align:right;font-size:12px;color:#60a5fa;font-weight:700}
+.sb-prediction{background:#0d1321;border:1px solid #1e3055;border-radius:8px;padding:10px;margin-bottom:10px;font-size:11px}
+.sb-prediction .sb-pred-title{font-size:12px;font-weight:700;margin-bottom:6px}
+.sb-pred-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #1e3055}
+.sb-pred-row:last-child{border-bottom:none}
+.sb-pred-label{color:#94a3b8}
+.sb-pred-val{font-weight:700}
+.sb-pred-val.pass{color:#4ade80}
+.sb-pred-val.warn{color:#fbbf24}
+.sb-pred-val.fail{color:#f87171}
+.sb-btn-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.sb-feedback{background:#1e293b;border-radius:8px;padding:12px;margin-bottom:10px;font-size:12px;line-height:1.6;color:#94a3b8;display:none}
+.sb-feedback.show{display:block}
+.sb-feedback.excellent{border:1px solid rgba(34,197,94,.3)}
+.sb-feedback.good{border:1px solid rgba(96,165,250,.3)}
+.sb-feedback.acceptable{border:1px solid rgba(251,191,36,.3)}
+.sb-feedback.dangerous{border:1px solid rgba(239,68,68,.3)}
+.sb-feedback .sb-fb-title{font-size:13px;font-weight:700;margin-bottom:6px}
+.sb-feedback .sb-fb-principle{background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:6px;padding:8px;margin-top:8px;font-size:11px;color:#60a5fa}
+.sb-pattern-cards{margin-top:10px}
+.sb-pattern-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;margin-bottom:6px;font-size:11px;line-height:1.5;color:#94a3b8}
+.sb-pattern-card .sb-pat-title{font-size:12px;font-weight:700;color:#c084fc;margin-bottom:4px}
+.sb-pattern-card .sb-pat-when{color:#fbbf24;font-weight:600}
+.sb-pattern-card .sb-pat-action{color:#4ade80;font-weight:600}
+.sb-achievements{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sb-badge{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:4px 10px;font-size:10px;color:#64748b;display:flex;align-items:center;gap:4px}
+.sb-badge.earned{border-color:#22c55e;color:#4ade80;background:rgba(34,197,94,.08)}
+.sb-badge .sb-badge-icon{font-size:14px}
+.sb-hint-btn{font-size:11px}
+.sb-timer{font-size:12px;color:#f87171;font-weight:700;text-align:center;padding:4px 0}
+.sb-progress-bar{height:4px;background:#1e3055;border-radius:2px;margin-bottom:10px;overflow:hidden}
+.sb-progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:2px;transition:width .3s}
+.sb-guided-step{background:rgba(96,165,250,0.06);border-left:3px solid #3b82f6;border-radius:6px;padding:10px;margin-bottom:8px;font-size:11px;line-height:1.6;color:#94a3b8}
+.sb-guided-step strong{color:#e0e6f0}
+.sb-guided-step .sb-gs-num{color:#60a5fa;font-weight:700}
+.sb-why-options{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.sb-why-opt{padding:6px 10px;background:transparent;border:1px solid #334155;border-radius:5px;color:#e0e6f0;font-size:11px;text-align:left;cursor:pointer;transition:all .15s}
+.sb-why-opt:hover{border-color:#8b5cf6}
+.sb-why-opt.selected{border-color:#8b5cf6;background:rgba(139,92,246,.1);color:#c084fc}
+.sb-why-opt.correct{border-color:#22c55e;background:rgba(34,197,94,.1);color:#4ade80}
+.sb-why-opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.1);color:#f87171}
 </style>
 </head>
 <body>
@@ -704,6 +782,15 @@ body.quick-start .warning-box{display:none!important}
       </div>
       <div class="collapsible-body collapsed" id="tipsSection">
         <div id="tipsContent"></div>
+      </div>
+
+      <!-- DOSE ADJUSTMENT SANDBOX -->
+      <div class="collapsible-header" onclick="toggleCollapse('sandboxSection')">
+        <h3 style="margin:0">🎯 Dose Adjustment Sandbox <span class="help-icon" onclick="event.stopPropagation();toggleHelp(this)" data-tip="<strong>Dose Adjustment Sandbox:</strong> Practice adjusting drug doses in realistic clinical scenarios. 4 learning levels from guided walkthroughs to timed challenges. Real-time chart feedback shows whether your adjustment hits the target.">?</span></h3><span id="sandboxArrow">&#9654;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="sandboxSection">
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Practice real clinical dose adjustments with instant chart feedback. Learn by doing, not just reading.</div>
+        <div id="sandboxContent"></div>
       </div>
 
       <!-- SHOW THE MATH -->
@@ -1401,6 +1488,25 @@ function drawChart(){
   ctx.font='10px sans-serif';ctx.textAlign='center';const xl=Math.min(state.numDoses+2,10);for(let i=0;i<=xl;i++){const t=(tEnd/xl)*i;ctx.fillText(t.toFixed(0)+'h',xS(t),h-m.bottom+16);}
   ctx.textAlign='right';for(let i=0;i<=6;i++){const cp=(maxY/6)*i;ctx.fillText(cp<1?cp.toFixed(2):cp.toFixed(1),m.left-8,yS(cp)+4);}
   ctx.fillStyle='#e0e6f0';ctx.font='bold 13px sans-serif';ctx.textAlign='left';const rl=state.route==='iv_bolus'?'IV Bolus':state.route==='iv_infusion'?'IV Infusion':'Oral';ctx.fillText(drug.name+' -- '+state.numDoses+' x '+state.dose+'mg '+rl+' q'+state.interval+'h',m.left,m.top-10);
+
+  // Sandbox overlay - show original regimen as dashed line
+  if(state.sandboxOverlay&&state.sandboxOverlayDose){
+    ctx.save();
+    const ow=getEffW(),oInfTime=state.sandboxOverlayInfTime||1;
+    ctx.strokeStyle='#f472b6';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    for(let i=0;i<points.length;i++){
+      const p=points[i];let cp=0;
+      for(let d=0;d<state.numDoses;d++){
+        cp+=getCpSingle(p.t,d*state.sandboxOverlayInterval,state.sandboxOverlayRoute,state.sandboxOverlayDose,state.ke,state.vd,state.f,ow,oInfTime);
+      }
+      if(i===0)ctx.moveTo(xS(p.t),yS(cp));else ctx.lineTo(xS(p.t),yS(cp));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#f472b6';ctx.font='10px sans-serif';ctx.textAlign='left';
+    ctx.fillText('Original Regimen',m.left+4,m.top+14);
+    ctx.restore();
+  }
 
   // Chart guide annotations
   if(state.chartGuideStep>0)drawChartGuideAnnotations(ctx,w,h,m,pW,pH,tEnd,maxY,drug,xS,yS,points);
@@ -2478,7 +2584,7 @@ function selectChartGuide(id){
 
 function clearChartGuide(){
   chartGuideState.activeStep=0;
-  state.chartGuideStep=0;
+  state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;
   CHART_GUIDE_STEPS.forEach(s=>{
     const el=document.getElementById('cgStep'+s.id);
     if(el) el.className='chart-guide-step';
@@ -2645,6 +2751,523 @@ function drawChartGuideAnnotations(ctx,w,h,m,pW,pH,tEnd,maxY,drug,xS,yS,points){
   ctx.restore();
 }
 
+
+// === DOSE ADJUSTMENT SANDBOX ===
+const SB_SCENARIOS=[
+{id:'sb1',title:'Subtherapeutic Vancomycin Trough',drug:'vancomycin',diff:'easy',
+patient:{weight:70,height:170,age:50,sex:'male',scr:0.9},
+currentDose:1000,currentInterval:12,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,
+vignette:'A 50-year-old male (70kg) on vancomycin 1000mg IV q12h for MRSA bacteremia. SCr 0.9. Day 3 trough = <span class="sb-vit-val low">8 mg/L</span>. Target trough: 15-20 mg/L.',
+labValue:8,labUnit:'mg/L',labType:'trough',
+problem:'sub_therapeutic',
+optimalDose:1500,optimalInterval:12,
+acceptable:[{dose:1250,interval:10},{dose:1500,interval:12},{dose:1000,interval:8}],
+principle:'low_trough_normal_kidney',
+principleTitle:'Low Trough, Normal Kidneys',
+principleWhen:'Trough below therapeutic range, CrCl normal (>60 mL/min)',
+principleAction:'INCREASE the dose. The kidneys clear the drug well, so you need more drug per dose to build up levels. Extending interval here would make troughs even lower.',
+hint:'The trough is 8 but needs to be 15-20. The kidneys work fine (CrCl ~68). What happens to trough if you give more drug per dose?'},
+{id:'sb2',title:'Renal Impairment — Extend Interval',drug:'vancomycin',diff:'easy',
+patient:{weight:75,height:175,age:65,sex:'male',scr:2.5},
+currentDose:1000,currentInterval:12,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,
+vignette:'A 65-year-old male (75kg) on vancomycin 1000mg IV q12h. SCr 2.5. CrCl ~31. Day 3 trough = <span class="sb-vit-val toxic">25 mg/L</span>. Toxic! Target: 15-20.',
+labValue:25,labUnit:'mg/L',labType:'trough',
+problem:'toxic_renal',
+optimalDose:1000,optimalInterval:24,
+acceptable:[{dose:750,interval:24},{dose:1000,interval:24},{dose:500,interval:12}],
+principle:'high_trough_low_crcl',
+principleTitle:'High Trough, Low CrCl',
+principleWhen:'Trough above range AND CrCl < 50 mL/min',
+principleAction:'EXTEND the interval first. Same dose, more time between doses = kidneys have longer to clear each dose. If trough still high after extending, then reduce dose too.',
+hint:'CrCl is only 31. The kidneys are slow. If you just reduce the dose, the trough stays high because the interval is still too short. Give the kidneys MORE TIME between doses.',
+whyOptions:['Reduce dose to 500mg q12h — less drug per dose','Extend to 1000mg q24h — same dose, more time to clear','Increase to 1500mg q24h — higher peaks help','Hold vancomycin permanently'],
+whyCorrect:1,whyExplain:'Extending the interval gives kidneys more time to clear each dose. The peak stays therapeutic, but the trough drops because the drug has 24h (instead of 12h) to be eliminated. Reducing dose alone (500mg q12h) would give subtherapeutic peaks AND still-elevated troughs.'},
+{id:'sb3',title:'Toxic Trough — Normal Renal Function',drug:'vancomycin',diff:'easy',
+patient:{weight:80,height:178,age:45,sex:'male',scr:0.8},
+currentDose:1500,currentInterval:8,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,
+vignette:'A 45-year-old male (80kg) on vancomycin 1500mg IV q8h. SCr 0.8, CrCl ~100. Trough = <span class="sb-vit-val toxic">28 mg/L</span>. Dose is too aggressive for this patient.',
+labValue:28,labUnit:'mg/L',labType:'trough',
+problem:'toxic_normal_renal',
+optimalDose:1500,optimalInterval:12,
+acceptable:[{dose:1000,interval:12},{dose:1500,interval:12},{dose:1250,interval:12}],
+principle:'high_trough_normal_kidney',
+principleTitle:'High Trough, Normal Kidneys',
+principleWhen:'Trough above range but CrCl normal (>60 mL/min)',
+principleAction:'The dose is too high for the interval. Either REDUCE the dose or EXTEND the interval (or both). With normal kidneys, extending interval works well because the drug clears efficiently.',
+hint:'CrCl is 100 — kidneys work great. The dose (1500mg q8h) is simply too much drug too often. Try extending to q12h or reducing the dose.'},
+{id:'sb4',title:'AKI Developing Mid-Therapy',drug:'vancomycin',diff:'medium',
+patient:{weight:85,height:178,age:65,sex:'male',scr:2.0},
+currentDose:1000,currentInterval:12,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,
+vignette:'A 65-year-old male (85kg) started on vancomycin 1g q12h when SCr was 1.0. Now Day 4: SCr jumped to <span class="sb-vit-val toxic">2.0</span>. Trough = <span class="sb-vit-val toxic">26 mg/L</span>. AKI is developing.',
+labValue:26,labUnit:'mg/L',labType:'trough',
+problem:'aki_mid_therapy',
+optimalDose:750,optimalInterval:24,
+acceptable:[{dose:500,interval:24},{dose:750,interval:24},{dose:1000,interval:48}],
+principle:'aki_mid_therapy',
+principleTitle:'AKI Developing Mid-Therapy',
+principleWhen:'SCr rising during vancomycin therapy, trough climbing',
+principleAction:'HOLD vancomycin immediately. Check the level. Once level drops to therapeutic, restart at a LOWER dose with an EXTENDED interval. Monitor SCr daily.',
+hint:'SCr doubled from 1.0 to 2.0. CrCl dropped by half. The drug is accumulating dangerously. First: HOLD the drug. Then restart at a safer regimen once levels drop.',
+whyOptions:['Continue 1000mg q12h — the infection needs treatment','Hold vancomycin, restart 750mg q24h when level drops','Switch to oral linezolid immediately','Increase dose to overcome the AKI'],
+whyCorrect:1,whyExplain:'With AKI, continuing the same dose causes more accumulation and potential nephrotoxicity (vicious cycle). HOLD first, let the level drop, then restart at a reduced dose with extended interval. You can always give more drug later, but you cannot take back a toxic dose.'},
+{id:'sb5',title:'Obese Patient — Wrong Weight Basis',drug:'vancomycin',diff:'medium',
+patient:{weight:140,height:175,age:55,sex:'male',scr:1.0},
+currentDose:1000,currentInterval:12,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,weightBasis:'abw',
+vignette:'A 55-year-old male, 140kg, 175cm. On vancomycin 1000mg IV q12h (dosed on TBW). SCr 1.0. Trough = <span class="sb-vit-val low">7 mg/L</span>. BMI = 45.6 — this patient is morbidly obese.',
+labValue:7,labUnit:'mg/L',labType:'trough',
+problem:'obese_wrong_weight',
+optimalDose:1500,optimalInterval:12,
+acceptable:[{dose:1250,interval:12},{dose:1500,interval:12},{dose:2000,interval:12}],
+principle:'obesity_dosing',
+principleTitle:'Obesity — Use Adjusted Body Weight',
+principleWhen:'BMI > 40, vancomycin dosing',
+principleAction:'Use ABW (Adjusted Body Weight) = IBW + 0.4 x (TBW - IBW) for Vd calculation. TBW overestimates Vd in obesity, leading to underdosing. IBW underestimates, leading to overdosing.',
+hint:'IBW for this patient is about 73kg. ABW = 73 + 0.4 x (140-73) = 100kg. Using TBW of 140kg underestimates the concentration. Try changing weight basis to ABW in the left panel, then adjust the dose.'},
+{id:'sb6',title:'Once-Daily Gentamicin — Subtherapeutic Peak',drug:'gentamicin',diff:'medium',
+patient:{weight:70,height:172,age:55,sex:'male',scr:1.0},
+currentDose:350,currentInterval:24,currentRoute:'iv_infusion',currentInfTime:0.5,numDoses:6,
+vignette:'A 55-year-old male (70kg) on gentamicin 350mg IV q24h (5 mg/kg OD). Peak at 1h post-infusion = <span class="sb-vit-val low">4.5 mg/L</span>. Target peak for OD: 8-10x MIC (MIC=1) = 8-10 mg/L.',
+labValue:4.5,labUnit:'mg/L',labType:'peak',
+problem:'sub_therapeutic_peak',
+optimalDose:560,optimalInterval:24,
+acceptable:[{dose:490,interval:24},{dose:560,interval:24},{dose:420,interval:24}],
+principle:'aminoglycoside_peak_mic',
+principleTitle:'Aminoglycoside: Peak/MIC Ratio',
+principleWhen:'Peak/MIC < 8-10 for once-daily aminoglycosides',
+principleAction:'INCREASE the dose to raise the peak. Aminoglycosides are concentration-dependent killers — higher peaks kill better. Target Peak/MIC >= 8.',
+hint:'Current peak is 4.5, MIC is 1. Peak/MIC = 4.5 — too low! Target is >= 8. You need to increase the dose to raise the peak. Try 7-8 mg/kg.'},
+{id:'sb7',title:'Aminoglycoside — Low Peak + High Trough',drug:'gentamicin',diff:'medium',
+patient:{weight:65,height:165,age:70,sex:'female',scr:1.5},
+currentDose:80,currentInterval:8,currentRoute:'iv_infusion',currentInfTime:0.5,numDoses:6,
+vignette:'A 70-year-old female (65kg) on gentamicin 80mg IV q8h (conventional). SCr 1.5. Peak = <span class="sb-vit-val low">3.8 mg/L</span>, Trough = <span class="sb-vit-val toxic">2.5 mg/L</span>. Peak too low, trough too high!',
+labValue:2.5,labUnit:'mg/L',labType:'trough',
+problem:'low_peak_high_trough_ag',
+optimalDose:160,optimalInterval:12,
+acceptable:[{dose:160,interval:12},{dose:130,interval:12},{dose:200,interval:24}],
+principle:'ag_increase_dose_extend_interval',
+principleTitle:'Aminoglycoside: Increase Dose AND Extend Interval',
+principleWhen:'Peak too low AND trough too high on conventional dosing',
+principleAction:'INCREASE the dose (to raise the peak) AND EXTEND the interval (to lower the trough). This is the classic aminoglycoside adjustment. Switching to OD dosing often solves both problems.',
+hint:'Peak is low = need more drug. Trough is high = need more time between doses. Both need to change. Try increasing dose AND extending the interval.'},
+{id:'sb8',title:'Phenytoin — Small Dose, Big Change',drug:'phenytoin',diff:'medium',
+patient:{weight:70,height:170,age:40,sex:'male',scr:0.9},
+currentDose:300,currentInterval:24,currentRoute:'oral',currentInfTime:0,numDoses:10,
+vignette:'A 40-year-old male (70kg) on phenytoin 300mg PO daily. Level = <span class="sb-vit-val toxic">22 mg/L</span>. Target: 10-20 mg/L. Phenytoin follows nonlinear (Michaelis-Menten) kinetics — a small dose increase causes a disproportionately large level increase.',
+labValue:22,labUnit:'mg/L',labType:'trough',
+problem:'phenytoin_nonlinear',
+optimalDose:250,optimalInterval:24,
+acceptable:[{dose:250,interval:24},{dose:230,interval:24},{dose:200,interval:24}],
+principle:'phenytoin_nonlinear',
+principleTitle:'Phenytoin: Nonlinear Kinetics',
+principleWhen:'Phenytoin levels near or above therapeutic range',
+principleAction:'REDUCE the dose by a SMALL amount (e.g., 300 to 250mg). Because phenytoin follows Michaelis-Menten kinetics, even a 50mg reduction can drop levels significantly. NEVER make large dose changes with phenytoin.',
+hint:'Phenytoin is NOT like vancomycin. A 10% dose change can cause a 50% level change. Reduce the dose gently — try 250mg instead of 300mg.'},
+{id:'sb9',title:'Drug Interaction — Amiodarone + Digoxin',drug:'digoxin',diff:'hard',
+patient:{weight:65,height:165,age:72,sex:'female',scr:1.2},
+currentDose:250,currentInterval:24,currentRoute:'oral',currentInfTime:0,numDoses:10,
+vignette:'A 72-year-old female (65kg) stable on digoxin 0.25mg PO daily. Level was 1.2 (in range). Started on amiodarone for AF. Day 7: digoxin level = <span class="sb-vit-val toxic">2.8 mcg/L</span>. Toxic!',
+labValue:2.8,labUnit:'mcg/L',labType:'trough',
+problem:'drug_interaction_inhibitor',
+optimalDose:125,optimalInterval:24,
+acceptable:[{dose:125,interval:24},{dose:100,interval:24},{dose:125,interval:48}],
+principle:'drug_interaction_inhibitor',
+principleTitle:'Drug Interaction: CYP Inhibitor',
+principleWhen:'New drug added that inhibits metabolism of existing drug',
+principleAction:'Amiodarone inhibits P-glycoprotein and CYP3A4, reducing digoxin clearance by 30-50%. HALVE the digoxin dose when starting amiodarone. Recheck level in 1-2 weeks.',
+hint:'Amiodarone is a powerful inhibitor. It blocks the enzymes that clear digoxin. The same dose now produces much higher levels. You need to reduce the dose significantly.'},
+{id:'sb10',title:'CRRT Patient — Needs MORE Drug',drug:'vancomycin',diff:'hard',
+patient:{weight:80,height:175,age:58,sex:'male',scr:4.0},
+currentDose:500,currentInterval:24,currentRoute:'iv_infusion',currentInfTime:1,numDoses:6,
+vignette:'A 58-year-old male (80kg) on CVVHDF (CRRT) for AKI. Given vancomycin 500mg q24h (standard renal dose). Trough = <span class="sb-vit-val low">9 mg/L</span>. Target 15-20. CRRT is clearing the drug faster than expected!',
+labValue:9,labUnit:'mg/L',labType:'trough',
+problem:'crrt_needs_more',
+optimalDose:1000,optimalInterval:12,
+acceptable:[{dose:750,interval:12},{dose:1000,interval:12},{dose:1000,interval:8}],
+principle:'crrt_dosing',
+principleTitle:'CRRT: Drug Is Being Removed',
+principleWhen:'Patient on CRRT, drug levels lower than expected',
+principleAction:'CRRT acts as an artificial kidney — it REMOVES drug. Some patients on CRRT actually need MORE drug or SHORTER intervals, not less! Check levels frequently and adjust.',
+hint:'CRRT is clearing the drug! The dose was reduced for renal failure, but CRRT replaces some kidney function. This patient may need MORE drug than a standard AKI patient. Try increasing dose and shortening interval.'},
+{id:'sb11',title:'Pediatric Vancomycin',drug:'vancomycin',diff:'hard',
+patient:{weight:12,height:90,age:3,sex:'male',scr:0.3},
+currentDose:180,currentInterval:6,currentRoute:'iv_infusion',currentInfTime:1,numDoses:10,
+vignette:'A 3-year-old boy (12kg) on vancomycin 15mg/kg IV q6h for MRSA osteomyelitis. SCr 0.3 (normal for age). Trough = <span class="sb-vit-val low">8 mg/L</span>. Target 15-20 mg/L. Children clear vancomycin faster than adults.',
+labValue:8,labUnit:'mg/L',labType:'trough',
+problem:'pediatric_faster_clearance',
+optimalDose:240,optimalInterval:6,
+acceptable:[{dose:240,interval:6},{dose:200,interval:6},{dose:180,interval:4}],
+principle:'pediatric_faster_clearance',
+principleTitle:'Pediatric: Faster Clearance',
+principleWhen:'Pediatric patient, drug levels lower than adult-equivalent dosing',
+principleAction:'Children clear renally-eliminated drugs 20-40% faster than adults. They often need higher mg/kg doses or shorter intervals. Use Schwartz equation for CrCl.',
+hint:'Children have faster renal clearance. 15mg/kg q6h gives a lower trough than you would expect in adults. Try increasing the mg/kg dose.'},
+{id:'sb12',title:'Lithium + NSAID Toxicity',drug:'lithium',diff:'hard',
+patient:{weight:70,height:170,age:50,sex:'male',scr:1.0},
+currentDose:600,currentInterval:12,currentRoute:'oral',currentInfTime:0,numDoses:10,
+vignette:'A 50-year-old male (70kg) stable on lithium 600mg PO BID for 2 years. Level was 0.8 (in range). Started ibuprofen 600mg TID for back pain. Day 5: lithium level = <span class="sb-vit-val toxic">1.6 mmol/L</span>. Toxic!',
+labValue:1.6,labUnit:'mmol/L',labType:'trough',
+problem:'nsaid_lithium_interaction',
+optimalDose:300,optimalInterval:12,
+acceptable:[{dose:300,interval:12},{dose:300,interval:24},{dose:200,interval:12}],
+principle:'nsaid_lithium',
+principleTitle:'NSAID + Lithium Interaction',
+principleWhen:'NSAID started in patient on lithium',
+principleAction:'NSAIDs reduce renal lithium clearance by 20-40%. STOP the NSAID if possible. If NSAID must continue, REDUCE lithium dose by 25-50% and monitor levels twice weekly.',
+hint:'NSAIDs constrict the afferent arteriole in the kidney, reducing GFR and lithium clearance. The same lithium dose now produces much higher levels. Stop the NSAID AND reduce the lithium dose.'}
+];
+
+let sbState={level:2,activeScenario:null,adjustDose:null,adjustInterval:null,submitted:false,feedback:null,showHint:false,whyAnswered:false,whyCorrect:false,timerSeconds:0,timerInterval:null};
+
+function sbLoadProgress(){try{const s=localStorage.getItem('pkSB');if(s)return JSON.parse(s);}catch(e){}return{scenarios:{},level:2,achievements:[],totalScore:0};}
+function sbSave(){try{localStorage.setItem('pkSB',JSON.stringify(sbProgress));}catch(e){}}
+let sbProgress=sbLoadProgress();
+
+function renderSandbox(){
+  const c=document.getElementById('sandboxContent');
+  if(!sbState.activeScenario){
+    c.innerHTML=sbRenderHome();
+  } else {
+    c.innerHTML=sbRenderScenario();
+  }
+}
+
+function sbRenderHome(){
+  const lvls=[{n:1,label:'Guided',icon:'📖'},{n:2,label:'Assisted',icon:'🤝'},{n:3,label:'Independent',icon:'🎯'},{n:4,label:'Timed',icon:'⚡'}];
+  let h='<div class="sb-level-tabs">';
+  lvls.forEach(l=>{
+    const unlocked=l.n<=2||sbProgress.totalScore>=6||sbProgress.totalScore>=12;
+    h+='<div class="sb-level-tab'+(sbState.level===l.n?' active':'')+(!unlocked?' locked':'')+'" onclick="'+(unlocked?'sbSetLevel('+l.n+')':'')+'">'+l.icon+' '+l.label+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="sb-progress-bar"><div class="sb-progress-fill" style="width:'+Math.min(100,Math.round(sbProgress.totalScore/36*100))+'%"></div></div>';
+  h+='<div style="font-size:10px;color:#64748b;margin-bottom:8px">Score: '+sbProgress.totalScore+'/36 points ('+Object.keys(sbProgress.scenarios).length+'/12 scenarios)</div>';
+  h+='<div class="sb-scenario-grid">';
+  SB_SCENARIOS.forEach(s=>{
+    const sp=sbProgress.scenarios[s.id];
+    const completed=sp&&sp.score>=1;
+    const locked=s.diff==='hard'&&!completed&&(!sbProgress.scenarios['sb4']||sbProgress.scenarios['sb4'].score<1)&&(!sbProgress.scenarios['sb5']||sbProgress.scenarios['sb5'].score<1);
+    h+='<div class="sb-scenario-card'+(completed?' completed':'')+(locked?' locked':'')+'" onclick="'+(locked?'':'sbStartScenario(\''+s.id+'\')')+'">';
+    h+='<div class="sb-sc-title">'+s.title+'</div>';
+    h+='<div class="sb-sc-drug">'+DRUGS[s.drug].name+'</div>';
+    h+='<span class="sb-sc-diff '+s.diff+'">'+s.diff+'</span>';
+    if(completed)h+='<div class="sb-sc-score">Score: '+sp.score+'/3</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  h+=sbRenderPatternCards();
+  h+=sbRenderAchievements();
+  return h;
+}
+
+function sbSetLevel(n){sbState.level=n;renderSandbox();}
+
+function sbStartScenario(id){
+  const s=SB_SCENARIOS.find(x=>x.id===id);
+  if(!s)return;
+  sbState={...sbState,activeScenario:id,adjustDose:s.currentDose,adjustInterval:s.currentInterval,submitted:false,feedback:null,showHint:false,whyAnswered:false,whyCorrect:false,timerSeconds:120,timerInterval:null};
+  // Load patient into simulator
+  sbLoadPatient(s);
+  if(sbState.level===4){sbState.timerInterval=setInterval(sbTick,1000);}
+  renderSandbox();
+}
+
+function sbLoadPatient(s){
+  document.getElementById('weightInput').value=s.patient.weight;
+  document.getElementById('heightInput').value=s.patient.height;
+  document.getElementById('ageInput').value=s.patient.age;
+  document.getElementById('sexSelect').value=s.patient.sex;
+  document.getElementById('scrInput').value=s.patient.scr;
+  document.getElementById('drugSelect').value=s.drug;
+  onDrugChange();
+  document.getElementById('doseInput').value=s.currentDose;
+  document.getElementById('doseRange').value=Math.min(s.currentDose,5000);
+  document.getElementById('doseVal').textContent=s.currentDose+' mg';
+  document.getElementById('intervalRange').value=s.currentInterval;
+  document.getElementById('intervalVal').textContent=s.currentInterval+' h';
+  document.getElementById('numDosesRange').value=s.numDoses;
+  document.getElementById('numDosesVal').textContent=s.numDoses;
+  setRoute(s.currentRoute);
+  if(s.currentInfTime)document.getElementById('infusionTimeRange').value=s.currentInfTime;
+  if(s.weightBasis)document.getElementById('weightBasis').value=s.weightBasis;
+  state.sandboxOverlay=true;
+  state.sandboxOverlayDose=s.currentDose;
+  state.sandboxOverlayInterval=s.currentInterval;
+  state.sandboxOverlayRoute=s.currentRoute;
+  state.sandboxOverlayInfTime=s.currentInfTime||1;
+  recalculate();
+}
+
+function sbRenderScenario(){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  const drug=DRUGS[s.drug];
+  const level=sbState.level;
+  let h='';
+  if(level===4&&sbState.timerInterval)h+='<div class="sb-timer">⏱ '+Math.floor(sbState.timerSeconds/60)+':'+(sbState.timerSeconds%60<10?'0':'')+(sbState.timerSeconds%60)+' remaining</div>';
+  h+='<button class="btn btn-sm btn-outline" onclick="sbBack()" style="margin-bottom:8px">← Back to Scenarios</button>';
+  // Vignette
+  h+='<div class="sb-vignette"><div class="sb-vit-title">📋 Clinical Scenario</div>'+s.vignette+'</div>';
+  // Current regimen
+  h+='<div class="sb-current-regimen"><div class="sb-reg-title">⚠ Current Regimen (dashed line on chart)</div>'+s.currentDose+'mg '+s.currentRoute.replace('iv_infusion','IV infusion').replace('iv_bolus','IV bolus').replace('oral','PO')+' q'+s.currentInterval+'h | Trough: '+s.labValue+' '+s.labUnit+'</div>';
+  // Level 1: Guided steps
+  if(level===1){h+=sbRenderGuided(s,drug);}
+  // Levels 2-4: Adjustment area
+  if(level>=2){
+    h+='<div class="sb-adjust-area">';
+    h+='<div class="sb-adj-title">🔧 Your Adjustment</div>';
+    const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
+    const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
+    const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
+    const iMax=Math.min(96,Math.round(s.currentInterval*4));
+    h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
+    h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
+    h+='</div>';
+    // Prediction
+    h+=sbRenderPrediction(s,drug);
+    // Buttons
+    h+='<div class="sb-btn-row">';
+    if(!sbState.submitted){
+      h+='<button class="btn btn-sm btn-primary" onclick="sbSubmit()">Submit Decision</button>';
+      if(level===2&&s.hint)h+='<button class="btn btn-sm btn-outline sb-hint-btn" onclick="sbToggleHint()">Show Hint</button>';
+    }
+    h+='</div>';
+    // Hint
+    if(sbState.showHint&&s.hint){
+      h+='<div class="sb-guided-step"><strong>💡 Hint:</strong> '+s.hint+'</div>';
+    }
+    // "Why" question after submit
+    if(sbState.submitted&&s.whyOptions&&!sbState.whyAnswered){
+      h+='<div style="margin-top:8px;font-size:12px;font-weight:600;color:#c084fc">Why did you choose this adjustment?</div>';
+      h+='<div class="sb-why-options">';
+      s.whyOptions.forEach((o,i)=>{
+        h+='<button class="sb-why-opt" onclick="sbAnswerWhy('+i+')">'+o+'</button>';
+      });
+      h+='</div>';
+    }
+  }
+  // Feedback
+  if(sbState.feedback)h+=sbRenderFeedback(s,drug);
+  // Pattern card
+  if(sbState.submitted)h+=sbRenderOnePatternCard(s);
+  return h;
+}
+
+function sbRenderGuided(s,drug){
+  const steps=[
+    {num:1,title:'Read the Level',text:'The trough is <strong style="color:#f87171">'+s.labValue+' '+s.labUnit+'</strong>. The therapeutic range is <strong>'+drug.therapeutic[0]+'-'+drug.therapeutic[1]+' '+drug.unit+'</strong>. This level is <strong style="color:'+(s.labValue>drug.toxic?'#f87171':s.labValue<drug.therapeutic[0]?'#fbbf24':'#4ade80')+'">'+(s.labValue>drug.toxic?'TOXIC':s.labValue<drug.therapeutic[0]?'SUBTHERAPEUTIC':'THERAPEUTIC')+'</strong>.'},
+    {num:2,title:'Assess the Patient',text:'SCr = <strong>'+s.patient.scr+'</strong>, CrCl ≈ <strong style="color:#60a5fa">'+calcCrCl().toFixed(0)+' mL/min</strong>. '+(calcCrCl()>60?'Kidneys work well — clearance is normal.':'Kidneys are impaired — clearance is reduced. This affects how fast the drug is removed.')},
+    {num:3,title:'Identify the Problem',text:s.labValue>drug.toxic?'The level is <strong style="color:#f87171">too high</strong>. The drug is accumulating. '+((calcCrCl()<50)?'With CrCl < 50, the kidneys cannot clear the drug fast enough.':'The current dose is simply too large for this interval.'):(s.labValue<drug.therapeutic[0]?'The level is <strong style="color:#fbbf24">too low</strong>. The drug is not reaching therapeutic concentrations. '+((calcCrCl()>60)?'With normal kidneys, you simply need more drug.':'Even with reduced clearance, the dose is too low.'):''+ 'The level is in range.')},
+    {num:4,title:'Choose Your Strategy',text:s.principleAction},
+    {num:5,title:'Make the Adjustment',text:'Recommended: <strong style="color:#4ade80">'+s.optimalDose+'mg q'+s.optimalInterval+'h</strong>. Watch how the chart changes — the new curve (solid) should land troughs inside the green band.'}
+  ];
+  let h='';
+  steps.forEach(st=>{
+    h+='<div class="sb-guided-step"><span class="sb-gs-num">Step '+st.num+':</span> <strong>'+st.title+'</strong><br>'+st.text+'</div>';
+  });
+  h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended Adjustment</button></div>';
+  return h;
+}
+
+function sbRenderPrediction(s,drug){
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route,infTime=sbState.adjustInterval>=24?2:1;
+  const tEnd=s.numDoses*s.currentInterval;
+  const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
+  let troughCp=0;
+  for(let i=0;i<s.numDoses;i++){
+    troughCp+=getCpSingle(lastDoseStart+sbState.adjustInterval,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);
+  }
+  let peakCp=0;
+  for(let i=0;i<s.numDoses;i++){
+    const pk=getCpSingle(i*sbState.adjustInterval+infTime,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);
+    if(pk>peakCp)peakCp=pk;
+  }
+  const aucDose=sbState.adjustDose*f/(ke*vd*w);
+  const auc24=aucDose*(24/sbState.adjustInterval);
+  const troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
+  const troughSafe=troughCp<=drug.toxic;
+  const peakOk=peakCp<=drug.toxic;
+  const aucOk=auc24>=400&&auc24<=600;
+  const cls=troughOk&&peakOk?'pass':!troughSafe||!peakOk?'fail':'warn';
+  h='<div class="sb-prediction"><div class="sb-pred-title" style="color:'+(cls==='pass'?'#4ade80':cls==='fail'?'#f87171':'#fbbf24')+'">Predicted Outcome</div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">Trough</span><span class="sb-pred-val '+(troughOk?'pass':troughSafe?'warn':'fail')+'">'+troughCp.toFixed(1)+' '+drug.unit+' '+(troughOk?'✓':troughSafe?'⚠':'✗')+'</span></div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">Peak</span><span class="sb-pred-val '+(peakOk?'pass':'fail')+'">'+peakCp.toFixed(1)+' '+drug.unit+' '+(peakOk?'✓':'✗')+'</span></div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC24</span><span class="sb-pred-val '+(aucOk?'pass':'warn')+'">'+auc24.toFixed(0)+' '+(aucOk?'✓':'⚠')+'</span></div>';
+  h+='</div>';
+  return h;
+}
+
+function sbOnAdjust(){
+  sbState.adjustDose=parseInt(document.querySelector('.sb-adjust-area input[type=range]:nth-of-type(1)').value)||sbState.adjustDose;
+  sbState.adjustInterval=parseInt(document.querySelector('.sb-adjust-area input[type=range]:nth-of-type(2)').value)||sbState.adjustInterval;
+  document.getElementById('sbDoseVal').textContent=sbState.adjustDose+' mg';
+  document.getElementById('sbIntervalVal').textContent='q'+sbState.adjustInterval+'h';
+  // Update live chart
+  document.getElementById('doseInput').value=sbState.adjustDose;
+  document.getElementById('doseRange').value=Math.min(sbState.adjustDose,5000);
+  document.getElementById('doseVal').textContent=sbState.adjustDose+' mg';
+  document.getElementById('intervalRange').value=sbState.adjustInterval;
+  document.getElementById('intervalVal').textContent=sbState.adjustInterval+' h';
+  recalculate();
+  // Re-render prediction
+  const predEl=document.querySelector('.sb-prediction');
+  if(predEl){
+    const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+    const drug=DRUGS[s.drug];
+    predEl.outerHTML=sbRenderPrediction(s,drug);
+  }
+}
+
+function sbSubmit(){
+  if(sbState.submitted)return;
+  sbState.submitted=true;
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  const drug=DRUGS[s.drug];
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
+  const infTime=sbState.adjustInterval>=24?2:1;
+  const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
+  let troughCp=0;
+  for(let i=0;i<s.numDoses;i++){
+    troughCp+=getCpSingle(lastDoseStart+sbState.adjustInterval,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);
+  }
+  let peakCp=0;
+  for(let i=0;i<s.numDoses;i++){
+    const pk=getCpSingle(i*sbState.adjustInterval+infTime,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);
+    if(pk>peakCp)peakCp=pk;
+  }
+  const aucDose=sbState.adjustDose*f/(ke*vd*w);
+  const auc24=aucDose*(24/sbState.adjustInterval);
+  const troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
+  const troughSafe=troughCp<=drug.toxic;
+  const peakOk=peakCp<=drug.toxic;
+  const isOptimal=sbState.adjustDose===s.optimalDose&&sbState.adjustInterval===s.optimalInterval;
+  const isAcceptable=s.acceptable.some(a=>a.dose===sbState.adjustDose&&a.interval===sbState.adjustInterval);
+  let score=0,fbClass='dangerous',fbTitle='⚠ Dangerous Adjustment';
+  if(!troughSafe||!peakOk){score=0;fbClass='dangerous';fbTitle='⚠ Dangerous — Levels in toxic range!';}
+  else if(isOptimal){score=3;fbClass='excellent';fbTitle='✓ Excellent — Optimal adjustment!';}
+  else if(isAcceptable&&troughOk){score=2;fbClass='good';fbTitle='✓ Good — Effective and safe';}
+  else if(troughSafe){score=1;fbClass='acceptable';fbTitle='⚠ Acceptable — Safe but not optimal';}
+  sbState.feedback={score,fbClass,fbTitle,troughCp,peakCp,auc24,troughOk,troughSafe,peakOk,isOptimal,isAcceptable};
+  // Save progress
+  if(!sbProgress.scenarios[s.id]||sbProgress.scenarios[s.id].score<score){
+    sbProgress.scenarios[s.id]={score,adjustDose:sbState.adjustDose,adjustInterval:sbState.adjustInterval};
+    sbProgress.totalScore=Object.values(sbProgress.scenarios).reduce((a,b)=>a+b.score,0);
+    sbSave();
+  }
+  // Check achievements
+  sbCheckAchievements();
+  if(sbState.timerInterval){clearInterval(sbState.timerInterval);sbState.timerInterval=null;}
+  renderSandbox();
+}
+
+function sbAutoAdjust(){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  sbState.adjustDose=s.optimalDose;
+  sbState.adjustInterval=s.optimalInterval;
+  document.getElementById('doseInput').value=s.optimalDose;
+  document.getElementById('doseRange').value=Math.min(s.optimalDose,5000);
+  document.getElementById('doseVal').textContent=s.optimalDose+' mg';
+  document.getElementById('intervalRange').value=s.optimalInterval;
+  document.getElementById('intervalVal').textContent=s.optimalInterval+' h';
+  recalculate();
+  renderSandbox();
+}
+
+function sbRenderFeedback(s,drug){
+  const fb=sbState.feedback;
+  let h='<div class="sb-feedback show '+fb.fbClass+'">';
+  h+='<div class="sb-fb-title">'+fb.fbTitle+'</div>';
+  h+='<div style="font-size:11px;color:#94a3b8;line-height:1.6">';
+  h+='<strong>Safety:</strong> '+(fb.troughSafe&&fb.peakOk?'<span style="color:#4ade80">✓ No toxic levels predicted</span>':'<span style="color:#f87171">✗ Toxic levels predicted!</span>')+'<br>';
+  h+='<strong>Efficacy:</strong> '+(fb.troughOk?'<span style="color:#4ade80">✓ Trough '+fb.troughCp.toFixed(1)+' in therapeutic range ('+drug.therapeutic[0]+'-'+drug.therapeutic[1]+')</span>':'<span style="color:#fbbf24">⚠ Trough '+fb.troughCp.toFixed(1)+' outside range</span>')+'<br>';
+  if(!fb.isOptimal){
+    h+='<strong>Approach:</strong> You chose '+sbState.adjustDose+'mg q'+sbState.adjustInterval+'h. ';
+    h+=fb.isAcceptable?'This is acceptable.':'Consider '+s.optimalDose+'mg q'+s.optimalInterval+'h instead.';
+    h+='<br>';
+  }
+  h+='</div>';
+  h+='<div class="sb-fb-principle">🔑 <strong>'+s.principleTitle+'</strong><br><span class="sb-pat-when">When:</span> '+s.principleWhen+'<br><span class="sb-pat-action">Action:</span> '+s.principleAction+'</div>';
+  h+='</div>';
+  return h;
+}
+
+function sbRenderOnePatternCard(s){
+  return '<div class="sb-pattern-card"><div class="sb-pat-title">🔑 '+s.principleTitle+'</div><span class="sb-pat-when">When: </span>'+s.principleWhen+'<br><span class="sb-pat-action">Action: </span>'+s.principleAction+'</div>';
+}
+
+function sbRenderPatternCards(){
+  const patterns=[
+    {title:'Low Trough, Normal Kidneys',when:'Trough below range, CrCl >60',action:'Increase dose'},
+    {title:'High Trough, Low CrCl',when:'Trough above range, CrCl <50',action:'Extend interval first, then adjust dose'},
+    {title:'High Trough, Normal Kidneys',when:'Trough above range, CrCl normal',action:'Reduce dose or extend interval'},
+    {title:'AKI Mid-Therapy',when:'SCr rising during therapy',action:'Hold → Check level → Restart adjusted'},
+    {title:'Aminoglycoside: Low Peak + High Trough',when:'Both peak low and trough high',action:'Increase dose AND extend interval'},
+    {title:'Drug Interaction Raises Levels',when:'New interacting drug started',action:'Reduce dose, monitor closely'}
+  ];
+  const completed=Object.keys(sbProgress.scenarios).length;
+  if(completed<1)return '';
+  let h='<div class="sb-pattern-cards"><div style="font-size:11px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Adjustment Pattern Cards</div>';
+  patterns.forEach(p=>{
+    h+='<div class="sb-pattern-card"><div class="sb-pat-title">🔑 '+p.title+'</div><span class="sb-pat-when">When: </span>'+p.when+'<br><span class="sb-pat-action">Action: </span>'+p.action+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function sbRenderAchievements(){
+  const badges=[
+    {id:'first_adj',icon:'🥼',label:'First Adjustment',cond:Object.keys(sbProgress.scenarios).length>=1},
+    {id:'on_target',icon:'🎯',label:'On Target',cond:Object.values(sbProgress.scenarios).filter(s=>s.score>=2).length>=3},
+    {id:'pattern_master',icon:'🧠',label:'Pattern Master',cond:Object.keys(sbProgress.scenarios).length>=6},
+    {id:'renal_expert',icon:'🏥',label:'Renal Expert',cond:!!(sbProgress.scenarios['sb2']&&sbProgress.scenarios['sb4'])},
+    {id:'speed_doser',icon:'⚡',label:'Speed Doser',cond:false},
+    {id:'pharmacist',icon:'🏆',label:'Clinical Pharmacist',cond:Object.keys(sbProgress.scenarios).length>=12},
+    {id:'perfect',icon:'💎',label:'Perfect Score',cond:sbProgress.totalScore>=36}
+  ];
+  let h='<div style="margin-top:10px"><div style="font-size:11px;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Achievements</div><div class="sb-achievements">';
+  badges.forEach(b=>{
+    h+='<div class="sb-badge'+(b.cond?' earned':'')+'"><span class="sb-badge-icon">'+b.icon+'</span> '+b.label+'</div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+
+function sbCheckAchievements(){
+  if(!sbProgress.achievements)sbProgress.achievements=[];
+  const badges=['first_adj','on_target','pattern_master','renal_expert','pharmacist','perfect'];
+  // Simple check - add earned badges
+  if(Object.keys(sbProgress.scenarios).length>=1&&!sbProgress.achievements.includes('first_adj')){sbProgress.achievements.push('first_adj');}
+  if(Object.values(sbProgress.scenarios).filter(s=>s.score>=2).length>=3&&!sbProgress.achievements.includes('on_target')){sbProgress.achievements.push('on_target');}
+  if(Object.keys(sbProgress.scenarios).length>=6&&!sbProgress.achievements.includes('pattern_master')){sbProgress.achievements.push('pattern_master');}
+  if(sbProgress.scenarios['sb2']&&sbProgress.scenarios['sb4']&&!sbProgress.achievements.includes('renal_expert')){sbProgress.achievements.push('renal_expert');}
+  if(Object.keys(sbProgress.scenarios).length>=12&&!sbProgress.achievements.includes('pharmacist')){sbProgress.achievements.push('pharmacist');}
+  if(sbProgress.totalScore>=36&&!sbProgress.achievements.includes('perfect')){sbProgress.achievements.push('perfect');}
+  sbSave();
+}
+
+function sbToggleHint(){sbState.showHint=!sbState.showHint;renderSandbox();}
+function sbBack(){
+  if(sbState.timerInterval){clearInterval(sbState.timerInterval);sbState.timerInterval=null;}
+  sbState.activeScenario=null;state.sandboxOverlay=false;renderSandbox();drawChart();
+}
+function sbTick(){
+  sbState.timerSeconds--;
+  if(sbState.timerSeconds<=0){clearInterval(sbState.timerInterval);sbState.timerInterval=null;sbSubmit();}
+  else renderSandbox();
+}
+function sbAnswerWhy(idx){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  sbState.whyAnswered=true;
+  sbState.whyCorrect=idx===s.whyCorrect;
+  document.querySelectorAll('.sb-why-opt').forEach((el,i)=>{
+    if(i===s.whyCorrect)el.classList.add('correct');
+    else if(i===idx&&!sbState.whyCorrect)el.classList.add('wrong');
+  });
+  if(s.whyExplain){
+    const area=document.querySelector('.sb-why-options');
+    if(area)area.innerHTML+='<div class="sb-guided-step" style="margin-top:6px"><strong>'+(sbState.whyCorrect?'✓ Correct!':'✗ Not quite.')+'</strong> '+s.whyExplain+'</div>';
+  }
+}
+
+
 // === CLINICAL PRACTICAL TIPS ===
 const PRACTICAL_TIPS=[
   {category:'Dosing Fundamentals',tips:[
@@ -2694,7 +3317,7 @@ function renderPracticalTips(){
 
 // Initialize lpProgress after LEARNING_PATH is defined
 if(!lpProgress.v){try{lpProgress=lpLoadProgress();}catch(e){lpProgress={v:1,ch:{}};}}
-state.chartGuideStep=0;renderChartGuide();renderPracticalTips();resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();lpInit();recalculate();
+state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;renderChartGuide();renderPracticalTips();renderSandbox();resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();lpInit();recalculate();
 // Multiple delayed chart draws
 setTimeout(()=>{resizeCanvas();drawChart();},50);
 setTimeout(()=>{resizeCanvas();drawChart();},200);
