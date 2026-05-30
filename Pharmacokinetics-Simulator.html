@@ -952,10 +952,10 @@ const DRUGS={
   valproic_acid:{name:'Valproic Acid',vd:0.15,keAuto:false,halfLife:12,f:1.0,pb:90,ka:2.0,therapeutic:[50,100],toxic:100,unit:'mg/L',info:'<strong>Valproic Acid</strong> -- Therapeutic 50-100. Highly protein-bound. Free fraction increases with hypoalbuminemia.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:20,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Inhibits phenytoin metabolism. Carbamazepine induces VPA clearance.'},
   carbamazepine:{name:'Carbamazepine',vd:1.4,keAuto:false,halfLife:25,f:0.8,pb:75,ka:0.8,therapeutic:[4,12],toxic:12,unit:'mg/L',info:'<strong>Carbamazepine</strong> -- Therapeutic 4-12. Autoinduction: t½ drops from ~30h to ~15h over 2-4 weeks.',defaultDose:200,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Strong CYP3A4 inducer. Erythromycin, fluconazole inhibit its metabolism.'},
   levetiracetam:{name:'Levetiracetam',vd:0.5,keAuto:true,halfLife:7,f:1.0,pb:10,ka:1.8,therapeutic:[12,46],toxic:46,unit:'mcg/mL',info:'<strong>Levetiracetam</strong> -- Therapeutic 12-46. Renally cleared. Wide therapeutic window.',defaultDose:500,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'Minimal drug interactions. Not CYP-metabolized.'},
-  digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,ka:0.8,therapeutic:[0.8,2.0],toxic:2.0,unit:'mcg/L',info:'<strong>Digoxin</strong> -- Therapeutic 0.8-2.0. Long t½ ~36h. Toxicity risk with hypokalemia.',defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Amiodarone, verapamil, quinidine increase digoxin levels.'},
+  digoxin:{name:'Digoxin',vd:7.3,keAuto:true,halfLife:36,f:0.7,pb:25,ka:0.8,therapeutic:[0.8,2.0],toxic:2.0,unit:'mcg/L',aucTarget:[15,25],aucMIC:false,info:'<strong>Digoxin</strong> -- Therapeutic 0.8-2.0. Long t½ ~36h. Toxicity risk with hypokalemia.',defaultDose:0.25,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:false,interactionNote:'Amiodarone, verapamil, quinidine increase digoxin levels.'},
   lidocaine:{name:'Lidocaine',vd:1.5,keAuto:false,halfLife:1.8,f:0.35,pb:70,therapeutic:[1.5,5.0],toxic:5.0,unit:'mcg/mL',info:'<strong>Lidocaine</strong> -- Antiarrhythmic. Therapeutic 1.5-5. Hepatic metabolism.',defaultDose:100,defaultInterval:0.5,route:'iv_bolus',infusionTime:0,loadingDose:1,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Beta-blockers and cimetidine reduce hepatic clearance.'},
   amiodarone:{name:'Amiodarone',vd:60,keAuto:false,halfLife:55,f:0.35,pb:96,therapeutic:[1.0,2.5],toxic:2.5,unit:'mcg/mL',info:'<strong>Amiodarone</strong> -- Extremely long t½ (40-55 days). Loading takes weeks. Multi-organ toxicity.',defaultDose:200,defaultInterval:24,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Inhibits CYP2D6, CYP3A4. Increases digoxin, warfarin, phenytoin levels.'},
-  lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,ka:1.2,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',info:'<strong>Lithium</strong> -- Therapeutic 0.6-1.2 (12h trough). Toxic >1.5. Narrow index. Renally cleared.',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, ACEi, thiazides increase levels.'},
+  lithium:{name:'Lithium',vd:0.7,keAuto:true,halfLife:18,f:1.0,pb:0,ka:1.2,therapeutic:[0.6,1.2],toxic:1.5,unit:'mmol/L',aucTarget:[14,28],aucMIC:false,info:'<strong>Lithium</strong> -- Therapeutic 0.6-1.2 (12h trough). Toxic >1.5. Narrow index. Renally cleared.',defaultDose:300,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, ACEi, thiazides increase levels.'},
   clozapine:{name:'Clozapine',vd:5.0,keAuto:false,halfLife:12,f:0.5,pb:95,ka:1.0,therapeutic:[350,600],toxic:1000,unit:'ng/mL',info:'<strong>Clozapine</strong> -- Therapeutic 350-600. Smoking induces CYP1A2. Monitor agranulocytosis.',defaultDose:100,defaultInterval:12,route:'oral',infusionTime:0,loadingDose:0,loadingUnit:'',hepatic:true,dialyzable:false,interactionNote:'Fluvoxamine strongly inhibits CYP1A2.'},
   theophylline:{name:'Theophylline',vd:0.5,keAuto:false,halfLife:8,f:1.0,pb:40,ka:1.5,therapeutic:[10,20],toxic:20,unit:'mg/L',info:'<strong>Theophylline</strong> -- Therapeutic 10-20. Toxic >20 (seizures, arrhythmias).',defaultDose:200,defaultInterval:8,route:'oral',infusionTime:0,loadingDose:5,loadingUnit:'mg/kg',hepatic:true,dialyzable:false,interactionNote:'Ciprofloxacin, erythromycin inhibit clearance.'},
   methotrexate:{name:'Methotrexate',vd:0.5,keAuto:false,halfLife:8,f:0.7,pb:50,therapeutic:[0.01,10],toxic:10,unit:'umol/L',info:'<strong>Methotrexate</strong> -- Monitor 24h (<10), 48h (<1), 72h (<0.1). Leucovorin rescue.',defaultDose:500,defaultInterval:24,route:'iv_infusion',infusionTime:4,loadingDose:0,loadingUnit:'',hepatic:false,dialyzable:true,interactionNote:'NSAIDs, penicillins reduce renal clearance.'},
@@ -3302,9 +3302,9 @@ function sbRenderGuided(s,drug){
     }
     const aucDose2=sbState.adjustDose*f/(ke*vd*w);
     const auc24_2=aucDose2*(24/sbState.adjustInterval);
-    const aucOk2=auc24_2>=400&&auc24_2<=600;
+    const aucTgt2=drug.aucTarget||[400,600];const aucOk2=aucTgt2[0]>0?(auc24_2>=aucTgt2[0]&&auc24_2<=aucTgt2[1]):true;
     if(!aucOk2){
-      h+='<div class="sb-guided-step" style="border-left-color:#fbbf24"><strong style="color:#fbbf24">⚠ AUC24 '+auc24_2.toFixed(0)+' '+(auc24_2>600?'> 600 — nephrotoxicity risk':'< 400 — subtherapeutic exposure')+'</strong><br><span style="color:#94a3b8">'+(auc24_2>600?'Reduce the dose or extend the interval to bring AUC24 into 400–600.':'Increase the dose or shorten the interval to bring AUC24 into 400–600.')+'</span> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24;margin-left:4px">⚡ Auto-Adjust AUC</button> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAll()" style="border-color:#4ade80;color:#4ade80;margin-left:2px">⚡ Auto-Adjust All</button></div>';
+      h+='<div class="sb-guided-step" style="border-left-color:#fbbf24"><strong style="color:#fbbf24">⚠ AUC24 '+auc24_2.toFixed(0)+' '+(auc24_2>aucTgt2[1]?'> '+aucTgt2[1]+' — toxicity risk':'< '+aucTgt2[0]+' — subtherapeutic exposure')+'</strong><br><span style="color:#94a3b8">'+(auc24_2>aucTgt2[1]?'Reduce the dose or extend the interval to bring AUC24 into '+aucTgt2[0]+'–'+aucTgt2[1]+'.':'Increase the dose or shorten the interval to bring AUC24 into '+aucTgt2[0]+'–'+aucTgt2[1]+'.')+'</span> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24;margin-left:4px">⚡ Auto-Adjust AUC</button> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAll()" style="border-color:#4ade80;color:#4ade80;margin-left:2px">⚡ Auto-Adjust All</button></div>';
     }
         h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended: '+s.optimalDose+'mg q'+s.optimalInterval+'h</button>';
     if(troughOk)h+='<button class="btn btn-sm btn-success" onclick="sbGuidedComplete()" style="background:#059669;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">✓ Complete Scenario</button>';
@@ -3354,14 +3354,14 @@ function sbRenderPrediction(s,drug){
   const troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
   const troughSafe=troughCp<=drug.toxic;
   const peakOk=peakCp<=drug.toxic;
-  const aucOk=auc24>=400&&auc24<=600;
+  const aucTgt=drug.aucTarget||[400,600];const aucOk=aucTgt[0]>0?(auc24>=aucTgt[0]&&auc24<=aucTgt[1]):true;
   const cls=troughOk&&peakOk&&aucOk?'pass':!troughSafe||!peakOk?'fail':'warn';
   h='<div class="sb-prediction"><div class="sb-pred-title" style="color:'+(cls==='pass'?'#4ade80':cls==='fail'?'#f87171':'#fbbf24')+'">Predicted Outcome</div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Trough</span><span class="sb-pred-val '+(troughOk?'pass':troughSafe?'warn':'fail')+'">'+troughCp.toFixed(1)+' '+drug.unit+' '+(troughOk?'✓':troughSafe?'⚠':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Peak</span><span class="sb-pred-val '+(peakOk?'pass':'fail')+'">'+peakCp.toFixed(1)+' '+drug.unit+' '+(peakOk?'✓':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC24</span><span class="sb-pred-val '+(aucOk?'pass':'warn')+'">'+auc24.toFixed(0)+' '+(aucOk?'✓':'⚠')+'</span></div>';
   if(!aucOk){
-    const aucHigh=auc24>600;
+    const aucHigh=auc24>aucTgt[1];
     h+='<div class="sb-auc-guide">';
     h+='<strong>AUC24 '+(aucHigh?'> 600':'< 400')+' \u2014 '+(aucHigh?'<span class="sb-auc-warn">Nephrotoxicity risk</span>':'<span class="sb-auc-warn">Subtherapeutic exposure</span>')+'</strong><br>';
     h+=(aucHigh?'Total drug exposure exceeds safe range. <span class="sb-auc-action">Reduce dose</span> or <span class="sb-auc-action">extend interval</span> to lower AUC24 into 400\u2013600 target.':'Drug exposure is below efficacy threshold. <span class="sb-auc-action">Increase dose</span> or <span class="sb-auc-action">shorten interval</span> to raise AUC24 into 400\u2013600 target.')+'<br>';
@@ -3474,6 +3474,7 @@ function sbAutoAdjust(){
 function sbAutoAdjustAUC(){
   const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
   const drug=DRUGS[s.drug];
+  const aucTgt=drug.aucTarget||[400,600];
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
   let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
@@ -3484,7 +3485,7 @@ function sbAutoAdjustAUC(){
     for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
-      if(auc24<400||auc24>600)continue;
+      if(aucTgt[0]>0&&(auc24<aucTgt[0]||auc24>aucTgt[1]))continue;
       const infTime=iv>=24?2:1;
       const lastDoseStart=(s.numDoses-1)*iv;
       let troughCp=0;
@@ -3492,7 +3493,8 @@ function sbAutoAdjustAUC(){
       let peakCp=0;
       for(let i=0;i<s.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
       if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
-      const aucDist=Math.abs(auc24-500);
+      const aucMid=(aucTgt[0]+aucTgt[1])/2;
+      const aucDist=Math.abs(auc24-aucMid);
       const troughDist=troughCp<(drug.therapeutic[0]+drug.therapeutic[1])/2?Math.abs(troughCp-(drug.therapeutic[0]+drug.therapeutic[1])/2):0;
       const score=aucDist+troughDist*2;
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
@@ -3511,6 +3513,7 @@ function sbAutoAdjustAUC(){
 function sbAutoAdjustAll(){
   const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
   const drug=DRUGS[s.drug];
+  const aucTgt=drug.aucTarget||[400,600];
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
   let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
   let alternatives=[];
@@ -3522,7 +3525,7 @@ function sbAutoAdjustAll(){
     for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
-      if(auc24<400||auc24>600)continue;
+      if(aucTgt[0]>0&&(auc24<aucTgt[0]||auc24>aucTgt[1]))continue;
       const infTime=iv>=24?2:1;
       const lastDoseStart=(s.numDoses-1)*iv;
       let troughCp=0;
@@ -3531,7 +3534,8 @@ function sbAutoAdjustAll(){
       for(let i=0;i<s.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
       if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
       if(troughCp<drug.therapeutic[0]||troughCp>drug.therapeutic[1])continue;
-      const aucDist=Math.abs(auc24-500);
+      const aucMid=(aucTgt[0]+aucTgt[1])/2;
+      const aucDist=Math.abs(auc24-aucMid);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
       const practicality=practicalityScore(d,iv,s.drug);
