@@ -261,6 +261,11 @@ body.quick-start .warning-box{display:none!important}
 .sb-pred-val.pass{color:#4ade80}
 .sb-pred-val.warn{color:#fbbf24}
 .sb-pred-val.fail{color:#f87171}
+.sb-auc-guide{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:11px;line-height:1.6;color:#fbbf24}
+.sb-auc-guide strong{color:#e0e6f0}
+.sb-auc-guide .sb-auc-action{color:#4ade80;font-weight:600}
+.sb-auc-guide .sb-auc-warn{color:#f87171;font-weight:600}
+.sb-auc-auto-btn{margin-top:6px;display:inline-block}
 .sb-btn-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .sb-feedback{background:#1e293b;border-radius:8px;padding:12px;margin-bottom:10px;font-size:12px;line-height:1.6;color:#94a3b8;display:none}
 .sb-feedback.show{display:block}
@@ -1375,7 +1380,8 @@ function updateHepaticInfo(){const hp=document.getElementById('hepaticClass').va
 function updateDialysisInfo(){const dm=document.getElementById('dialysisMode').value,i=document.getElementById('dialysisInfo'),d=DRUGS[state.drug];if(dm!=='none'){i.classList.remove('hidden');if(d.dialyzable){i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+{ihd:'4h session removes ~50-70%. Redose after HD.',cvvhd:'Continuous clearance. May need higher/more frequent doses.',sled:'Extended session. Intermediate clearance.',pd:'Minimal removal (5-15%).'}[dm]+' ke increased.';}else{i.innerHTML='<strong>'+dm.toUpperCase()+':</strong> '+d.name+' is NOT significantly dialyzable.';}}else i.classList.add('hidden');}
 function updateInteractionInfo(){const enz=document.getElementById('interactionEnzyme').checked,inh=document.getElementById('interactionInhibitor').checked,i=document.getElementById('interactionInfo'),d=DRUGS[state.drug];if(enz||inh){i.classList.remove('hidden');let m=d.interactionNote||'No specific interactions noted.';if(enz)m+='<br><span style="color:#fbbf24">CYP inducer: ke increased ~40% (faster clearance).</span>';if(inh)m+='<br><span style="color:#f87171">CYP inhibitor: ke decreased ~35% (slower clearance).</span>';i.innerHTML=m;}else i.classList.add('hidden');}
 function calcTMIC(){const mic=parseFloat(document.getElementById('micInput').value)||0,tgt=parseFloat(document.getElementById('tMicTarget').value)||40,res=document.getElementById('tMicResult');if(mic<=0){res.innerHTML='Enter MIC to calculate T>MIC.';return;}const tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval,dt=0.05;let above=0,tot=0;for(let t=lds;t<=tEnd;t+=dt){tot+=dt;if(getTotalCp(t)>=mic)above+=dt;}const pct=(above/tot)*100;state.tmicPct=pct;res.innerHTML='<strong>T>MIC: '+pct.toFixed(1)+'%</strong> (target >='+tgt+'%) <span class="badge '+(pct>=tgt?'badge-green':'badge-red')+'">'+(pct>=tgt?'MET':'NOT MET')+'</span>';}
-function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1,tgt=parseFloat(document.getElementById('targetAUC').value)||500,am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;let s,sc;if(r>=0.9&&r<=1.1){s='ON TARGET';sc='badge-green';}else if(r<0.9){s='BELOW TARGET';sc='badge-amber';}else{s='ABOVE TARGET';sc='badge-red';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br><strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >=400) <span class="badge '+(am>=400?'badge-green':'badge-red')+'">'+(am>=400?'MET':'LOW')+'</span><br><strong>Target AUC24: '+tgt+'</strong> <span class="badge '+sc+'">'+s+'</span>';}
+function updateAUCMode(){const ar=document.getElementById('aucResult');if(!document.getElementById('aucMode').checked){ar.classList.add('hidden');return;}ar.classList.remove('hidden');const dt=0.05,tEnd=state.numDoses*state.interval,lds=(state.numDoses-1)*state.interval;let auc=0,prev=getTotalCp(lds);for(let t=lds+dt;t<=tEnd;t+=dt){const cp=getTotalCp(t);auc+=(prev+cp)/2*dt;prev=cp;}const mic=parseFloat(document.getElementById('vancMIC').value)||1,tgt=parseFloat(document.getElementById('targetAUC').value)||500,am=auc/mic,r=am/tgt;state.auc24=auc;state.aucMic=am;let s,sc;if(r>=0.9&&r<=1.1){s='ON TARGET';sc='badge-green';}else if(r<0.9){s='BELOW TARGET';sc='badge-amber';}else{s='ABOVE TARGET';sc='badge-red';}let guide='';
+if(auc>600){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#f87171">\u26a0 AUC24 &gt; 600 \u2014 Nephrotoxicity risk</strong><br><span style="color:#94a3b8">Reduce dose or extend interval to lower AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}else if(auc<400){guide='<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:6px;font-size:11px;line-height:1.6"><strong style="color:#fbbf24">\u26a0 AUC24 &lt; 400 \u2014 Subtherapeutic exposure</strong><br><span style="color:#94a3b8">Increase dose or shorten interval to raise AUC24 into 400\u2013600 range.</span><br><button onclick="autoAdjustAUCMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #fbbf24;border-radius:5px;color:#fbbf24;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust AUC</button> <button onclick="autoAdjustAllMain()" style="margin-top:4px;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:11px;font-weight:600;cursor:pointer">\u26a1 Auto-Adjust All</button></div>';}ar.innerHTML='<strong>AUC24: '+auc.toFixed(0)+' mg*h/L</strong><br><strong>AUC/MIC: '+am.toFixed(0)+'</strong> (target >=400) <span class="badge '+(am>=400?'badge-green':'badge-red')+'">'+(am>=400?'MET':'LOW')+'</span><br><strong>Target AUC24: '+tgt+'</strong> <span class="badge '+sc+'">'+s+'</span>'+guide;}
 function updateParams(){
   const tEnd=state.numDoses*state.interval,dt=0.05;let cmax=0,cmin=Infinity;const lds=(state.numDoses-1)*state.interval;
   for(let t=lds;t<=lds+state.interval*2;t+=dt){const cp=getTotalCp(t);if(cp>cmax)cmax=cp;}cmin=getTotalCp(tEnd);
@@ -1506,120 +1512,6 @@ function drawChart(){
     ctx.fillStyle='#f472b6';ctx.font='10px sans-serif';ctx.textAlign='left';
     ctx.fillText('Original Regimen',m.left+4,m.top+14);
     ctx.restore();
-  }
-
-  // Sandbox markers - highlight trough/peak with labeled dots
-  if(state.sandboxOverlay&&state.sandboxDrug){
-    var sbDrug=DRUGS[state.sandboxDrug];
-    if(sbDrug){
-      var sbW=getEffW(),sbF=state.f,sbVd=state.vd,sbKe=state.ke;
-      var sbRoute=state.route,sbInfT=state.infusionTime;
-      // Find peak and trough of the CURRENT (adjusted) regimen
-      var sbPeakCp=0,sbPeakT=0,sbTroughCp=Infinity,sbTroughT=0;
-      var lastDS=(state.numDoses-1)*state.interval;
-      for(var ti=0;ti<=tEnd;ti+=0.1){
-        var cp=getTotalCp(ti);
-        if(cp>sbPeakCp){sbPeakCp=cp;sbPeakT=ti;}
-      }
-      for(var ti=lastDS+0.5;ti<=lastDS+state.interval;ti+=0.1){
-        var cp=getTotalCp(ti);
-        if(cp<sbTroughCp){sbTroughCp=cp;sbTroughT=ti;}
-      }
-      if(sbTroughCp===Infinity){sbTroughCp=points.length>0?points[points.length-1].cp:0;sbTroughT=tEnd;}
-      // Draw trough marker
-      if(sbTroughCp>0&&sbTroughCp<maxY){
-        var tx=xS(sbTroughT),ty=yS(sbTroughCp);
-        var tInTherapeutic=sbTroughCp>=sbDrug.therapeutic[0]&&sbTroughCp<=sbDrug.therapeutic[1];
-        var tIsToxic=sbTroughCp>sbDrug.toxic;
-        // Outer glow
-        ctx.beginPath();ctx.arc(tx,ty,12,0,Math.PI*2);
-        ctx.fillStyle=tInTherapeutic?'rgba(34,197,94,0.2)':tIsToxic?'rgba(239,68,68,0.2)':'rgba(251,191,36,0.2)';
-        ctx.fill();
-        // Inner dot
-        ctx.beginPath();ctx.arc(tx,ty,5,0,Math.PI*2);
-        ctx.fillStyle=tInTherapeutic?'#4ade80':tIsToxic?'#f87171':'#fbbf24';
-        ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
-        // Label
-        ctx.font='bold 10px sans-serif';ctx.textAlign='center';
-        ctx.fillStyle=tInTherapeutic?'#4ade80':tIsToxic?'#f87171':'#fbbf24';
-        var labelY=ty-18;
-        if(labelY<m.top+10)labelY=ty+22;
-        ctx.fillText('Trough',tx,labelY);
-        ctx.fillText(sbTroughCp.toFixed(1)+' '+sbDrug.unit,tx,labelY+12);
-      }
-      // Draw peak marker
-      if(sbPeakCp>0&&sbPeakCp<maxY){
-        var px=xS(sbPeakT),py=yS(sbPeakCp);
-        var pIsToxic=sbPeakCp>sbDrug.toxic;
-        // Outer glow
-        ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);
-        ctx.fillStyle=pIsToxic?'rgba(239,68,68,0.2)':'rgba(96,165,250,0.2)';
-        ctx.fill();
-        // Inner dot
-        ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
-        ctx.fillStyle=pIsToxic?'#f87171':'#60a5fa';
-        ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
-        // Label
-        ctx.font='bold 10px sans-serif';ctx.textAlign='center';
-        ctx.fillStyle=pIsToxic?'#f87171':'#60a5fa';
-        var labelY2=py-18;
-        if(labelY2<m.top+10)labelY2=py+22;
-        ctx.fillText('Peak',px,labelY2);
-        ctx.fillText(sbPeakCp.toFixed(1)+' '+sbDrug.unit,px,labelY2+12);
-      }
-      // Draw the scenario's lab value (the problem level) as a larger highlighted marker
-      if(state.sandboxLabValue!=null){
-        var lv=state.sandboxLabValue;
-        // Find the time for this lab value on the ORIGINAL (problem) curve
-        var lvTime=-1;
-        if(state.sandboxLabType==='trough'){
-          // Trough = just before the next dose, use last dose interval
-          var oLastDS=(state.numDoses-1)*state.sandboxOverlayInterval;
-          lvTime=oLastDS+state.sandboxOverlayInterval;
-          if(lvTime>tEnd)lvTime=oLastDS+state.sandboxOverlayInterval*0.95;
-        } else if(state.sandboxLabType==='peak'){
-          lvTime=state.sandboxOverlayInfTime||1;
-        } else {
-          lvTime=state.sandboxOverlayInterval/2;
-        }
-        if(lvTime>=0&&lvTime<=tEnd){
-          var lx=xS(lvTime),ly=yS(lv);
-          // Pulsing ring
-          ctx.beginPath();ctx.arc(lx,ly,16,0,Math.PI*2);
-          ctx.fillStyle='rgba(244,114,182,0.15)';ctx.fill();
-          ctx.beginPath();ctx.arc(lx,ly,10,0,Math.PI*2);
-          ctx.fillStyle='rgba(244,114,182,0.25)';ctx.fill();
-          // Main dot
-          ctx.beginPath();ctx.arc(lx,ly,6,0,Math.PI*2);
-          ctx.fillStyle='#f472b6';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-          // Label with box
-          var lvLabel=state.sandboxLabType==='trough'?'Current Trough':state.sandboxLabType==='peak'?'Current Peak':'Current Level';
-          ctx.font='bold 10px sans-serif';
-          var lvText=lvLabel+': '+lv+' '+state.sandboxLabUnit;
-          var lvTW=ctx.measureText(lvText).width+12;
-          var lvBX=Math.max(m.left,Math.min(lx-lvTW/2,w-m.right-lvTW));
-          var lvBY=ly-30;if(lvBY<m.top+5)lvBY=ly+18;
-          // Background box
-          ctx.fillStyle='rgba(244,114,182,0.9)';
-          ctx.beginPath();ctx.roundRect(lvBX,lvBY,lvTW,18,4);ctx.fill();
-          ctx.font='bold 9px sans-serif';ctx.textAlign='left';ctx.fillStyle='#fff';
-          ctx.fillText(lvText,lvBX+6,lvBY+13);
-          // Arrow from box to dot
-          ctx.strokeStyle='#f472b6';ctx.lineWidth=1.5;
-          ctx.beginPath();ctx.moveTo(lx,lvBY+18);ctx.lineTo(lx,ly-6);ctx.stroke();
-        }
-      }
-      // Draw AUC24 indicator
-      if(state.auc24){
-        var aucX=m.left+pW*0.7,aucY=m.top+28;
-        ctx.font='bold 10px sans-serif';ctx.textAlign='left';
-        var aucOk=state.auc24>=400&&state.auc24<=600;
-        ctx.fillStyle=aucOk?'rgba(34,197,94,0.12)':'rgba(251,191,36,0.12)';
-        ctx.beginPath();ctx.roundRect(aucX,aucY,110,18,4);ctx.fill();
-        ctx.fillStyle=aucOk?'#4ade80':'#fbbf24';
-        ctx.fillText('AUC24: '+state.auc24.toFixed(0)+' '+aucOk?'✓':'⚠',aucX+6,aucY+13);
-      }
-    }
   }
 
   // Chart guide annotations
@@ -2698,7 +2590,7 @@ function selectChartGuide(id){
 
 function clearChartGuide(){
   chartGuideState.activeStep=0;
-  state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;state.sandboxDrug=null;state.sandboxLabType=null;state.sandboxLabValue=null;state.sandboxLabUnit=null;
+  state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;
   CHART_GUIDE_STEPS.forEach(s=>{
     const el=document.getElementById('cgStep'+s.id);
     if(el) el.className='chart-guide-step';
@@ -3108,10 +3000,6 @@ function sbLoadPatient(s){
   state.sandboxOverlayInterval=s.currentInterval;
   state.sandboxOverlayRoute=s.currentRoute;
   state.sandboxOverlayInfTime=s.currentInfTime||1;
-  state.sandboxDrug=s.drug;
-  state.sandboxLabType=s.labType;
-  state.sandboxLabValue=s.labValue;
-  state.sandboxLabUnit=s.labUnit;
   recalculate();
 }
 
@@ -3209,7 +3097,13 @@ function sbRenderGuided(s,drug){
     } else {
       h+='<div class="sb-guided-step" style="border-left-color:#4ade80"><strong style="color:#4ade80">✓ Great!</strong> Your adjustment brings the trough into the therapeutic range. The new curve (solid blue) should now sit inside the green band on the chart.</div>';
     }
-    h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended: '+s.optimalDose+'mg q'+s.optimalInterval+'h</button>';
+    const aucDose2=sbState.adjustDose*f/(ke*vd*w);
+    const auc24_2=aucDose2*(24/sbState.adjustInterval);
+    const aucOk2=auc24_2>=400&&auc24_2<=600;
+    if(!aucOk2){
+      h+='<div class="sb-guided-step" style="border-left-color:#fbbf24"><strong style="color:#fbbf24">⚠ AUC24 '+auc24_2.toFixed(0)+' '+(auc24_2>600?'> 600 — nephrotoxicity risk':'< 400 — subtherapeutic exposure')+'</strong><br><span style="color:#94a3b8">'+(auc24_2>600?'Reduce the dose or extend the interval to bring AUC24 into 400–600.':'Increase the dose or shorten the interval to bring AUC24 into 400–600.')+'</span> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24;margin-left:4px">⚡ Auto-Adjust AUC</button> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAll()" style="border-color:#4ade80;color:#4ade80;margin-left:2px">⚡ Auto-Adjust All</button></div>';
+    }
+        h+='<div class="sb-btn-row"><button class="btn btn-sm btn-primary" onclick="sbAutoAdjust()">Apply Recommended: '+s.optimalDose+'mg q'+s.optimalInterval+'h</button>';
     if(troughOk)h+='<button class="btn btn-sm btn-success" onclick="sbGuidedComplete()" style="background:#059669;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">✓ Complete Scenario</button>';
     h+='</div>';
   } else {
@@ -3258,11 +3152,20 @@ function sbRenderPrediction(s,drug){
   const troughSafe=troughCp<=drug.toxic;
   const peakOk=peakCp<=drug.toxic;
   const aucOk=auc24>=400&&auc24<=600;
-  const cls=troughOk&&peakOk?'pass':!troughSafe||!peakOk?'fail':'warn';
+  const cls=troughOk&&peakOk&&aucOk?'pass':!troughSafe||!peakOk?'fail':'warn';
   h='<div class="sb-prediction"><div class="sb-pred-title" style="color:'+(cls==='pass'?'#4ade80':cls==='fail'?'#f87171':'#fbbf24')+'">Predicted Outcome</div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Trough</span><span class="sb-pred-val '+(troughOk?'pass':troughSafe?'warn':'fail')+'">'+troughCp.toFixed(1)+' '+drug.unit+' '+(troughOk?'✓':troughSafe?'⚠':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Peak</span><span class="sb-pred-val '+(peakOk?'pass':'fail')+'">'+peakCp.toFixed(1)+' '+drug.unit+' '+(peakOk?'✓':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC24</span><span class="sb-pred-val '+(aucOk?'pass':'warn')+'">'+auc24.toFixed(0)+' '+(aucOk?'✓':'⚠')+'</span></div>';
+  if(!aucOk){
+    const aucHigh=auc24>600;
+    h+='<div class="sb-auc-guide">';
+    h+='<strong>AUC24 '+(aucHigh?'> 600':'< 400')+' \u2014 '+(aucHigh?'<span class="sb-auc-warn">Nephrotoxicity risk</span>':'<span class="sb-auc-warn">Subtherapeutic exposure</span>')+'</strong><br>';
+    h+=(aucHigh?'Total drug exposure exceeds safe range. <span class="sb-auc-action">Reduce dose</span> or <span class="sb-auc-action">extend interval</span> to lower AUC24 into 400\u2013600 target.':'Drug exposure is below efficacy threshold. <span class="sb-auc-action">Increase dose</span> or <span class="sb-auc-action">shorten interval</span> to raise AUC24 into 400\u2013600 target.')+'<br>';
+    h+='<em>Tip: AUC24 = (Dose \u00d7 F) / (ke \u00d7 Vd \u00d7 W) \u00d7 (24 / interval). Changing dose scales AUC linearly; changing interval scales it inversely.</em>';
+    h+='</div>';
+    h+='<div class="sb-auc-auto-btn"><button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24">⚡ Auto-Adjust AUC</button> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAll()" style="border-color:#4ade80;color:#4ade80">⚡ Auto-Adjust All</button></div>';
+  }
   h+='</div>';
   return h;
 }
@@ -3315,6 +3218,7 @@ function sbSubmit(){
   const troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
   const troughSafe=troughCp<=drug.toxic;
   const peakOk=peakCp<=drug.toxic;
+  const aucOk=auc24>=400&&auc24<=600;
   const isOptimal=sbState.adjustDose===s.optimalDose&&sbState.adjustInterval===s.optimalInterval;
   const isAcceptable=s.acceptable.some(a=>a.dose===sbState.adjustDose&&a.interval===sbState.adjustInterval);
   let score=0,fbClass='dangerous',fbTitle='⚠ Dangerous Adjustment';
@@ -3322,7 +3226,7 @@ function sbSubmit(){
   else if(isOptimal){score=3;fbClass='excellent';fbTitle='✓ Excellent — Optimal adjustment!';}
   else if(isAcceptable&&troughOk){score=2;fbClass='good';fbTitle='✓ Good — Effective and safe';}
   else if(troughSafe){score=1;fbClass='acceptable';fbTitle='⚠ Acceptable — Safe but not optimal';}
-  sbState.feedback={score,fbClass,fbTitle,troughCp,peakCp,auc24,troughOk,troughSafe,peakOk,isOptimal,isAcceptable};
+  sbState.feedback={score,fbClass,fbTitle,troughCp,peakCp,auc24,aucOk,troughOk,troughSafe,peakOk,isOptimal,isAcceptable};
   // Save progress
   if(!sbProgress.scenarios[s.id]||sbProgress.scenarios[s.id].score<score){
     sbProgress.scenarios[s.id]={score,adjustDose:sbState.adjustDose,adjustInterval:sbState.adjustInterval};
@@ -3344,6 +3248,83 @@ function sbAutoAdjust(){
   document.getElementById('doseVal').textContent=s.optimalDose+' mg';
   document.getElementById('intervalRange').value=s.optimalInterval;
   document.getElementById('intervalVal').textContent=s.optimalInterval+' h';
+  recalculate();
+  renderSandbox();
+}
+
+function sbAutoAdjustAUC(){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  const drug=DRUGS[s.drug];
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
+  let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
+  const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
+  const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
+  const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
+  const iMax=Math.min(96,Math.round(s.currentInterval*4));
+  for(let iv=iMin;iv<=iMax;iv+=1){
+    for(let d=dMin;d<=dMax;d+=25){
+      const aucDose=d*f/(ke*vd*w);
+      const auc24=aucDose*(24/iv);
+      if(auc24<400||auc24>600)continue;
+      const infTime=iv>=24?2:1;
+      const lastDoseStart=(s.numDoses-1)*iv;
+      let troughCp=0;
+      for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
+      let peakCp=0;
+      for(let i=0;i<s.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+      if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
+      const aucDist=Math.abs(auc24-500);
+      const troughDist=troughCp<(drug.therapeutic[0]+drug.therapeutic[1])/2?Math.abs(troughCp-(drug.therapeutic[0]+drug.therapeutic[1])/2):0;
+      const score=aucDist+troughDist*2;
+      if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+    }
+  }
+  sbState.adjustDose=bestDose;
+  sbState.adjustInterval=bestInterval;
+  document.getElementById('doseInput').value=bestDose;
+  document.getElementById('doseRange').value=Math.min(bestDose,5000);
+  document.getElementById('doseVal').textContent=bestDose+' mg';
+  document.getElementById('intervalRange').value=bestInterval;
+  document.getElementById('intervalVal').textContent=bestInterval+' h';
+  recalculate();
+  renderSandbox();
+}
+function sbAutoAdjustAll(){
+  const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+  const drug=DRUGS[s.drug];
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
+  let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
+  const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
+  const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
+  const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
+  const iMax=Math.min(96,Math.round(s.currentInterval*4));
+  for(let iv=iMin;iv<=iMax;iv+=1){
+    for(let d=dMin;d<=dMax;d+=25){
+      const aucDose=d*f/(ke*vd*w);
+      const auc24=aucDose*(24/iv);
+      if(auc24<400||auc24>600)continue;
+      const infTime=iv>=24?2:1;
+      const lastDoseStart=(s.numDoses-1)*iv;
+      let troughCp=0;
+      for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
+      let peakCp=0;
+      for(let i=0;i<s.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+      if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
+      if(troughCp<drug.therapeutic[0]||troughCp>drug.therapeutic[1])continue;
+      const aucDist=Math.abs(auc24-500);
+      const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
+      const troughDist=Math.abs(troughCp-troughMid);
+      const score=aucDist+troughDist*1.5;
+      if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+    }
+  }
+  sbState.adjustDose=bestDose;
+  sbState.adjustInterval=bestInterval;
+  document.getElementById('doseInput').value=bestDose;
+  document.getElementById('doseRange').value=Math.min(bestDose,5000);
+  document.getElementById('doseVal').textContent=bestDose+' mg';
+  document.getElementById('intervalRange').value=bestInterval;
+  document.getElementById('intervalVal').textContent=bestInterval+' h';
   recalculate();
   renderSandbox();
 }
@@ -3423,7 +3404,7 @@ function sbCheckAchievements(){
 function sbToggleHint(){sbState.showHint=!sbState.showHint;renderSandbox();}
 function sbBack(){
   if(sbState.timerInterval){clearInterval(sbState.timerInterval);sbState.timerInterval=null;}
-  sbState.activeScenario=null;state.sandboxOverlay=false;state.sandboxDrug=null;state.sandboxLabType=null;state.sandboxLabValue=null;state.sandboxLabUnit=null;renderSandbox();drawChart();
+  sbState.activeScenario=null;state.sandboxOverlay=false;renderSandbox();drawChart();
 }
 function sbTick(){
   sbState.timerSeconds--;
@@ -3494,6 +3475,65 @@ function renderPracticalTips(){
 
 // Initialize lpProgress after LEARNING_PATH is defined
 if(!lpProgress.v){try{lpProgress=lpLoadProgress();}catch(e){lpProgress={v:1,ch:{}};}}
+
+function autoAdjustAUCMain(){
+  const drug=DRUGS[state.drug];
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f;
+  let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
+  const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
+  const dMax=Math.min(5000,Math.round(state.dose*3/25)*25);
+  const iMin=Math.max(4,Math.round(state.interval*0.3));
+  const iMax=Math.min(96,Math.round(state.interval*4));
+  for(let iv=iMin;iv<=iMax;iv+=1){
+    for(let d=dMin;d<=dMax;d+=25){
+      const aucDose=d*f/(ke*vd*w);
+      const auc24=aucDose*(24/iv);
+      if(auc24<400||auc24>600)continue;
+      const score=Math.abs(auc24-500);
+      if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+    }
+  }
+  document.getElementById('doseInput').value=bestDose;
+  document.getElementById('doseRange').value=Math.min(bestDose,5000);
+  document.getElementById('doseVal').textContent=bestDose+' mg';
+  document.getElementById('intervalRange').value=bestInterval;
+  document.getElementById('intervalVal').textContent=bestInterval+' h';
+  recalculate();
+}
+function autoAdjustAllMain(){
+  const drug=DRUGS[state.drug];
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
+  let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
+  const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
+  const dMax=Math.min(5000,Math.round(state.dose*3/25)*25);
+  const iMin=Math.max(4,Math.round(state.interval*0.3));
+  const iMax=Math.min(96,Math.round(state.interval*4));
+  for(let iv=iMin;iv<=iMax;iv+=1){
+    for(let d=dMin;d<=dMax;d+=25){
+      const aucDose=d*f/(ke*vd*w);
+      const auc24=aucDose*(24/iv);
+      if(auc24<400||auc24>600)continue;
+      const infTime=iv>=24?2:1;
+      const lastDoseStart=(state.numDoses-1)*iv;
+      let troughCp=0;
+      for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
+      let peakCp=0;
+      for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+      if(troughCp>drug.toxic||peakCp>drug.toxic)continue;
+      const aucDist=Math.abs(auc24-500);
+      const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
+      const troughDist=Math.abs(troughCp-troughMid);
+      const score=aucDist+troughDist*1.5;
+      if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
+    }
+  }
+  document.getElementById('doseInput').value=bestDose;
+  document.getElementById('doseRange').value=Math.min(bestDose,5000);
+  document.getElementById('doseVal').textContent=bestDose+' mg';
+  document.getElementById('intervalRange').value=bestInterval;
+  document.getElementById('intervalVal').textContent=bestInterval+' h';
+  recalculate();
+}
 state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;renderChartGuide();renderPracticalTips();renderSandbox();resizeCanvas();onDrugChange();updateGlossary();renderSimSelector();lpInit();recalculate();
 // Multiple delayed chart draws
 setTimeout(()=>{resizeCanvas();drawChart();},50);
