@@ -3018,8 +3018,8 @@ function sbRenderScenario(){
     const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
     const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
     const iMax=Math.min(96,Math.round(s.currentInterval*4));
-    h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
-    h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
+    h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
+    h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" id="sbIntervalSlider" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
     h+='</div>';
     // Prediction
     h+=sbRenderPrediction(s,drug);
@@ -3096,16 +3096,21 @@ function sbRenderPrediction(s,drug){
 }
 
 function sbOnAdjust(){
-  sbState.adjustDose=parseInt(document.querySelector('.sb-adjust-area input[type=range]:nth-of-type(1)').value)||sbState.adjustDose;
-  sbState.adjustInterval=parseInt(document.querySelector('.sb-adjust-area input[type=range]:nth-of-type(2)').value)||sbState.adjustInterval;
+  var doseEl=document.getElementById('sbDoseSlider');
+  var intEl=document.getElementById('sbIntervalSlider');
+  sbState.adjustDose=doseEl?parseInt(doseEl.value):sbState.adjustDose;
+  sbState.adjustInterval=intEl?parseInt(intEl.value):sbState.adjustInterval;
   document.getElementById('sbDoseVal').textContent=sbState.adjustDose+' mg';
   document.getElementById('sbIntervalVal').textContent='q'+sbState.adjustInterval+'h';
-  // Update live chart
+  // Update main panel controls so recalculate picks up new values
   document.getElementById('doseInput').value=sbState.adjustDose;
   document.getElementById('doseRange').value=Math.min(sbState.adjustDose,5000);
   document.getElementById('doseVal').textContent=sbState.adjustDose+' mg';
   document.getElementById('intervalRange').value=sbState.adjustInterval;
   document.getElementById('intervalVal').textContent=sbState.adjustInterval+' h';
+  // Also set infusion time for longer intervals
+  var infTime=sbState.adjustInterval>=24?2:1;
+  if(document.getElementById('infusionTimeRange')){document.getElementById('infusionTimeRange').value=infTime;document.getElementById('infusionTimeVal').textContent=infTime.toFixed(2)+' h';}
   recalculate();
   // Re-render prediction
   const predEl=document.querySelector('.sb-prediction');
