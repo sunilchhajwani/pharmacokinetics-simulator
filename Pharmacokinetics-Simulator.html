@@ -1508,6 +1508,120 @@ function drawChart(){
     ctx.restore();
   }
 
+  // Sandbox markers - highlight trough/peak with labeled dots
+  if(state.sandboxOverlay&&state.sandboxDrug){
+    var sbDrug=DRUGS[state.sandboxDrug];
+    if(sbDrug){
+      var sbW=getEffW(),sbF=state.f,sbVd=state.vd,sbKe=state.ke;
+      var sbRoute=state.route,sbInfT=state.infusionTime;
+      // Find peak and trough of the CURRENT (adjusted) regimen
+      var sbPeakCp=0,sbPeakT=0,sbTroughCp=Infinity,sbTroughT=0;
+      var lastDS=(state.numDoses-1)*state.interval;
+      for(var ti=0;ti<=tEnd;ti+=0.1){
+        var cp=getTotalCp(ti);
+        if(cp>sbPeakCp){sbPeakCp=cp;sbPeakT=ti;}
+      }
+      for(var ti=lastDS+0.5;ti<=lastDS+state.interval;ti+=0.1){
+        var cp=getTotalCp(ti);
+        if(cp<sbTroughCp){sbTroughCp=cp;sbTroughT=ti;}
+      }
+      if(sbTroughCp===Infinity){sbTroughCp=points.length>0?points[points.length-1].cp:0;sbTroughT=tEnd;}
+      // Draw trough marker
+      if(sbTroughCp>0&&sbTroughCp<maxY){
+        var tx=xS(sbTroughT),ty=yS(sbTroughCp);
+        var tInTherapeutic=sbTroughCp>=sbDrug.therapeutic[0]&&sbTroughCp<=sbDrug.therapeutic[1];
+        var tIsToxic=sbTroughCp>sbDrug.toxic;
+        // Outer glow
+        ctx.beginPath();ctx.arc(tx,ty,12,0,Math.PI*2);
+        ctx.fillStyle=tInTherapeutic?'rgba(34,197,94,0.2)':tIsToxic?'rgba(239,68,68,0.2)':'rgba(251,191,36,0.2)';
+        ctx.fill();
+        // Inner dot
+        ctx.beginPath();ctx.arc(tx,ty,5,0,Math.PI*2);
+        ctx.fillStyle=tInTherapeutic?'#4ade80':tIsToxic?'#f87171':'#fbbf24';
+        ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+        // Label
+        ctx.font='bold 10px sans-serif';ctx.textAlign='center';
+        ctx.fillStyle=tInTherapeutic?'#4ade80':tIsToxic?'#f87171':'#fbbf24';
+        var labelY=ty-18;
+        if(labelY<m.top+10)labelY=ty+22;
+        ctx.fillText('Trough',tx,labelY);
+        ctx.fillText(sbTroughCp.toFixed(1)+' '+sbDrug.unit,tx,labelY+12);
+      }
+      // Draw peak marker
+      if(sbPeakCp>0&&sbPeakCp<maxY){
+        var px=xS(sbPeakT),py=yS(sbPeakCp);
+        var pIsToxic=sbPeakCp>sbDrug.toxic;
+        // Outer glow
+        ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);
+        ctx.fillStyle=pIsToxic?'rgba(239,68,68,0.2)':'rgba(96,165,250,0.2)';
+        ctx.fill();
+        // Inner dot
+        ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+        ctx.fillStyle=pIsToxic?'#f87171':'#60a5fa';
+        ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+        // Label
+        ctx.font='bold 10px sans-serif';ctx.textAlign='center';
+        ctx.fillStyle=pIsToxic?'#f87171':'#60a5fa';
+        var labelY2=py-18;
+        if(labelY2<m.top+10)labelY2=py+22;
+        ctx.fillText('Peak',px,labelY2);
+        ctx.fillText(sbPeakCp.toFixed(1)+' '+sbDrug.unit,px,labelY2+12);
+      }
+      // Draw the scenario's lab value (the problem level) as a larger highlighted marker
+      if(state.sandboxLabValue!=null){
+        var lv=state.sandboxLabValue;
+        // Find the time for this lab value on the ORIGINAL (problem) curve
+        var lvTime=-1;
+        if(state.sandboxLabType==='trough'){
+          // Trough = just before the next dose, use last dose interval
+          var oLastDS=(state.numDoses-1)*state.sandboxOverlayInterval;
+          lvTime=oLastDS+state.sandboxOverlayInterval;
+          if(lvTime>tEnd)lvTime=oLastDS+state.sandboxOverlayInterval*0.95;
+        } else if(state.sandboxLabType==='peak'){
+          lvTime=state.sandboxOverlayInfTime||1;
+        } else {
+          lvTime=state.sandboxOverlayInterval/2;
+        }
+        if(lvTime>=0&&lvTime<=tEnd){
+          var lx=xS(lvTime),ly=yS(lv);
+          // Pulsing ring
+          ctx.beginPath();ctx.arc(lx,ly,16,0,Math.PI*2);
+          ctx.fillStyle='rgba(244,114,182,0.15)';ctx.fill();
+          ctx.beginPath();ctx.arc(lx,ly,10,0,Math.PI*2);
+          ctx.fillStyle='rgba(244,114,182,0.25)';ctx.fill();
+          // Main dot
+          ctx.beginPath();ctx.arc(lx,ly,6,0,Math.PI*2);
+          ctx.fillStyle='#f472b6';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+          // Label with box
+          var lvLabel=state.sandboxLabType==='trough'?'Current Trough':state.sandboxLabType==='peak'?'Current Peak':'Current Level';
+          ctx.font='bold 10px sans-serif';
+          var lvText=lvLabel+': '+lv+' '+state.sandboxLabUnit;
+          var lvTW=ctx.measureText(lvText).width+12;
+          var lvBX=Math.max(m.left,Math.min(lx-lvTW/2,w-m.right-lvTW));
+          var lvBY=ly-30;if(lvBY<m.top+5)lvBY=ly+18;
+          // Background box
+          ctx.fillStyle='rgba(244,114,182,0.9)';
+          ctx.beginPath();ctx.roundRect(lvBX,lvBY,lvTW,18,4);ctx.fill();
+          ctx.font='bold 9px sans-serif';ctx.textAlign='left';ctx.fillStyle='#fff';
+          ctx.fillText(lvText,lvBX+6,lvBY+13);
+          // Arrow from box to dot
+          ctx.strokeStyle='#f472b6';ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(lx,lvBY+18);ctx.lineTo(lx,ly-6);ctx.stroke();
+        }
+      }
+      // Draw AUC24 indicator
+      if(state.auc24){
+        var aucX=m.left+pW*0.7,aucY=m.top+28;
+        ctx.font='bold 10px sans-serif';ctx.textAlign='left';
+        var aucOk=state.auc24>=400&&state.auc24<=600;
+        ctx.fillStyle=aucOk?'rgba(34,197,94,0.12)':'rgba(251,191,36,0.12)';
+        ctx.beginPath();ctx.roundRect(aucX,aucY,110,18,4);ctx.fill();
+        ctx.fillStyle=aucOk?'#4ade80':'#fbbf24';
+        ctx.fillText('AUC24: '+state.auc24.toFixed(0)+' '+aucOk?'✓':'⚠',aucX+6,aucY+13);
+      }
+    }
+  }
+
   // Chart guide annotations
   if(state.chartGuideStep>0)drawChartGuideAnnotations(ctx,w,h,m,pW,pH,tEnd,maxY,drug,xS,yS,points);
 }
@@ -2584,7 +2698,7 @@ function selectChartGuide(id){
 
 function clearChartGuide(){
   chartGuideState.activeStep=0;
-  state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;
+  state.chartGuideStep=0;state.sandboxOverlay=false;state.sandboxOverlayDose=null;state.sandboxOverlayInterval=null;state.sandboxOverlayRoute=null;state.sandboxOverlayInfTime=null;state.sandboxDrug=null;state.sandboxLabType=null;state.sandboxLabValue=null;state.sandboxLabUnit=null;
   CHART_GUIDE_STEPS.forEach(s=>{
     const el=document.getElementById('cgStep'+s.id);
     if(el) el.className='chart-guide-step';
@@ -2994,6 +3108,10 @@ function sbLoadPatient(s){
   state.sandboxOverlayInterval=s.currentInterval;
   state.sandboxOverlayRoute=s.currentRoute;
   state.sandboxOverlayInfTime=s.currentInfTime||1;
+  state.sandboxDrug=s.drug;
+  state.sandboxLabType=s.labType;
+  state.sandboxLabValue=s.labValue;
+  state.sandboxLabUnit=s.labUnit;
   recalculate();
 }
 
@@ -3305,7 +3423,7 @@ function sbCheckAchievements(){
 function sbToggleHint(){sbState.showHint=!sbState.showHint;renderSandbox();}
 function sbBack(){
   if(sbState.timerInterval){clearInterval(sbState.timerInterval);sbState.timerInterval=null;}
-  sbState.activeScenario=null;state.sandboxOverlay=false;renderSandbox();drawChart();
+  sbState.activeScenario=null;state.sandboxOverlay=false;state.sandboxDrug=null;state.sandboxLabType=null;state.sandboxLabValue=null;state.sandboxLabUnit=null;renderSandbox();drawChart();
 }
 function sbTick(){
   sbState.timerSeconds--;
