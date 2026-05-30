@@ -3154,7 +3154,7 @@ function sbRenderHome(){
   SB_SCENARIOS.forEach(s=>{
     const sp=sbProgress.scenarios[s.id];
     const completed=sp&&sp.score>=1;
-    const locked=s.diff==='hard'&&!completed&&(!sbProgress.scenarios['sb4']||sbProgress.scenarios['sb4'].score<1)&&(!sbProgress.scenarios['sb5']||sbProgress.scenarios['sb5'].score<1);
+    const locked=false;
     h+='<div class="sb-scenario-card'+(completed?' completed':'')+(locked?' locked':'')+'" onclick="'+(locked?'':'sbStartScenario(\''+s.id+'\')')+'">';
     h+='<div class="sb-sc-title">'+s.title+'</div>';
     h+='<div class="sb-sc-drug">'+DRUGS[s.drug].name+'</div>';
