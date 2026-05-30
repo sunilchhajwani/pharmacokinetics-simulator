@@ -3164,6 +3164,13 @@ function sbRenderHome(){
   h+='<div class="sb-progress-bar"><div class="sb-progress-fill" style="width:'+Math.min(100,Math.round(sbProgress.totalScore/36*100))+'%"></div></div>';
   h+='<div style="font-size:10px;color:#64748b;margin-bottom:8px">Score: '+sbProgress.totalScore+'/36 points ('+Object.keys(sbProgress.scenarios).length+'/12 scenarios)</div>';
   h+='<div class="sb-scenario-grid">';
+  // Free Practice card - practice with any drug
+  h+='<div class="sb-scenario-card" onclick="sbFreePractice()" style="border:2px dashed rgba(74,222,128,0.4);background:rgba(74,222,128,0.04)">';
+  h+='<div class="sb-sc-title" style="color:#4ade80">🔬 Free Practice</div>';
+  h+='<div class="sb-sc-drug">Any drug with AUC target</div>';
+  h+='<span class="sb-sc-diff easy" style="background:rgba(74,222,128,0.15);color:#4ade80">Open</span>';
+  h+='<div style="font-size:10px;color:#94a3b8;margin-top:4px">Practice AUC auto-adjust with any drug you select</div>';
+  h+='</div>';
   SB_SCENARIOS.forEach(s=>{
     const sp=sbProgress.scenarios[s.id];
     const completed=sp&&sp.score>=1;
@@ -3219,7 +3226,79 @@ function sbLoadPatient(s){
   recalculate();
 }
 
+function sbRenderFreePractice(){
+  var drug=DRUGS[state.drug];
+  var aucTgt=drug.aucTarget||[0,0];
+  var h='';
+  h+='<button class="btn btn-sm btn-outline" onclick="sbBack()" style="margin-bottom:8px">← Back to Scenarios</button>';
+  h+='<div class="sb-vignette"><div class="sb-vit-title" style="color:#4ade80">🔬 Free Practice: '+drug.name+'</div>';
+  h+='<p style="font-size:11px;color:#94a3b8;line-height:1.6">Practice AUC-guided dosing with <strong>'+drug.name+'</strong>. ';
+  if(aucTgt[0]>0){
+    h+='Target AUC24: <strong>'+aucTgt[0]+'-'+aucTgt[1]+'</strong>';
+    if(drug.aucMIC!==false){h+=' (AUC/MIC ≥ '+aucTgt[0]+')';}
+  } else {
+    h+='This drug does not have an AUC target — AUC auto-adjust is not applicable.';
+  }
+  h+='</p>';
+  h+='<p style="font-size:11px;color:#94a3b8">Use the sliders below to adjust the dose and interval. Watch the chart and AUC update in real-time. When AUC is out of range, the Auto-Adjust buttons will appear.</p>';
+  h+='</div>';
+  // Current regimen info
+  h+='<div class="sb-current-regimen"><div class="sb-reg-title">📊 Current Regimen</div>';
+  h+=state.dose+'mg '+drug.route.replace('iv_infusion','IV infusion').replace('iv_bolus','IV bolus').replace('oral','PO')+' q'+state.interval+'h';
+  h+='</div>';
+  // Adjustment area with sliders
+  h+='<div class="sb-adjust-area">';
+  h+='<div class="sb-adj-title">🔧 Adjust Dose & Interval</div>';
+  var dMin=Math.max(25,Math.round(state.dose*0.2/25)*25);
+  var dMax=Math.min(5000,Math.round(state.dose*5/25)*25);
+  var iMin=Math.max(4,Math.round(state.interval*0.3));
+  var iMax=Math.min(96,Math.round(state.interval*4));
+  h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
+  h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" id="sbIntervalSlider" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
+  h+='</div>';
+  // Prediction
+  var ke=state.ke,vd=state.vd,w=getEffW(),f=state.f;
+  var route=drug.route;
+  var infTime=drug.infusionTime||1;
+  var lastDoseStart=(state.numDoses-1)*sbState.adjustInterval;
+  var troughCp=0;
+  for(var i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+sbState.adjustInterval,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);}
+  var peakCp=0;
+  for(var i=0;i<state.numDoses;i++){var pk=getCpSingle(i*sbState.adjustInterval+infTime,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+  var aucDose=sbState.adjustDose*f/(ke*vd*w);
+  var auc24=aucDose*(24/sbState.adjustInterval);
+  var aucMic=auc24/(parseFloat(document.getElementById('vancMIC').value)||1);
+  var hasMIC=drug.aucMIC!==false;
+  var aucCheckVal=hasMIC?aucMic:auc24;
+  var aucInTarget=aucTgt[0]>0?(aucCheckVal>=aucTgt[0]&&aucCheckVal<=aucTgt[1]):true;
+  var troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
+  var troughSafe=troughCp<=drug.toxic;
+  var peakOk=peakCp<=drug.toxic;
+  var cls=aucInTarget&&troughOk&&peakOk?'pass':!troughSafe||!peakOk?'fail':'warn';
+  h+='<div class="sb-prediction"><div class="sb-pred-title" style="color:'+(cls==='pass'?'#4ade80':cls==='fail'?'#f87171':'#fbbf24')+'">Predicted Outcome</div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">Trough</span><span class="sb-pred-val '+(troughOk?'pass':troughSafe?'warn':'fail')+'">'+troughCp.toFixed(1)+' '+drug.unit+' '+(troughOk?'✓':troughSafe?'⚠':'✗')+'</span></div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">Peak</span><span class="sb-pred-val '+(peakOk?'pass':'fail')+'">'+peakCp.toFixed(1)+' '+drug.unit+' '+(peakOk?'✓':'✗')+'</span></div>';
+  h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC24</span><span class="sb-pred-val '+(aucInTarget?'pass':'warn')+'">'+auc24.toFixed(0)+' '+(aucInTarget?'✓':'⚠')+'</span></div>';
+  if(hasMIC){h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC/MIC</span><span class="sb-pred-val '+(aucCheckVal>=aucTgt[0]?'pass':'warn')+'">'+aucMic.toFixed(0)+' '+(aucCheckVal>=aucTgt[0]?'✓':'LOW')+'</span></div>';}
+  // AUC auto-adjust buttons
+  if(aucTgt[0]>0&&!aucInTarget){
+    h+='<div class="sb-guided-step" style="border-left-color:#fbbf24;margin-top:8px">';
+    h+='<strong style="color:'+(aucCheckVal>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(aucCheckVal>aucTgt[1]?'>'+aucTgt[1]:'<'+aucTgt[0])+' — '+(aucCheckVal>aucTgt[1]?'Toxicity risk':'Subtherapeutic')+'</strong><br>';
+    h+='<span style="color:#94a3b8;font-size:11px">'+(aucCheckVal>aucTgt[1]?'Reduce dose or extend interval.':'Increase dose or shorten interval.')+'</span><br>';
+    h+='<button class="btn btn-sm btn-outline" onclick="sbFreeAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24;margin-top:4px">⚡ Auto-Adjust AUC</button> ';
+    h+='<button class="btn btn-sm btn-outline" onclick="sbFreeAdjustAll()" style="border-color:#4ade80;color:#4ade80;margin-top:4px">⚡ Auto-Adjust All</button>';
+    h+='</div>';
+  } else if(aucTgt[0]>0&&aucInTarget){
+    h+='<div class="sb-guided-step" style="border-left-color:#4ade80;margin-top:8px"><strong style="color:#4ade80">✓ AUC24 is on target ('+aucTgt[0]+'-'+aucTgt[1]+')</strong></div>';
+  }
+  h+='</div>';
+  return h;
+}
+
 function sbRenderScenario(){
+  if(sbState.freePractice){
+    return sbRenderFreePractice();
+  }
   const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
   const drug=DRUGS[s.drug];
   const level=sbState.level;
@@ -3407,6 +3486,15 @@ function sbOnAdjust(){
   var intEl=document.getElementById('sbIntervalSlider');
   sbState.adjustDose=doseEl?parseInt(doseEl.value):sbState.adjustDose;
   sbState.adjustInterval=intEl?parseInt(intEl.value):sbState.adjustInterval;
+  // In free practice mode, also update main simulator
+  if(sbState.freePractice){
+    document.getElementById('doseInput').value=sbState.adjustDose;
+    document.getElementById('doseRange').value=Math.min(sbState.adjustDose,5000);
+    document.getElementById('doseVal').textContent=sbState.adjustDose+' mg';
+    document.getElementById('intervalRange').value=sbState.adjustInterval;
+    document.getElementById('intervalVal').textContent=sbState.adjustInterval+' h';
+    recalculate();
+  }
   document.getElementById('sbDoseVal').textContent=sbState.adjustDose+' mg';
   document.getElementById('sbIntervalVal').textContent='q'+sbState.adjustInterval+'h';
   // Update main panel controls so recalculate picks up new values
@@ -3672,9 +3760,61 @@ function sbCheckAchievements(){
 }
 
 function sbToggleHint(){sbState.showHint=!sbState.showHint;renderSandbox();}
+function sbFreePractice(){
+  // Use the currently selected drug for free practice mode
+  var drug=DRUGS[state.drug];
+  var aucTgt=drug.aucTarget||[0,0];
+  // Create a synthetic scenario from current state
+  var freeScenario={
+    id:'free_practice',
+    drug:state.drug,
+    currentDose:state.dose,
+    currentInterval:state.interval,
+    currentRoute:drug.route,
+    numDoses:state.numDoses||5,
+    optimalDose:state.dose,
+    optimalInterval:state.interval,
+    patient:{weight:state.weight,height:parseFloat(document.getElementById('heightInput').value)||170,age:parseFloat(document.getElementById('ageInput').value)||50,sex:document.getElementById('sexSelect').value,scr:parseFloat(document.getElementById('scrInput').value)||1.0},
+    vignette:'<strong>Free Practice:</strong> Practice AUC-guided dosing with '+drug.name+'. Use the AUC auto-adjust buttons to optimize the regimen.',
+    labValue:0,labUnit:drug.unit,
+    diff:'easy',
+    hint:'Use the AUC auto-adjust feature to find the optimal dose and interval.',
+    whyOptions:['To optimize AUC','To minimize toxicity','To reduce cost','To shorten therapy'],
+    whyCorrect:0,
+    whyExplain:'AUC-guided dosing optimizes total drug exposure to ensure efficacy while minimizing toxicity.',
+    principleAction:'Adjust the dose and/or interval to bring AUC24 into the target range ('+aucTgt[0]+'-'+aucTgt[1]+').',
+    patternCard:{title:drug.name+' Dosing Patterns',patterns:[]}
+  };
+  sbState={...sbState,activeScenario:'free_practice',adjustDose:state.dose,adjustInterval:state.interval,submitted:false,feedback:null,showHint:false,whyAnswered:false,whyCorrect:false,guidedStep:5,timerSeconds:0,timerInterval:null};
+  sbState.freePractice=true;
+  renderSandbox();
+}
+
+function sbFreeAdjustAUC(){
+  // Auto-adjust AUC for free practice mode - use current drug
+  autoAdjustAUCMain();
+  // Update sandbox sliders to match
+  var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
+  var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
+  sbState.adjustDose=newDose;
+  sbState.adjustInterval=newInterval;
+  renderSandbox();
+}
+
+function sbFreeAdjustAll(){
+  // Auto-adjust AUC + Trough for free practice mode
+  autoAdjustAllMain();
+  // Update sandbox sliders to match
+  var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
+  var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
+  sbState.adjustDose=newDose;
+  sbState.adjustInterval=newInterval;
+  renderSandbox();
+}
+
 function sbBack(){
   if(sbState.timerInterval){clearInterval(sbState.timerInterval);sbState.timerInterval=null;}
-  sbState.activeScenario=null;state.sandboxOverlay=false;renderSandbox();drawChart();
+  sbState.activeScenario=null;sbState.freePractice=false;state.sandboxOverlay=false;renderSandbox();drawChart();
 }
 function sbTick(){
   sbState.timerSeconds--;
