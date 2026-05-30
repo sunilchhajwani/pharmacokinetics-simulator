@@ -3249,8 +3249,11 @@ function sbRenderFreePractice(){
   // Adjustment area with sliders
   h+='<div class="sb-adjust-area">';
   h+='<div class="sb-adj-title">🔧 Adjust Dose & Interval</div>';
-  var dMin=Math.max(25,Math.round(state.dose*0.2/25)*25);
-  var dMax=Math.min(5000,Math.round(state.dose*5/25)*25);
+  var vials=VIAL_SIZES[state.drug]||[];
+  var minVial=vials.length>0?vials[0]:25;
+  var step=vials.length>0?minVial:25;
+  var dMin=Math.max(step,Math.round(state.dose*0.2/step)*step);
+  var dMax=Math.min(5000,Math.round(state.dose*5/step)*step);
   var iMin=Math.max(4,Math.round(state.interval*0.3));
   var iMax=Math.min(96,Math.round(state.interval*4));
   h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
@@ -3506,15 +3509,22 @@ function sbOnAdjust(){
   document.getElementById('intervalRange').value=sbState.adjustInterval;
   document.getElementById('intervalVal').textContent=sbState.adjustInterval+' h';
   // Also set infusion time for longer intervals
-  var infTime=DRUGS[s.drug]?DRUGS[s.drug].infusionTime||1:1;
+  var infTime=DRUGS[state.drug]?DRUGS[state.drug].infusionTime||1:1;
   if(document.getElementById('infusionTimeRange')){document.getElementById('infusionTimeRange').value=infTime;document.getElementById('infusionTimeVal').textContent=infTime.toFixed(2)+' h';}
   recalculate();
   // Re-render prediction
   const predEl=document.querySelector('.sb-prediction');
   if(predEl){
-    const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
-    const drug=DRUGS[s.drug];
-    predEl.outerHTML=sbRenderPrediction(s,drug);
+    if(sbState.freePractice){
+      predEl.outerHTML=sbRenderFreePractice();
+      // Re-attach the prediction inside
+    } else {
+      const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
+      if(s){
+        const drug=DRUGS[s.drug];
+        predEl.outerHTML=sbRenderPrediction(s,drug);
+      }
+    }
   }
 }
 
@@ -3794,24 +3804,53 @@ function sbFreePractice(){
 
 function sbFreeAdjustAUC(){
   // Auto-adjust AUC for free practice mode - use current drug
+  var drug=DRUGS[state.drug];
   autoAdjustAUCMain();
+  // Update route and infusion time to match drug defaults
+  setRoute(drug.route);
+  var newInfTime=drug.infusionTime||(drug.route==='iv_infusion'?1:0);
+  document.getElementById('infusionTimeRange').value=newInfTime;
+  document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Update sandbox sliders to match
   var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
   var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
   sbState.adjustDose=newDose;
   sbState.adjustInterval=newInterval;
-  renderSandbox();
+  // Re-render the free practice panel
+  if(sbState.freePractice){
+    var sandboxEl=document.getElementById('sandboxContent');
+    if(sandboxEl){sandboxEl.innerHTML=sbRenderFreePractice();}
+  } else {
+    renderSandbox();
+  }
 }
 
 function sbFreeAdjustAll(){
   // Auto-adjust AUC + Trough for free practice mode
+  var drug=DRUGS[state.drug];
+  var aucTgt=drug.aucTarget||[0,0];
+  if(aucTgt[0]===0){
+    // No AUC target for this drug - just adjust dose/interval for trough
+    // Use the main panel's auto-adjust which handles this case
+  }
   autoAdjustAllMain();
+  // Update route and infusion time to match drug defaults
+  setRoute(drug.route);
+  var newInfTime=drug.infusionTime||(drug.route==='iv_infusion'?1:0);
+  document.getElementById('infusionTimeRange').value=newInfTime;
+  document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Update sandbox sliders to match
   var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
   var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
   sbState.adjustDose=newDose;
   sbState.adjustInterval=newInterval;
-  renderSandbox();
+  // Re-render the free practice panel
+  if(sbState.freePractice){
+    var sandboxEl=document.getElementById('sandboxContent');
+    if(sandboxEl){sandboxEl.innerHTML=sbRenderFreePractice();}
+  } else {
+    renderSandbox();
+  }
 }
 
 function sbBack(){
