@@ -74,6 +74,64 @@ The sandbox is the core practical learning tool — it presents a clinical scena
 
 **7 Achievement Badges:** 🥼 First Adjustment · 🎯 On Target · 🧠 Pattern Master · 🏥 Renal Expert · ⚡ Speed Doser · 🏆 Clinical Pharmacist · 💎 Perfect Score
 
+
+### 🎯 AUC24 Optimization & Practical Dosing
+
+**The Problem:** Trough and peak may be in range while AUC24 is silently above 600 — a nephrotoxicity risk the old simulator never flagged.
+
+**What's New:**
+
+- **AUC24 in Predicted Outcome** — Every sandbox adjustment now shows AUC24 alongside trough and peak, with ✓ or ⚠ status
+- **AUC24 guidance** — When AUC24 is out of range (above 600 or below 400), a yellow/red guidance box explains the clinical risk and what action to take (reduce dose, extend interval, etc.)
+- **AUC24 in feedback** — After submission, the feedback panel shows AUC24 status with nephrotoxicity/subtherapeutic warnings
+
+**Auto-Adjust Buttons:**
+
+| Button | What It Does |
+|--------|-------------|
+| ⚡ Auto-Adjust AUC | Finds a dose/interval that brings AUC24 into 400–600 (may not keep trough perfectly in range) |
+| ⚡ Auto-Adjust All | Optimizes all three parameters simultaneously — AUC24 400–600 ✓, trough in therapeutic range ✓, peak below toxic ✓ |
+
+**Practical Dosing Intelligence:**
+
+The auto-adjust optimizer doesn't just find the mathematically optimal dose — it finds the **clinically practical** one:
+
+- **Vial-aware dosing** — Only suggests doses that can be made from available vial sizes (e.g., vancomycin: 500mg, 750mg, 1000mg, 1500mg vials → doses like 500, 750, 1000, 1250, 1500, 1750, 2000, etc. — no more 550mg!)
+- **Preferred intervals** — Searches q6h, q8h, q12h, q24h (standard nursing schedules), not q7h or q11h
+- **Practicality scoring** — Penalizes wasteful vial use and frequent dosing, rewards convenient schedules and minimal waste
+
+**Why this matters:** 550mg q6h and 750mg q8h may produce similar trough/AUC values, but 750mg q8h uses whole vials, needs only 3 daily administrations (vs 4), and is far more likely to be given correctly by nursing staff at 2 AM.
+
+**Practical Alternatives Panel:**
+
+After auto-adjusting, the simulator shows the top 3 practical alternatives — each clickable to apply instantly. Example:
+
+```
+⚙ Practical Alternatives (vial-friendly)
+Same daily dose, standard intervals, whole vials:
+  750mg q8h   AUC:513  T:15.1  P:14.6
+  1000mg q12h AUC:456  T:14.5  P:12.8
+  500mg q6h   AUC:468  T:14.8  P:11.2
+```
+
+**Long-Term Safety: Why AUC Buffer Matters**
+
+With fixed dosing, drug accumulation is **self-limiting** — levels rise until steady state (4–5 half-lives), then plateau. They do NOT keep climbing indefinitely.
+
+| Scenario | AUC24 | Buffer to 600 | If SCr rises... |
+|----------|-------|--------------|-----------------|
+| 750mg q8h | 513 | 87 pts (safe) | Drifts to ~560 — still in range ✓ |
+| 1500mg q12h | 684 | **Already over** ⚠ | Any renal decline → higher AUC → nephrotoxicity |
+
+The AUC "buffer" — how far your AUC is below 600 — is your safety margin against:
+- Acute kidney injury (SCr rises → ke drops → AUC climbs)
+- Added nephrotoxins (aminoglycosides, NSAIDs, contrast dye)
+- Drug interactions that reduce clearance
+- Fluid shifts that alter Vd
+
+**AUC24 at 513 gives you an 87-point buffer. AUC24 at 684 gives you zero.** That's why 750mg q8h is a maintainable long-term regimen while 1500mg q12h is not — even though both produce therapeutic troughs.
+
+
 ### 📚 Learn Tab — 8-Chapter Learning Path
 Structured curriculum from basics to clinical mastery:
 
