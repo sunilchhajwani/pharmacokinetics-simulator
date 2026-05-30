@@ -1799,6 +1799,15 @@ function getPracticalDoses(drugKey, minDose, maxDose) {
       if (d >= minDose && d <= maxDose) doses.add(d);
     }
   }
+  // Combos: 3 vials (for high-dose regimens like OD gentamicin 5-7mg/kg)
+  for (let i = 0; i < vials.length; i++) {
+    for (let j = i; j < vials.length; j++) {
+      for (let k = j; k < vials.length; k++) {
+        const d = vials[i] + vials[j] + vials[k];
+        if (d >= minDose && d <= maxDose) doses.add(d);
+      }
+    }
+  }
   return Array.from(doses).sort((a, b) => a - b);
 }
 function practicalityScore(dose, interval, drugKey) {
@@ -3294,7 +3303,7 @@ function sbRenderGuided(s,drug){
     h+=sbRenderPrediction(s,drug);
     // Show recommended if they haven't found optimal
     const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
-    const infTime=sbState.adjustInterval>=24?2:1;
+    const infTime=DRUGS[s.drug]?DRUGS[s.drug].infusionTime||1:1;
     const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
     let troughCp=0;
     for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+sbState.adjustInterval,i*sbState.adjustInterval,route,sbState.adjustDose,ke,vd,f,w,infTime);}
@@ -3341,7 +3350,7 @@ function sbGuidedComplete(){
 }
 
 function sbRenderPrediction(s,drug){
-  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route,infTime=sbState.adjustInterval>=24?2:1;
+  const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route,infTime=DRUGS[s.drug]?DRUGS[s.drug].infusionTime||1:1;
   const tEnd=s.numDoses*s.currentInterval;
   const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
   let troughCp=0;
@@ -3407,7 +3416,7 @@ function sbOnAdjust(){
   document.getElementById('intervalRange').value=sbState.adjustInterval;
   document.getElementById('intervalVal').textContent=sbState.adjustInterval+' h';
   // Also set infusion time for longer intervals
-  var infTime=sbState.adjustInterval>=24?2:1;
+  var infTime=DRUGS[s.drug]?DRUGS[s.drug].infusionTime||1:1;
   if(document.getElementById('infusionTimeRange')){document.getElementById('infusionTimeRange').value=infTime;document.getElementById('infusionTimeVal').textContent=infTime.toFixed(2)+' h';}
   recalculate();
   // Re-render prediction
@@ -3425,7 +3434,7 @@ function sbSubmit(){
   const s=SB_SCENARIOS.find(x=>x.id===sbState.activeScenario);
   const drug=DRUGS[s.drug];
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
-  const infTime=sbState.adjustInterval>=24?2:1;
+  const infTime=DRUGS[s.drug]?DRUGS[s.drug].infusionTime||1:1;
   const lastDoseStart=(s.numDoses-1)*sbState.adjustInterval;
   let troughCp=0;
   for(let i=0;i<s.numDoses;i++){
@@ -3474,7 +3483,7 @@ function sbAutoAdjust(){
   document.getElementById('intervalVal').textContent=s.optimalInterval+' h';
   // Update route and infusion time to match drug
   setRoute(drug.route);
-  const newInfTime=(drug.route==='iv_infusion')?(s.optimalInterval>=24?2:1):0;
+  const newInfTime=drug.infusionTime||(drug.route==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   showLoadingDoseHint(drug,s.optimalDose);
@@ -3503,7 +3512,7 @@ function sbAutoAdjustAUC(){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       const aucVal=hasMIC?auc24/mic:auc24;if(aucTgt[0]>0&&(aucVal<aucTgt[0]||aucVal>aucTgt[1]))continue;
-      const infTime=(drugRoute==='iv_infusion')?(iv>=24?2:1):0;
+      const infTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
       const lastDoseStart=(s.numDoses-1)*iv;
       let troughCp=0;
       for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,drugRoute,d,ke,vd,f,w,infTime);}
@@ -3525,7 +3534,7 @@ function sbAutoAdjustAUC(){
   document.getElementById('intervalRange').value=bestInterval;
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   setRoute(drugRoute);
-  const newInfTime=(drugRoute==='iv_infusion')?(bestInterval>=24?2:1):0;
+  const newInfTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   showLoadingDoseHint(drug,bestDose);
@@ -3554,7 +3563,7 @@ function sbAutoAdjustAll(){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       const aucVal=hasMIC?auc24/mic:auc24;if(aucTgt[0]>0&&(aucVal<aucTgt[0]||aucVal>aucTgt[1]))continue;
-      const infTime=(drugRoute==='iv_infusion')?(iv>=24?2:1):0;
+      const infTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
       const lastDoseStart=(s.numDoses-1)*iv;
       let troughCp=0;
       for(let i=0;i<s.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,drugRoute,d,ke,vd,f,w,infTime);}
@@ -3582,7 +3591,7 @@ function sbAutoAdjustAll(){
   document.getElementById('intervalRange').value=bestInterval;
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   setRoute(drugRoute);
-  const newInfTime=(drugRoute==='iv_infusion')?(bestInterval>=24?2:1):0;
+  const newInfTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   showLoadingDoseHint(drug,bestDose);
@@ -3854,7 +3863,7 @@ function autoAdjustAUCMain(){
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   // Update route to drug default and infusion time based on interval
   setRoute(drugRoute);
-  const newInfTime=(drugRoute==='iv_infusion')?(bestInterval>=24?2:1):0;
+  const newInfTime=drugInfTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Show loading dose suggestion
@@ -3883,7 +3892,7 @@ function autoAdjustAllMain(){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       const aucVal=hasMIC?auc24/mic:auc24;if(aucVal<aucTgt[0]||aucVal>aucTgt[1])continue;
-      const infTime=(route==='iv_infusion')?(iv>=24?2:1):0;
+      const infTime=drug.infusionTime||(route==='iv_infusion'?1:0);
       const lastDoseStart=(state.numDoses-1)*iv;
       let troughCp=0;
       for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
@@ -3905,10 +3914,10 @@ function autoAdjustAllMain(){
         const auc24=(d*f)/(ke*vd*w)*(24/iv);
         const aucVal=hasMIC?auc24/mic:auc24;
         if(aucVal<aucTgt[0]||aucVal>aucTgt[1])continue;
-        const infTime=(route==='iv_infusion')?(iv>=24?2:1):0;
+        const infTime=drug.infusionTime||(drugRoute==='iv_infusion'?1:0);
         const lastDoseStart=(state.numDoses-1)*iv;
-        let troughCp=0;for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,route,d,ke,vd,f,w,infTime);}
-        let peakCp=0;for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,route,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
+        let troughCp=0;for(let i=0;i<state.numDoses;i++){troughCp+=getCpSingle(lastDoseStart+iv,i*iv,drugRoute,d,ke,vd,f,w,infTime);}
+        let peakCp=0;for(let i=0;i<state.numDoses;i++){const pk=getCpSingle(i*iv+infTime,i*iv,drugRoute,d,ke,vd,f,w,infTime);if(pk>peakCp)peakCp=pk;}
         if(troughCp>drug.toxic*1.25||peakCp>drug.toxic*1.25)continue;
         const aucDist=Math.abs(aucVal-(aucTgt[0]+aucTgt[1])/2);
         const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
@@ -3926,7 +3935,7 @@ function autoAdjustAllMain(){
   document.getElementById('intervalVal').textContent=bestInterval+' h';
   // Update route to drug default and infusion time based on interval
   setRoute(drugRoute);
-  const newInfTime=(drugRoute==='iv_infusion')?(bestInterval>=24?2:1):0;
+  const newInfTime=drugInfTime||(drugRoute==='iv_infusion'?1:0);
   document.getElementById('infusionTimeRange').value=newInfTime;
   document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
   // Show loading dose suggestion
