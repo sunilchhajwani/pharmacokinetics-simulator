@@ -3234,6 +3234,7 @@ function sbLoadPatient(s){
 function sbRenderFreePractice(){
   var drug=DRUGS[state.drug];
   var aucTgt=drug.aucTarget||[0,0];
+  var hasMIC=drug.aucMIC!==false;
   var h='';
   h+='<button class="btn btn-sm btn-outline" onclick="sbBack()" style="margin-bottom:8px">← Back to Scenarios</button>';
   h+='<div class="sb-vignette"><div class="sb-vit-title" style="color:#4ade80">🔬 Free Practice: '+drug.name+'</div>';
@@ -3282,7 +3283,7 @@ function sbRenderFreePractice(){
   var aucDose=sbState.adjustDose*f/(ke*vd*w);
   var auc24=aucDose*(24/sbState.adjustInterval);
   var aucMic=auc24/(parseFloat(document.getElementById('vancMIC').value)||1);
-  var hasMIC=drug.aucMIC!==false;
+  hasMIC=drug.aucMIC!==false;
   var aucCheckVal=hasMIC?aucMic:auc24;
   var aucInTarget=aucTgt[0]>0?(aucCheckVal>=aucTgt[0]&&aucCheckVal<=aucTgt[1]):true;
   var troughOk=troughCp>=drug.therapeutic[0]&&troughCp<=drug.therapeutic[1];
