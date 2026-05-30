@@ -3805,21 +3805,31 @@ function sbFreePractice(){
 function sbFreeAdjustAUC(){
   // Auto-adjust AUC for free practice mode - use current drug
   var drug=DRUGS[state.drug];
-  autoAdjustAUCMain();
-  // Update route and infusion time to match drug defaults
-  setRoute(drug.route);
-  var newInfTime=drug.infusionTime||(drug.route==='iv_infusion'?1:0);
-  document.getElementById('infusionTimeRange').value=newInfTime;
-  document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
-  // Update sandbox sliders to match
-  var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
-  var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
-  sbState.adjustDose=newDose;
-  sbState.adjustInterval=newInterval;
+  var aucTgt=drug.aucTarget||[0,0];
+  if(aucTgt[0]===0){
+    alert('AUC auto-adjust is not available for '+drug.name+' (no AUC target defined).');
+    return;
+  }
+  try {
+    autoAdjustAUCMain();
+  } catch(e) {
+    console.error('autoAdjustAUCMain error:', e);
+    alert('Auto-adjust error: '+e.message);
+    return;
+  }
+  // Sync sandbox state with main panel
+  sbState.adjustDose=state.dose;
+  sbState.adjustInterval=state.interval;
   // Re-render the free practice panel
   if(sbState.freePractice){
     var sandboxEl=document.getElementById('sandboxContent');
-    if(sandboxEl){sandboxEl.innerHTML=sbRenderFreePractice();}
+    if(sandboxEl){
+      try {
+        sandboxEl.innerHTML=sbRenderFreePractice();
+      } catch(e) {
+        console.error('Render error:', e);
+      }
+    }
   } else {
     renderSandbox();
   }
@@ -3830,24 +3840,29 @@ function sbFreeAdjustAll(){
   var drug=DRUGS[state.drug];
   var aucTgt=drug.aucTarget||[0,0];
   if(aucTgt[0]===0){
-    // No AUC target for this drug - just adjust dose/interval for trough
-    // Use the main panel's auto-adjust which handles this case
+    alert('AUC auto-adjust is not available for '+drug.name+' (no AUC target defined).');
+    return;
   }
-  autoAdjustAllMain();
-  // Update route and infusion time to match drug defaults
-  setRoute(drug.route);
-  var newInfTime=drug.infusionTime||(drug.route==='iv_infusion'?1:0);
-  document.getElementById('infusionTimeRange').value=newInfTime;
-  document.getElementById('infusionTimeVal').textContent=newInfTime.toFixed(2)+' h';
-  // Update sandbox sliders to match
-  var newDose=parseFloat(document.getElementById('doseInput').value)||state.dose;
-  var newInterval=parseFloat(document.getElementById('intervalRange').value)||state.interval;
-  sbState.adjustDose=newDose;
-  sbState.adjustInterval=newInterval;
+  try {
+    autoAdjustAllMain();
+  } catch(e) {
+    console.error('autoAdjustAllMain error:', e);
+    alert('Auto-adjust error: '+e.message);
+    return;
+  }
+  // Sync sandbox state with main panel
+  sbState.adjustDose=state.dose;
+  sbState.adjustInterval=state.interval;
   // Re-render the free practice panel
   if(sbState.freePractice){
     var sandboxEl=document.getElementById('sandboxContent');
-    if(sandboxEl){sandboxEl.innerHTML=sbRenderFreePractice();}
+    if(sandboxEl){
+      try {
+        sandboxEl.innerHTML=sbRenderFreePractice();
+      } catch(e) {
+        console.error('Render error:', e);
+      }
+    }
   } else {
     renderSandbox();
   }
