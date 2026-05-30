@@ -3259,9 +3259,9 @@ function sbRenderFreePractice(){
   var minVial=vials.length>0?vials[0]:25;
   var step=vials.length>0?minVial:25;
   // Wider range for free practice: allow exploration beyond typical doses
-  var dMin=Math.min(step, Math.max(1, Math.round(state.dose*0.1)));
-  var dMax=Math.max(5000, Math.round(state.dose*10));
-  var sliderStep=vials.length>0?minVial:5;
+  var dMin=1;
+  var dMax=10000;
+  var sliderStep=5;
   var iMin=2;
   var iMax=96;
   h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="'+sliderStep+'" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
