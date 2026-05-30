@@ -3279,17 +3279,19 @@ function sbRenderFreePractice(){
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Trough</span><span class="sb-pred-val '+(troughOk?'pass':troughSafe?'warn':'fail')+'">'+troughCp.toFixed(1)+' '+drug.unit+' '+(troughOk?'✓':troughSafe?'⚠':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">Peak</span><span class="sb-pred-val '+(peakOk?'pass':'fail')+'">'+peakCp.toFixed(1)+' '+drug.unit+' '+(peakOk?'✓':'✗')+'</span></div>';
   h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC24</span><span class="sb-pred-val '+(aucInTarget?'pass':'warn')+'">'+auc24.toFixed(0)+' '+(aucInTarget?'✓':'⚠')+'</span></div>';
-  if(hasMIC){h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC/MIC</span><span class="sb-pred-val '+(aucCheckVal>=aucTgt[0]?'pass':'warn')+'">'+aucMic.toFixed(0)+' '+(aucCheckVal>=aucTgt[0]?'✓':'LOW')+'</span></div>';}
+  if(hasMIC){h+='<div class="sb-pred-row"><span class="sb-pred-label">AUC/MIC</span><span class="sb-pred-val '+(aucInTarget?'pass':aucCheckVal>aucTgt[1]?'fail':'warn')+'">'+aucMic.toFixed(0)+' '+(aucInTarget?'✓':aucCheckVal>aucTgt[1]?'HIGH':'LOW')+'</span></div>';}
   // AUC auto-adjust buttons
   if(aucTgt[0]>0&&!aucInTarget){
+    var aucLabel=hasMIC?'AUC/MIC':'AUC24';
     h+='<div class="sb-guided-step" style="border-left-color:#fbbf24;margin-top:8px">';
-    h+='<strong style="color:'+(aucCheckVal>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ AUC24 '+(aucCheckVal>aucTgt[1]?'>'+aucTgt[1]:'<'+aucTgt[0])+' — '+(aucCheckVal>aucTgt[1]?'Toxicity risk':'Subtherapeutic')+'</strong><br>';
-    h+='<span style="color:#94a3b8;font-size:11px">'+(aucCheckVal>aucTgt[1]?'Reduce dose or extend interval.':'Increase dose or shorten interval.')+'</span><br>';
+    h+='<strong style="color:'+(aucCheckVal>aucTgt[1]?'#f87171':'#fbbf24')+'">⚠ '+aucLabel+' '+(aucCheckVal>aucTgt[1]?'>'+aucTgt[1]+' — Toxicity risk':'<'+aucTgt[0]+' — Subtherapeutic')+'</strong><br>';
+    h+='<span style="color:#94a3b8;font-size:11px">'+(aucCheckVal>aucTgt[1]?'Reduce dose or extend interval to bring '+aucLabel+' into '+aucTgt[0]+'-'+aucTgt[1]+' range.':'Increase dose or shorten interval to bring '+aucLabel+' into '+aucTgt[0]+'-'+aucTgt[1]+' range.')+'</span><br>';
     h+='<button class="btn btn-sm btn-outline" onclick="sbFreeAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24;margin-top:4px">⚡ Auto-Adjust AUC</button> ';
     h+='<button class="btn btn-sm btn-outline" onclick="sbFreeAdjustAll()" style="border-color:#4ade80;color:#4ade80;margin-top:4px">⚡ Auto-Adjust All</button>';
     h+='</div>';
   } else if(aucTgt[0]>0&&aucInTarget){
-    h+='<div class="sb-guided-step" style="border-left-color:#4ade80;margin-top:8px"><strong style="color:#4ade80">✓ AUC24 is on target ('+aucTgt[0]+'-'+aucTgt[1]+')</strong></div>';
+    var aucLabel=hasMIC?'AUC/MIC':'AUC24';
+    h+='<div class="sb-guided-step" style="border-left-color:#4ade80;margin-top:8px"><strong style="color:#4ade80">✓ '+aucLabel+' is on target ('+aucTgt[0]+'-'+aucTgt[1]+')</strong></div>';
   }
   h+='</div>';
   return h;
