@@ -846,6 +846,11 @@ body.quick-start .warning-box{display:none!important}
           <label>Explorer CL (L/h): <span id="aucExpCLVal" style="color:#60a5fa">5.0</span></label>
           <input type="range" id="aucExpCL" min="0.5" max="15" step="0.5" value="5" oninput="updateAUCExplorer()">
         </div>
+        <div class="field" id="aucExpMICRow" style="display:none">
+          <label>Organism MIC (mg/L): <span id="aucExpMICVal" style="color:#60a5fa">1.0</span></label>
+          <input type="range" id="aucExpMIC" min="0.25" max="16" step="0.25" value="1" oninput="updateAUCExplorer()">
+          <div style="font-size:10px;color:#64748b;margin-top:2px">Enter the MIC from culture & sensitivity. Higher MIC = higher dose needed to achieve AUC/MIC target.</div>
+        </div>
         <div class="info-box" id="aucExplorerResult" style="line-height:1.8">
           <div id="aucExpCalc"></div>
         </div>
@@ -3938,7 +3943,17 @@ function updateAUCExplorer(){
   var hl=0.693/ke;
   var drug=DRUGS[state.drug];
   var aucTgt=drug.aucTarget||[400,600];
+  var hasMIC=drug.aucMIC!==false;
+  var mic=hasMIC?(parseFloat(document.getElementById('aucExpMIC').value)||1):1;
+  var aucMic=auc24/mic;
   var aucInTarget=auc24>=aucTgt[0]&&auc24<=aucTgt[1];
+  var aucMicInTarget=hasMIC?(aucMic>=aucTgt[0]&&aucMic<=aucTgt[1]):true;
+  // Show/hide MIC row based on drug
+  var micRow=document.getElementById('aucExpMICRow');
+  if(micRow){micRow.style.display=hasMIC?'flex':'none';}
+  // Update MIC display
+  var micEl=document.getElementById('aucExpMIC');
+  if(micEl){document.getElementById('aucExpMICVal').textContent=mic.toFixed(2)+' mg/L';}
 
   document.getElementById('aucExpDoseVal').textContent=dose+' mg';
   document.getElementById('aucExpIntVal').textContent=interval+' h';
@@ -3962,7 +3977,8 @@ function updateAUCExplorer(){
     '</div>'+
     '<div style="background:'+(aucInTarget?'rgba(34,197,94,0.08)':'rgba(251,191,36,0.08)')+';border:1px solid '+(aucInTarget?'rgba(34,197,94,0.25)':'rgba(251,191,36,0.25)')+';border-radius:8px;padding:12px;text-align:center">'+
     '<div style="font-size:22px;font-weight:700;color:'+statusColor+'">'+auc24.toFixed(0)+' <span style="font-size:12px">mg*h/L</span></div>'+
-    '<div style="font-size:11px;color:'+statusColor+';margin-top:4px">'+statusIcon+' '+statusText+' ('+targetLabel+')</div>'+
+    (hasMIC?'<div style="font-size:18px;font-weight:700;color:'+(aucMicInTarget?'#4ade80':'#f87171')+'">AUC/MIC: '+aucMic.toFixed(0)+' <span style="font-size:11px">('+auc24.toFixed(0)+'/'+mic.toFixed(1)+')</span></div>':'')+
+    '<div style="font-size:11px;color:'+statusColor+';margin-top:4px">'+statusIcon+' '+(hasMIC?'AUC/MIC '+(aucMicInTarget?'in target':'outside target')+' ('+targetLabel+')':statusText)+' ('+targetLabel+')</div>'+
     '</div>'+
     '<div style="font-size:11px;color:#94a3b8;margin-top:8px;line-height:1.6">'+
     '<strong style="color:#e0e6f0">Key relationships:</strong><br>'+
