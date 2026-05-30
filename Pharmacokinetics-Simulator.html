@@ -3258,6 +3258,12 @@ function sbRenderFreePractice(){
   var iMax=Math.min(96,Math.round(state.interval*4));
   h+='<div class="sb-slider-row"><label>Dose:</label><input type="range" id="sbDoseSlider" min="'+dMin+'" max="'+dMax+'" step="25" value="'+sbState.adjustDose+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbDoseVal">'+sbState.adjustDose+' mg</span></div>';
   h+='<div class="sb-slider-row"><label>Interval:</label><input type="range" id="sbIntervalSlider" min="'+iMin+'" max="'+iMax+'" step="1" value="'+sbState.adjustInterval+'" oninput="sbOnAdjust()"><span class="sb-slider-val" id="sbIntervalVal">q'+sbState.adjustInterval+'h</span></div>';
+  // MIC slider for AUC/MIC drugs
+  if(hasMIC){
+    var currentMIC=parseFloat(document.getElementById('vancMIC').value)||1;
+    h+='<div class="sb-slider-row"><label>MIC (mg/L):</label><input type="range" id="sbMICSlider" min="0.25" max="8" step="0.25" value="'+currentMIC+'" oninput="sbOnMICChange()"><span class="sb-slider-val" id="sbMICVal">'+currentMIC.toFixed(2)+' mg/L</span></div>';
+    h+='<div style="font-size:10px;color:#64748b;margin-top:-4px;margin-bottom:6px">AUC/MIC target: '+aucTgt[0]+'-'+aucTgt[1]+' | Higher MIC = higher dose needed</div>';
+  }
   h+='</div>';
   // Prediction
   var ke=state.ke,vd=state.vd,w=getEffW(),f=state.f;
@@ -3484,6 +3490,18 @@ function sbRenderPrediction(s,drug){
   }
   h+='</div>';
   return h;
+}
+
+function sbOnMICChange(){
+  // Update MIC in main panel and re-render free practice
+  var micEl=document.getElementById('sbMICSlider');
+  if(micEl){
+    var micVal=parseFloat(micEl.value)||1;
+    document.getElementById('vancMIC').value=micVal;
+    document.getElementById('sbMICVal').textContent=micVal.toFixed(2)+' mg/L';
+    recalculate();
+  }
+  renderSandbox();
 }
 
 function sbOnAdjust(){
