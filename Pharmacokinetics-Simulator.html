@@ -1699,6 +1699,79 @@ const VIAL_SIZES={
   custom:[]
 };
 
+
+// === PRACTICAL DOSING HELPERS ===
+const PREFERRED_INTERVALS = [6,8,12,18,24,36,48];
+function getPracticalDoses(drugKey, minDose, maxDose) {
+  const vials = VIAL_SIZES[drugKey] || [];
+  if (vials.length === 0) {
+    // For drugs without vial data, use multiples of 25 or 50
+    const doses = [];
+    for (let d = Math.max(25, minDose); d <= maxDose; d += 25) doses.push(d);
+    return doses;
+  }
+  const doses = new Set();
+  // Single vial doses
+  for (const v of vials) { if (v >= minDose && v <= maxDose) doses.add(v); }
+  // Combos: 2 of same vial
+  for (const v of vials) { const d = v * 2; if (d >= minDose && d <= maxDose) doses.add(d); }
+  // Combos: 2 different vials
+  for (let i = 0; i < vials.length; i++) {
+    for (let j = i; j < vials.length; j++) {
+      const d = vials[i] + vials[j];
+      if (d >= minDose && d <= maxDose) doses.add(d);
+    }
+  }
+  return Array.from(doses).sort((a, b) => a - b);
+}
+function practicalityScore(dose, interval, drugKey) {
+  let score = 0;
+  const vials = VIAL_SIZES[drugKey] || [];
+  // Prefer standard intervals
+  if (PREFERRED_INTERVALS.includes(interval)) score -= 10;
+  if (interval === 8 || interval === 12) score -= 5; // sweet spots
+  if (interval === 6) score -= 2; // ok but frequent
+  if (interval % 6 !== 0) score += 5; // odd intervals harder to schedule
+  // Prefer vial-aligned doses
+  if (vials.length > 0) {
+    const nearestVial = vials.reduce((best, v) => Math.abs(dose - v) < Math.abs(dose - best) ? v : best, vials[0]);
+    const vialDiff = Math.abs(dose - nearestVial);
+    if (vialDiff === 0) score -= 10; // exact vial match
+    else if (vialDiff <= nearestVial * 0.1) score -= 5; // within 10%
+    // Check if dose = sum of whole vials
+    const canMake = canMakeFromVials(dose, vials);
+    if (canMake.exact) score -= 8;
+    else if (canMake.waste < 0.15) score -= 3;
+    else score += canMake.waste * 20; // penalize waste
+  }
+  // Fewer daily doses = better
+  const dailyDoses = 24 / interval;
+  if (dailyDoses <= 2) score -= 5;
+  else if (dailyDoses <= 3) score -= 2;
+  else score += dailyDoses;
+  return score;
+}
+function canMakeFromVials(dose, vials) {
+  // Try combinations of up to 3 vials
+  for (const v of vials) {
+    const n = Math.ceil(dose / v);
+    const total = n * v;
+    const waste = (total - dose) / total;
+    if (n <= 3 && waste < 0.5) return { exact: dose === total, waste, vials: n, vialSize: v, total };
+  }
+  // Try 2 different vials
+  for (let i = 0; i < vials.length; i++) {
+    for (let j = i; j < vials.length; j++) {
+      const total = vials[i] + vials[j];
+      if (total >= dose) {
+        const waste = (total - dose) / total;
+        return { exact: dose === total, waste, vials: 2, vialSize: vials[i], total };
+      }
+    }
+  }
+  return { exact: false, waste: 0.5, vials: 1, vialSize: vials[0], total: dose };
+}
+
 // === UNIT CONVERSIONS ===
 const UNIT_TABLE={
   'mg/L':{mcg_mL:1,mcg_L:1000,ng_mL:1000,mmol_L:null},
@@ -3165,6 +3238,22 @@ function sbRenderPrediction(s,drug){
     h+='<em>Tip: AUC24 = (Dose \u00d7 F) / (ke \u00d7 Vd \u00d7 W) \u00d7 (24 / interval). Changing dose scales AUC linearly; changing interval scales it inversely.</em>';
     h+='</div>';
     h+='<div class="sb-auc-auto-btn"><button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAUC()" style="border-color:#fbbf24;color:#fbbf24">⚡ Auto-Adjust AUC</button> <button class="btn btn-sm btn-outline" onclick="sbAutoAdjustAll()" style="border-color:#4ade80;color:#4ade80">⚡ Auto-Adjust All</button></div>';
+
+    if(sbState.practicalAlternatives&&sbState.practicalAlternatives.length>0){
+      h+='<div style="margin-top:8px;padding:8px 10px;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.2);border-radius:6px;font-size:11px">';
+      h+='<strong style="color:#60a5fa">\u2699 Practical Alternatives (vial-friendly)</strong><br>';
+      h+='<span style="color:#94a3b8">Same daily dose, standard intervals, whole vials:</span>';
+      sbState.practicalAlternatives.forEach(function(alt,i){
+        h+='<div style="margin:4px 0;padding:4px 8px;background:#1e293b;border-radius:4px;cursor:pointer" onclick="sbState.adjustDose='+alt.dose+';sbState.adjustInterval='+alt.interval+';document.getElementById(\'doseInput\').value='+alt.dose+';document.getElementById(\'doseRange\').value=Math.min('+alt.dose+',5000);document.getElementById(\'doseVal\').textContent=\''+alt.dose+' mg\';document.getElementById(\'intervalRange\').value='+alt.interval+';document.getElementById(\'intervalVal\').textContent=\''+alt.interval+' h\';recalculate();renderSandbox();">';
+        h+='<strong style="color:#e0e6f0">'+alt.dose+'mg q'+alt.interval+'h</strong> ';
+        h+='<span style="color:#60a5fa">AUC:'+alt.auc24.toFixed(0)+'</span> ';
+        h+='<span style="color:#4ade80">T:'+alt.troughCp.toFixed(1)+'</span> ';
+        h+='<span style="color:#fbbf24">P:'+alt.peakCp.toFixed(1)+'</span>';
+        h+='</div>';
+      });
+      h+='</div>';
+    }
+
   }
   h+='</div>';
   return h;
@@ -3259,10 +3348,10 @@ function sbAutoAdjustAUC(){
   let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
   const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
-  const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
-  const iMax=Math.min(96,Math.round(s.currentInterval*4));
-  for(let iv=iMin;iv<=iMax;iv+=1){
-    for(let d=dMin;d<=dMax;d+=25){
+  const practicalDoses=getPracticalDoses(s.drug,dMin,dMax);
+  const intervals=PREFERRED_INTERVALS.filter(iv=>iv>=Math.max(4,Math.round(s.currentInterval*0.3))&&iv<=Math.min(96,Math.round(s.currentInterval*4)));
+  for(const iv of intervals){
+    for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       if(auc24<400||auc24>600)continue;
@@ -3294,12 +3383,13 @@ function sbAutoAdjustAll(){
   const drug=DRUGS[s.drug];
   const ke=state.ke,vd=state.vd,w=getEffW(),f=state.f,route=state.route;
   let bestDose=sbState.adjustDose,bestInterval=sbState.adjustInterval,bestScore=Infinity;
+  let alternatives=[];
   const dMin=Math.max(25,Math.round(s.currentDose*0.2/25)*25);
   const dMax=Math.min(5000,Math.round(s.currentDose*3/25)*25);
-  const iMin=Math.max(4,Math.round(s.currentInterval*0.3));
-  const iMax=Math.min(96,Math.round(s.currentInterval*4));
-  for(let iv=iMin;iv<=iMax;iv+=1){
-    for(let d=dMin;d<=dMax;d+=25){
+  const practicalDoses=getPracticalDoses(s.drug,dMin,dMax);
+  const intervals=PREFERRED_INTERVALS.filter(iv=>iv>=Math.max(4,Math.round(s.currentInterval*0.3))&&iv<=Math.min(96,Math.round(s.currentInterval*4)));
+  for(const iv of intervals){
+    for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       if(auc24<400||auc24>600)continue;
@@ -3314,10 +3404,14 @@ function sbAutoAdjustAll(){
       const aucDist=Math.abs(auc24-500);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
-      const score=aucDist+troughDist*1.5;
+      const practicality=practicalityScore(d,iv,s.drug);
+      const score=aucDist+troughDist*1.5+practicality;
+      alternatives.push({dose:d,interval:iv,score,auc24,troughCp,peakCp,practicality});
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
     }
   }
+  alternatives.sort((a,b)=>a.score-b.score);
+  sbState.practicalAlternatives=alternatives.slice(0,3);
   sbState.adjustDose=bestDose;
   sbState.adjustInterval=bestInterval;
   document.getElementById('doseInput').value=bestDose;
@@ -3482,14 +3576,15 @@ function autoAdjustAUCMain(){
   let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
   const dMax=Math.min(5000,Math.round(state.dose*3/25)*25);
-  const iMin=Math.max(4,Math.round(state.interval*0.3));
-  const iMax=Math.min(96,Math.round(state.interval*4));
-  for(let iv=iMin;iv<=iMax;iv+=1){
-    for(let d=dMin;d<=dMax;d+=25){
+  const practicalDoses=getPracticalDoses(state.drug,dMin,dMax);
+  const intervals=PREFERRED_INTERVALS.filter(iv=>iv>=Math.max(4,Math.round(state.interval*0.3))&&iv<=Math.min(96,Math.round(state.interval*4)));
+  for(const iv of intervals){
+    for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       if(auc24<400||auc24>600)continue;
-      const score=Math.abs(auc24-500);
+      const practicality=practicalityScore(d,iv,state.drug);
+      const score=Math.abs(auc24-500)+practicality;
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
     }
   }
@@ -3506,10 +3601,10 @@ function autoAdjustAllMain(){
   let bestDose=state.dose,bestInterval=state.interval,bestScore=Infinity;
   const dMin=Math.max(25,Math.round(state.dose*0.3/25)*25);
   const dMax=Math.min(5000,Math.round(state.dose*3/25)*25);
-  const iMin=Math.max(4,Math.round(state.interval*0.3));
-  const iMax=Math.min(96,Math.round(state.interval*4));
-  for(let iv=iMin;iv<=iMax;iv+=1){
-    for(let d=dMin;d<=dMax;d+=25){
+  const practicalDoses=getPracticalDoses(state.drug,dMin,dMax);
+  const intervals=PREFERRED_INTERVALS.filter(iv=>iv>=Math.max(4,Math.round(state.interval*0.3))&&iv<=Math.min(96,Math.round(state.interval*4)));
+  for(const iv of intervals){
+    for(const d of practicalDoses){
       const aucDose=d*f/(ke*vd*w);
       const auc24=aucDose*(24/iv);
       if(auc24<400||auc24>600)continue;
@@ -3523,7 +3618,8 @@ function autoAdjustAllMain(){
       const aucDist=Math.abs(auc24-500);
       const troughMid=(drug.therapeutic[0]+drug.therapeutic[1])/2;
       const troughDist=Math.abs(troughCp-troughMid);
-      const score=aucDist+troughDist*1.5;
+      const practicality=practicalityScore(d,iv,state.drug);
+      const score=aucDist+troughDist*1.5+practicality;
       if(score<bestScore){bestScore=score;bestDose=d;bestInterval=iv;}
     }
   }
